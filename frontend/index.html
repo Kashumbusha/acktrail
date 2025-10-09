@@ -9,13 +9,8 @@
       (function() {
         try {
           var stored = localStorage.getItem('theme');
-          var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var shouldDark = stored === 'dark' || (!stored && systemDark);
-          if (shouldDark) {
-            document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
-          }
+          var shouldDark = stored === 'dark'; // default is light
+          document.documentElement.classList.toggle('dark', shouldDark);
         } catch (_) {}
       })();
     </script>
