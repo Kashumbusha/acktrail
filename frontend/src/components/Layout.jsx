@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import ThemeToggle from './ThemeToggle';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -24,8 +25,8 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <Disclosure as="nav" className="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200/70">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-slate-900">
+      <Disclosure as="nav" className="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800">
         {({ open }) => (
           <>
             <div className="container-page">
@@ -53,7 +54,8 @@ export default function Layout({ children }) {
                     ))}
                   </div>
                 </div>
-                <div className="hidden sm:ml-6 sm:flex sm:items-center">
+                <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-2">
+                  <ThemeToggle />
                   <Menu as="div" className="relative ml-3">
                     <div>
                       <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
@@ -130,7 +132,7 @@ export default function Layout({ children }) {
                     <UserCircleIcon className="h-10 w-10 text-gray-400" />
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">{user?.email}</div>
+                    <div className="text-base font-medium text-gray-800 dark:text-slate-200">{user?.email}</div>
                   </div>
                 </div>
                 <div className="mt-3 space-y-1">
