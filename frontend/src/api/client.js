@@ -52,7 +52,11 @@ export const authAPI = {
 // Policies API
 export const policiesAPI = {
   list: () => apiClient.get('/api/policies'),
-  create: (data) => apiClient.post('/api/policies', data),
+  create: (data) => {
+    // Ensure multipart when sending FormData (file uploads)
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    return apiClient.post('/api/policies', data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
+  },
   get: (id) => apiClient.get(`/api/policies/${id}`),
   update: (id, data) => apiClient.put(`/api/policies/${id}`, data),
   delete: (id) => apiClient.delete(`/api/policies/${id}`),
