@@ -115,7 +115,7 @@ export default function Dashboard() {
 
       {/* Additional Stats Row */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="bg-white overflow-hidden rounded-xl border border-slate-200">
+        <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -135,7 +135,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden rounded-xl border border-slate-200">
+        <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -160,43 +160,43 @@ export default function Dashboard() {
 
       {/* Recent Policies */}
       {recent_policies && recent_policies.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200">
-          <div className="px-6 py-4 border-b border-slate-200">
+        <div className="bg-white rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900">
                 Recent Policies
               </h3>
               <Link
                 to="/policies"
-                className="text-sm text-indigo-600 hover:text-indigo-700"
+                className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
                 View all
               </Link>
             </div>
           </div>
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-slate-200 dark:divide-slate-800">
             {recent_policies.slice(0, 5).map((policy) => (
               <li key={policy.id}>
                 <Link
                   to={`/policies/${policy.id}`}
-                  className="block hover:bg-slate-50 px-6 py-4"
+                  className="block hover:bg-slate-50 dark:hover:bg-slate-800/60 px-6 py-4"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <DocumentTextIcon className="h-5 w-5 text-slate-400 mr-3" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
                           {policy.title}
                         </p>
                         {policy.description && (
-                          <p className="text-sm text-slate-600 mt-1">
+                          <p className="text-sm text-slate-600 mt-1 dark:text-slate-400">
                             {policy.description}
                           </p>
                         )}
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         {policy.assignments_count || 0} assignments
                       </p>
                       <p className="text-xs text-slate-400">
@@ -212,14 +212,14 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 dark:bg-slate-900 dark:border-slate-800">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Quick Actions
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             to="/policies/new"
-            className="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            className="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors dark:border-slate-800 dark:hover:bg-slate-800/60"
           >
             <PlusIcon className="h-6 w-6 text-indigo-600 mr-3" />
             <div>
@@ -230,7 +230,7 @@ export default function Dashboard() {
 
           <Link
             to="/policies"
-            className="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            className="flex items-center p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors dark:border-slate-800 dark:hover:bg-slate-800/60"
           >
             <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
             <div>
@@ -239,7 +239,7 @@ export default function Dashboard() {
             </div>
           </Link>
 
-          <div className="flex items-center p-4 border border-slate-200 rounded-lg bg-slate-50">
+          <div className="flex items-center p-4 border border-slate-200 rounded-lg bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
             <UsersIcon className="h-6 w-6 text-slate-400 mr-3" />
             <div>
               <p className="text-sm font-medium text-gray-500">Bulk Actions</p>
