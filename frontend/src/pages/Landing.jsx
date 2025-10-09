@@ -1,0 +1,226 @@
+import { Link } from 'react-router-dom';
+import {
+  DocumentTextIcon,
+  ShieldCheckIcon,
+  BellIcon,
+  ChartBarIcon,
+  ClockIcon,
+  UserGroupIcon
+} from '@heroicons/react/24/outline';
+
+export default function Landing() {
+  return (
+    <div className="bg-white">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200/70">
+        <div className="container-page">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <div className="bg-indigo-600 rounded-xl p-2 shadow">
+                <DocumentTextIcon className="h-6 w-6 text-white" />
+              </div>
+              <span className="ml-3 text-lg font-semibold text-slate-900">
+                Policy Acknowledgment Tracker
+              </span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Link
+                to="/login"
+                className="btn btn-secondary"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/login"
+                className="btn btn-primary"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-white to-purple-50" />
+        <div className="container-page">
+          <div className="grid lg:grid-cols-2 gap-10 items-center py-16 md:py-24">
+            <div>
+              <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                New • Modern policy tracking
+              </span>
+              <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
+                Simplify Policy
+                <br />
+                Acknowledgment Management
+              </h1>
+              <p className="mt-4 text-lg text-slate-600 max-w-xl">
+                Streamline distribution, track acknowledgments in real-time, and ensure compliance with an intuitive, modern platform.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Link to="/login" className="btn btn-primary">
+                  Get Started Free
+                </Link>
+                <a href="#features" className="btn btn-secondary">
+                  Learn More
+                </a>
+              </div>
+              <div className="mt-10 grid grid-cols-3 gap-6 text-center">
+                <div className="card">
+                  <div className="card-body">
+                    <div className="text-2xl font-bold text-slate-900">5m+</div>
+                    <div className="text-xs text-slate-500">Emails sent securely</div>
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="card-body">
+                    <div className="text-2xl font-bold text-slate-900">99.9%</div>
+                    <div className="text-xs text-slate-500">Uptime SLA</div>
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="card-body">
+                    <div className="text-2xl font-bold text-slate-900">AES-256</div>
+                    <div className="text-xs text-slate-500">Encryption at rest</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-tr from-indigo-200/40 via-purple-200/40 to-transparent blur-2xl" />
+              <div className="card shadow-lg">
+                <div className="card-body">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-lg bg-indigo-50 p-4">
+                      <DocumentTextIcon className="h-6 w-6 text-indigo-600" />
+                      <div className="mt-2 text-sm font-medium text-slate-900">Policies</div>
+                      <div className="text-xs text-slate-500">Upload PDF/Markdown</div>
+                    </div>
+                    <div className="rounded-lg bg-purple-50 p-4">
+                      <UserGroupIcon className="h-6 w-6 text-purple-600" />
+                      <div className="mt-2 text-sm font-medium text-slate-900">Assignments</div>
+                      <div className="text-xs text-slate-500">Bulk CSV import</div>
+                    </div>
+                    <div className="rounded-lg bg-green-50 p-4">
+                      <ChartBarIcon className="h-6 w-6 text-green-600" />
+                      <div className="mt-2 text-sm font-medium text-slate-900">Analytics</div>
+                      <div className="text-xs text-slate-500">Real-time insights</div>
+                    </div>
+                    <div className="rounded-lg bg-yellow-50 p-4">
+                      <BellIcon className="h-6 w-6 text-yellow-600" />
+                      <div className="mt-2 text-sm font-medium text-slate-900">Reminders</div>
+                      <div className="text-xs text-slate-500">Automated emails</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Everything you need</h2>
+            <p className="mt-3 text-slate-600">A comprehensive solution designed for modern organizations</p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-indigo-600 text-white grid place-items-center">
+                  <DocumentTextIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Policy Management</h3>
+                <p className="mt-2 text-slate-600">Upload and manage PDF or Markdown policies with versioning.</p>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-purple-600 text-white grid place-items-center">
+                  <UserGroupIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Easy Assignment</h3>
+                <p className="mt-2 text-slate-600">Assign via email with CSV bulk import for large deployments.</p>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-yellow-500 text-white grid place-items-center">
+                  <BellIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Smart Reminders</h3>
+                <p className="mt-2 text-slate-600">Automated reminders with escalating urgency and tracking.</p>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-emerald-600 text-white grid place-items-center">
+                  <ChartBarIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Real-time Analytics</h3>
+                <p className="mt-2 text-slate-600">Track rates, pending and overdue; export to CSV.</p>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-sky-600 text-white grid place-items-center">
+                  <ShieldCheckIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Secure Authentication</h3>
+                <p className="mt-2 text-slate-600">Magic links and verification codes—no passwords required.</p>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-12 w-12 rounded-lg bg-amber-600 text-white grid place-items-center">
+                  <ClockIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">Audit Trail</h3>
+                <p className="mt-2 text-slate-600">Complete history with PDF receipts and SHA-256 hashing.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600" />
+        <div className="container-page text-center py-16 sm:py-20">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            <span className="block">Ready to get started?</span>
+            <span className="block text-indigo-200">Start managing policies today.</span>
+          </h2>
+          <p className="mt-4 text-lg text-indigo-100">No credit card required. Get started in minutes.</p>
+          <Link to="/login" className="btn bg-white text-indigo-700 hover:bg-indigo-50 mt-8">
+            Get Started Free
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900">
+        <div className="container-page py-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <DocumentTextIcon className="h-6 w-6 text-indigo-400" />
+              <span className="ml-2 text-sm font-semibold text-white">
+                Policy Acknowledgment Tracker
+              </span>
+            </div>
+            <p className="text-slate-400 text-xs">© 2025 Policy Tracker. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

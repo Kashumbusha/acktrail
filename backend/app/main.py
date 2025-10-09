@@ -1,0 +1,154 @@
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+import logging
+import time
+from typing import Dict, Any
+
+from .core.config import settings
+from .models.database import engine, Base
+
+# Import all routers
+from .api.auth import router as auth_router
+from .api.policies import router as policies_router
+from .api.assignments import router as assignments_router
+from .api.acknowledgments import router as acknowledgments_router
+from .api.dashboard import router as dashboard_router
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
+class RequestLoggingMiddleware:
+    """Middleware to log all API requests."""
+    
+    def __init__(self, app):
+        self.app = app
+    
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            request = Request(scope, receive)
+            start_time = time.time()
+            
+            # Log the request
+            logger.info(f"Request: {request.method} {request.url}")
+            
+            async def send_wrapper(message):
+                if message["type"] == "http.response.start":
+                    process_time = time.time() - start_time
+                    status_code = message["status"]
+                    logger.info(f"Response: {status_code} - {process_time:.3f}s")
+                await send(message)
+            
+            await self.app(scope, receive, send_wrapper)
+        else:
+            await self.app(scope, receive, send)
+
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application."""
+    
+    app = FastAPI(
+        title=settings.app_name,
+        version="1.0.0",
+        description="Policy Acknowledgment Tracker API",
+        docs_url="/docs" if settings.environment == "development" else None,
+        redoc_url="/redoc" if settings.environment == "development" else None,
+    )
+
+    # Create database tables
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to create database tables: {e}")
+
+    # Add middleware
+    if settings.environment == "production":
+        app.add_middleware(
+            TrustedHostMiddleware,
+            allowed_hosts=["*"]  # Configure this properly for production
+        )
+    
+    # CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allow_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["Content-Disposition"],  # For file downloads
+    )
+    
+    # Request logging middleware
+    if settings.environment == "development":
+        app.add_middleware(RequestLoggingMiddleware)
+
+    # Global exception handler
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        logger.error(f"Global exception on {request.url}: {exc}", exc_info=True)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error"}
+        )
+
+    # Include routers with proper prefixes
+    app.include_router(auth_router, prefix="/api")
+    app.include_router(policies_router, prefix="/api")
+    app.include_router(assignments_router, prefix="/api")
+    app.include_router(acknowledgments_router, prefix="/api")
+    app.include_router(dashboard_router, prefix="/api")
+
+    # Health check endpoint
+    @app.get("/health", tags=["health"])
+    def health_check() -> Dict[str, Any]:
+        """Health check endpoint."""
+        return {
+            "status": "healthy",
+            "environment": settings.environment,
+            "timestamp": time.time()
+        }
+
+    # Root endpoint
+    @app.get("/", tags=["root"])
+    def root() -> Dict[str, str]:
+        """Root endpoint."""
+        return {
+            "message": f"Welcome to {settings.app_name}",
+            "docs": "/docs" if settings.environment == "development" else "Documentation not available in production",
+            "health": "/health"
+        }
+
+    # Add startup event
+    @app.on_event("startup")
+    async def startup_event():
+        logger.info(f"Starting {settings.app_name} in {settings.environment} environment")
+
+    # Add shutdown event
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        logger.info(f"Shutting down {settings.app_name}")
+
+    return app
+
+
+# Create the app instance
+app = create_app()
+
+# For running with uvicorn directly
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.environment == "development"
+    )
+
+

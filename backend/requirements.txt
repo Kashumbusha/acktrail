@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+PyJWT
+requests
+pydantic>=2
+reportlab
+
+
+
