@@ -82,7 +82,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
       {/* Header */}
       <div className="w-full px-4 py-6">
         <Link
@@ -104,32 +104,32 @@ export default function Login() {
                 <DocumentTextIcon className="h-10 w-10 text-white" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
               Policy Acknowledgment Tracker
             </h1>
           </div>
 
           {/* Login Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+          <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 dark:bg-slate-900 dark:border dark:border-slate-800">
             <div className="text-center">
-              <h2 className="text-3xl font-extrabold text-gray-900">
+              <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">
                 {step === 1 ? 'Sign in' : 'Verify your email'}
               </h2>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                 {step === 1
                   ? 'Enter your email address to receive a verification code'
                   : `We sent a 6-digit code to`
                 }
               </p>
               {step === 2 && (
-                <p className="text-sm font-medium text-indigo-600">{email}</p>
+                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{email}</p>
               )}
             </div>
 
             {step === 1 ? (
               <form className="space-y-5" onSubmit={handleEmailSubmit}>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
                     Email address
                   </label>
                   <div className="relative">
@@ -147,15 +147,15 @@ export default function Login() {
                         setEmail(e.target.value);
                         setEmailError('');
                       }}
-                      className={`appearance-none block w-full px-3 py-3 pl-10 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
-                        emailError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`appearance-none block w-full px-3 py-3 pl-10 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 ${
+                        emailError ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-gray-300 dark:border-slate-700'
                       }`}
                       placeholder="you@example.com"
                       disabled={loading}
                     />
                   </div>
                   {emailError && (
-                    <p className="mt-2 text-sm text-red-600 flex items-start">
+                    <p className="mt-2 text-sm text-red-600 flex items-start dark:text-red-400">
                       <span className="mr-1">⚠️</span>
                       {emailError}
                     </p>
@@ -174,7 +174,7 @@ export default function Login() {
             ) : (
               <form className="space-y-5" onSubmit={handleCodeSubmit}>
                 <div>
-                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
                     Verification code
                   </label>
                   <div className="relative">
@@ -195,8 +195,8 @@ export default function Login() {
                         setCode(value);
                         setCodeError('');
                       }}
-                      className={`appearance-none block w-full px-3 py-3 pl-10 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center tracking-[0.5em] text-xl font-semibold transition-all ${
-                        codeError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`appearance-none block w-full px-3 py-3 pl-10 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center tracking-[0.5em] text-xl font-semibold transition-all dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 ${
+                        codeError ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-gray-300 dark:border-slate-700'
                       }`}
                       placeholder="000000"
                       disabled={loading}
@@ -204,7 +204,7 @@ export default function Login() {
                     />
                   </div>
                   {codeError && (
-                    <p className="mt-2 text-sm text-red-600 flex items-start">
+                    <p className="mt-2 text-sm text-red-600 flex items-start dark:text-red-400">
                       <span className="mr-1">⚠️</span>
                       {codeError}
                     </p>
@@ -215,7 +215,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={handleBackToEmail}
-                    className="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                    className="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
                     disabled={loading}
                   >
                     Back
@@ -245,7 +245,7 @@ export default function Login() {
                         })
                         .finally(() => setLoading(false));
                     }}
-                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium disabled:opacity-50 transition-colors"
+                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium disabled:opacity-50 transition-colors dark:text-indigo-400 dark:hover:text-indigo-300"
                     disabled={loading}
                   >
                     Didn't receive the code? <span className="underline">Send again</span>
@@ -256,13 +256,13 @@ export default function Login() {
           </div>
 
           {/* Footer */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-slate-400">
             By continuing, you agree to our{' '}
-            <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">
               Privacy Policy
             </a>
           </p>

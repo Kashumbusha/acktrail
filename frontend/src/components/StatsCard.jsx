@@ -18,7 +18,7 @@ export default function StatsCard({
   };
 
   return (
-    <div className="bg-white overflow-hidden rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+    <div className="bg-white overflow-hidden rounded-xl border border-slate-200 hover:shadow-md transition-shadow dark:bg-slate-900 dark:border-slate-800">
       <div className="p-5">
         <div className="flex items-center">
           <div className="flex-shrink-0">
@@ -30,19 +30,19 @@ export default function StatsCard({
           </div>
           <div className="ml-5 w-0 flex-1">
             <dl>
-              <dt className="text-sm font-medium text-gray-500 truncate">
+              <dt className="text-sm font-medium text-gray-500 truncate dark:text-slate-400">
                 {title}
               </dt>
               <dd className="flex items-baseline">
                 {loading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse dark:bg-slate-800"></div>
                 ) : (
-                  <div className="text-2xl font-semibold text-gray-900">
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-slate-100">
                     {formatNumber(value)}
                   </div>
                 )}
                 {subtitle && (
-                  <div className="ml-2 flex items-baseline text-sm font-semibold text-gray-600">
+                  <div className="ml-2 flex items-baseline text-sm font-semibold text-gray-600 dark:text-slate-300">
                     {subtitle}
                   </div>
                 )}
