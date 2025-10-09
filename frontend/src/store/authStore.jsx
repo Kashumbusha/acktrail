@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await authAPI.verifyCode(email, code);
-      const { token, user } = response.data;
+      const token = response.data?.access_token || response.data?.token;
+      const user = response.data?.user;
       
       // Store in localStorage
       localStorage.setItem('token', token);
