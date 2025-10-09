@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import PolicyList from './pages/PolicyList';
 import PolicyCreate from './pages/PolicyCreate';
@@ -35,6 +36,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/ack/:token" element={<AcknowledgePage />} />
               <Route path="/success" element={<SuccessPage />} />
 

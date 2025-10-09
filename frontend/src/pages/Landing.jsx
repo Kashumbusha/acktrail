@@ -12,7 +12,7 @@ export default function Landing() {
   return (
     <div className="bg-white">
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-slate-200/70">
+      <nav className="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800">
         <div className="container-page">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -31,10 +31,10 @@ export default function Landing() {
                 Sign In
               </Link>
               <Link
-                to="/login"
+                to="/signup"
                 className="btn btn-primary"
               >
-                Get Started
+                Sign up
               </Link>
             </div>
           </div>
@@ -59,12 +59,8 @@ export default function Landing() {
                 Streamline distribution, track acknowledgments in real-time, and ensure compliance with an intuitive, modern platform.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Link to="/login" className="btn btn-primary">
-                  Get Started Free
-                </Link>
-                <a href="#features" className="btn btn-secondary">
-                  Learn More
-                </a>
+                <Link to="/signup" className="btn btn-primary">Sign up</Link>
+                <a href="#features" className="btn btn-secondary">Learn More</a>
               </div>
               <div className="mt-10 grid grid-cols-3 gap-6 text-center">
                 <div className="card">
@@ -201,9 +197,7 @@ export default function Landing() {
             <span className="block text-indigo-200">Start managing policies today.</span>
           </h2>
           <p className="mt-4 text-lg text-indigo-100">No credit card required. Get started in minutes.</p>
-          <Link to="/login" className="btn bg-white text-indigo-700 hover:bg-indigo-50 mt-8">
-            Get Started Free
-          </Link>
+          <Link to="/signup" className="btn bg-white text-indigo-700 hover:bg-indigo-50 mt-8">Sign up</Link>
         </div>
       </section>
 
