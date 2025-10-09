@@ -27,7 +27,7 @@ export default function PolicyList() {
     refetch
   } = useQuery({
     queryKey: QUERY_KEYS.POLICIES,
-    queryFn: () => policiesAPI.list().then(res => res.data),
+    queryFn: () => policiesAPI.list().then(res => res.data?.policies || []),
     refetchOnWindowFocus: false,
   });
 
@@ -137,7 +137,7 @@ export default function PolicyList() {
       {/* Policies List */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {filteredPolicies.length === 0 ? (
-          <div className="text-center py-12">
+            <div className="text-center py-12">
             <div className="text-gray-500 mb-4">
               {policies?.length === 0 ? 'No policies created yet' : 'No policies match your search'}
             </div>
