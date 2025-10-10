@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 import time
 from typing import Dict, Any
@@ -26,28 +27,43 @@ logger = logging.getLogger(__name__)
 
 class RequestLoggingMiddleware:
     """Middleware to log all API requests."""
-    
+
     def __init__(self, app):
         self.app = app
-    
+
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
             request = Request(scope, receive)
             start_time = time.time()
-            
+
             # Log the request
             logger.info(f"Request: {request.method} {request.url}")
-            
+
             async def send_wrapper(message):
                 if message["type"] == "http.response.start":
                     process_time = time.time() - start_time
                     status_code = message["status"]
                     logger.info(f"Response: {status_code} - {process_time:.3f}s")
                 await send(message)
-            
+
             await self.app(scope, receive, send_wrapper)
         else:
             await self.app(scope, receive, send)
+
+
+class ProxyHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to handle X-Forwarded-* headers from Railway/Vercel proxy."""
+
+    async def dispatch(self, request: Request, call_next):
+        # Get the X-Forwarded-Proto header (set by Railway)
+        forwarded_proto = request.headers.get("x-forwarded-proto")
+
+        if forwarded_proto == "https":
+            # Override the URL scheme to https for redirect generation
+            request.scope["scheme"] = "https"
+
+        response = await call_next(request)
+        return response
 
 
 def create_app() -> FastAPI:
@@ -81,12 +97,15 @@ def create_app() -> FastAPI:
         logger.exception(e)
 
     # Add middleware
+    # Proxy headers middleware (must be first to handle X-Forwarded-* headers)
+    app.add_middleware(ProxyHeadersMiddleware)
+
     if settings.environment == "production":
         app.add_middleware(
             TrustedHostMiddleware,
             allowed_hosts=["*"]  # Configure this properly for production
         )
-    
+
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
