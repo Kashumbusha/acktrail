@@ -44,9 +44,20 @@ export default function PolicyViewer({ policy, token }) {
   if (policy.file_url && policy.file_url.endsWith('.pdf')) {
     // Use proxy endpoint to avoid CORS issues with B2
     // Use different endpoint based on whether we have a token (acknowledgment page) or not (admin page)
-    const pdfUrl = token
-      ? `/api/ack/${token}/file`
-      : `/api/policies/${policy.id}/file`;
+    let pdfUrl;
+    let pdfUrlForNewTab;
+
+    if (token) {
+      // For acknowledgment page (magic link token)
+      pdfUrl = `/api/ack/${token}/file`;
+      pdfUrlForNewTab = pdfUrl;
+    } else {
+      // For admin page (JWT token in localStorage)
+      pdfUrl = `/api/policies/${policy.id}/file`;
+      // Add JWT token as query parameter for "Open in New Tab"
+      const jwtToken = localStorage.getItem('token');
+      pdfUrlForNewTab = jwtToken ? `${pdfUrl}?token=${jwtToken}` : pdfUrl;
+    }
 
     return (
       <div className="bg-white rounded-lg shadow-sm border">
@@ -61,7 +72,7 @@ export default function PolicyViewer({ policy, token }) {
             </div>
             <div className="flex space-x-2">
               <button
-                onClick={() => window.open(pdfUrl, '_blank')}
+                onClick={() => window.open(pdfUrlForNewTab, '_blank')}
                 className="inline-flex items-center px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100"
               >
                 <ArrowTopRightOnSquareIcon className="h-3 w-3 mr-1" />
@@ -91,7 +102,7 @@ export default function PolicyViewer({ policy, token }) {
               <div className="text-red-600 mb-2">Failed to load PDF</div>
               <div className="text-sm text-gray-500 mb-4">{error}</div>
               <button
-                onClick={() => window.open(pdfUrl, '_blank')}
+                onClick={() => window.open(pdfUrlForNewTab, '_blank')}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />

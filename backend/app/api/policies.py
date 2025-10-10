@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form, Request
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
@@ -11,7 +11,7 @@ from ..schemas.policies import (
 )
 from ..models.database import get_db
 from ..models.models import Policy, User, Assignment, Acknowledgment, AssignmentStatus
-from ..core.security import get_current_user, require_admin_role
+from ..core.security import get_current_user, require_admin_role, decode_jwt_token
 from ..core.storage import upload_policy_file, delete_policy_file, download_policy_file
 from ..core.hashing import compute_policy_hash
 
@@ -291,13 +291,53 @@ def delete_policy(
     return {"success": True, "message": "Policy deleted successfully"}
 
 
+async def get_current_user_optional_query_token(
+    request: Request,
+    token: Optional[str] = None,
+    db: Session = Depends(get_db)
+) -> dict:
+    """
+    Get current user from either Authorization header or query parameter token.
+    For use with endpoints that need to support both axios requests and direct browser navigation.
+    """
+    # Try to get token from Authorization header first
+    auth_header = request.headers.get("Authorization")
+    token_to_use = None
+
+    if auth_header and auth_header.startswith("Bearer "):
+        token_to_use = auth_header.replace("Bearer ", "")
+    elif token:
+        token_to_use = token
+
+    if not token_to_use:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+
+    payload = decode_jwt_token(token_to_use)
+
+    # Verify it's an access token
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type"
+        )
+
+    return payload
+
+
 @router.get("/{policy_id}/file")
-def get_policy_file(
+async def get_policy_file(
     policy_id: UUID,
+    token: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_optional_query_token)
 ):
-    """Proxy policy PDF file to avoid CORS issues with B2."""
+    """Proxy policy PDF file to avoid CORS issues with B2.
+
+    Accepts JWT token as query parameter for direct browser access (e.g., opening in new tab).
+    """
     # Get policy
     policy = db.query(Policy).filter(Policy.id == policy_id).first()
     if not policy:
