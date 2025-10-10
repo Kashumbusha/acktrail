@@ -4,7 +4,8 @@ nixPkgs = ["python310", "postgresql"]
 [phases.install]
 cmds = [
   "cd backend",
-  "pip install poetry",
+  "python3 -m pip install --upgrade pip",
+  "python3 -m pip install poetry",
   "poetry config virtualenvs.create false",
   "poetry install --no-dev --no-interaction --no-ansi"
 ]
@@ -13,4 +14,4 @@ cmds = [
 cmds = ["echo 'Build complete'"]
 
 [start]
-cmd = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = "cd backend && poetry run uvicorn app.main:app --host 0.0.0.0 --port $PORT"
