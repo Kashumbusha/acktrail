@@ -63,8 +63,11 @@ def create_app() -> FastAPI:
 
     # Create database tables
     try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
+        if engine is not None:
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables created successfully")
+        else:
+            logger.warning("Skipping database table creation - database not configured")
     except Exception as e:
         logger.error(f"Failed to create database tables: {e}")
 
