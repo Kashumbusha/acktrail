@@ -1,0 +1,36 @@
+# Ignore frontend files
+frontend/
+node_modules/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Ignore environment files
+.env
+.env.local
+*.local
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore deployment configs not needed in container
+nixpacks.toml
+railway.json
+vercel.json
