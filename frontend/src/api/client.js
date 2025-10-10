@@ -4,13 +4,6 @@ import toast from 'react-hot-toast';
 // Prefer explicit VITE_API_URL; otherwise default to same-origin to work in production
 const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
-// Debug logging for production troubleshooting
-if (typeof window !== 'undefined') {
-  console.log('[API Client] VITE_API_URL:', import.meta.env.VITE_API_URL);
-  console.log('[API Client] window.location.origin:', window.location.origin);
-  console.log('[API Client] Using API_BASE_URL:', API_BASE_URL);
-}
-
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
