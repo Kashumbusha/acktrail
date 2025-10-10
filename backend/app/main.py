@@ -52,7 +52,14 @@ class RequestLoggingMiddleware:
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
-    
+
+    logger.info("=" * 60)
+    logger.info("Starting application initialization")
+    logger.info(f"Environment: {settings.environment}")
+    logger.info(f"Frontend URL: {settings.frontend_url}")
+    logger.info(f"Database URL configured: {bool(settings.database_url)}")
+    logger.info("=" * 60)
+
     app = FastAPI(
         title=settings.app_name,
         version="1.0.0",
@@ -64,12 +71,14 @@ def create_app() -> FastAPI:
     # Create database tables
     try:
         if engine is not None:
+            logger.info("Attempting to create database tables...")
             Base.metadata.create_all(bind=engine)
-            logger.info("Database tables created successfully")
+            logger.info("✓ Database tables created successfully")
         else:
-            logger.warning("Skipping database table creation - database not configured")
+            logger.warning("⚠ Skipping database table creation - database not configured")
     except Exception as e:
-        logger.error(f"Failed to create database tables: {e}")
+        logger.error(f"✗ Failed to create database tables: {e}")
+        logger.exception(e)
 
     # Add middleware
     if settings.environment == "production":
