@@ -23,5 +23,5 @@ RUN poetry config virtualenvs.create false \
 # Expose port (Railway will set PORT env var)
 EXPOSE 8000
 
-# Start command - use PORT env var or default to 8000
-CMD poetry run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Start command - Railway sets PORT env var automatically
+CMD ["sh", "-c", "poetry run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
