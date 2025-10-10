@@ -40,38 +40,49 @@ def add_policy_recipients(
     
     created_assignments = 0
     existing_assignments = []
-    
-    for user_id in recipients.recipients:
-        # Check if user exists
-        user = db.query(User).filter(User.id == user_id).first()
+    created_users = 0
+
+    for email in recipients.recipients:
+        # Check if user exists, create if not
+        user = db.query(User).filter(User.email == email).first()
         if not user:
-            logger.warning(f"User {user_id} not found, skipping")
-            continue
-        
+            # Create new user
+            user = User(
+                email=email,
+                name=email.split('@')[0],  # Use email prefix as name
+                role='employee'
+            )
+            db.add(user)
+            db.flush()  # Get the user ID
+            created_users += 1
+            logger.info(f"Created new user: {email}")
+
         # Check if assignment already exists
         existing_assignment = db.query(Assignment).filter(
             Assignment.policy_id == policy_id,
-            Assignment.user_id == user_id
+            Assignment.user_id == user.id
         ).first()
-        
+
         if existing_assignment:
-            existing_assignments.append(str(user_id))
+            existing_assignments.append(email)
             continue
-        
+
         # Create new assignment
         assignment = Assignment(
             policy_id=policy_id,
-            user_id=user_id,
+            user_id=user.id,
             status=AssignmentStatus.PENDING
         )
         db.add(assignment)
         created_assignments += 1
     
     db.commit()
-    
-    logger.info(f"Created {created_assignments} assignments for policy {policy_id}")
-    
+
+    logger.info(f"Created {created_users} users and {created_assignments} assignments for policy {policy_id}")
+
     response_message = f"Created {created_assignments} new assignments"
+    if created_users > 0:
+        response_message += f" (including {created_users} new users)"
     if existing_assignments:
         response_message += f". {len(existing_assignments)} users already had assignments."
     

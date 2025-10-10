@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
 from typing import Optional, List
 from uuid import UUID
 import logging
@@ -46,10 +46,10 @@ def list_policies(
         # Get assignment stats
         assignment_stats = db.query(
             func.count(Assignment.id).label('total'),
-            func.sum(func.case([(Assignment.status == AssignmentStatus.PENDING, 1)], else_=0)).label('pending'),
-            func.sum(func.case([(Assignment.status == AssignmentStatus.VIEWED, 1)], else_=0)).label('viewed'),
-            func.sum(func.case([(Assignment.status == AssignmentStatus.ACKNOWLEDGED, 1)], else_=0)).label('acknowledged'),
-            func.sum(func.case([(Assignment.status == AssignmentStatus.DECLINED, 1)], else_=0)).label('declined')
+            func.sum(case((Assignment.status == AssignmentStatus.PENDING, 1), else_=0)).label('pending'),
+            func.sum(case((Assignment.status == AssignmentStatus.VIEWED, 1), else_=0)).label('viewed'),
+            func.sum(case((Assignment.status == AssignmentStatus.ACKNOWLEDGED, 1), else_=0)).label('acknowledged'),
+            func.sum(case((Assignment.status == AssignmentStatus.DECLINED, 1), else_=0)).label('declined')
         ).filter(Assignment.policy_id == policy.id).first()
         
         # Get creator name

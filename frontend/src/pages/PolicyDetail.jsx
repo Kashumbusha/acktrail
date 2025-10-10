@@ -242,14 +242,14 @@ export default function PolicyDetail() {
       </div>
 
       {/* Policy Header */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{policy.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{policy.title}</h1>
             {policy.description && (
-              <p className="mt-1 text-sm text-gray-600">{policy.description}</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{policy.description}</p>
             )}
-            <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500">
+            <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
               <div>
                 <span className="font-medium">Status:</span>
                 <span className={`ml-2 ${getStatusBadgeClass(policy.status)}`}>
@@ -278,11 +278,11 @@ export default function PolicyDetail() {
       <div className="space-y-6">
         {/* Add Recipients Section */}
         {!showAddRecipients ? (
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Recipients</h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recipients</h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Manage who needs to acknowledge this policy
                 </p>
               </div>

@@ -58,10 +58,10 @@ export default function RecipientUploader({ onRecipientsChange, disabled = false
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Add Recipients</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Add Recipients</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Add email addresses for policy recipients using one of the methods below.
         </p>
       </div>
@@ -97,7 +97,7 @@ export default function RecipientUploader({ onRecipientsChange, disabled = false
       {/* Paste Emails Tab */}
       {activeTab === 'paste' && (
         <div>
-          <label htmlFor="emails" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="emails" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Email Addresses
           </label>
           <textarea
@@ -110,10 +110,10 @@ export default function RecipientUploader({ onRecipientsChange, disabled = false
 user1@example.com
 user2@example.com
 user3@example.com"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400"
             disabled={disabled}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Separate multiple emails with commas or new lines
           </p>
         </div>

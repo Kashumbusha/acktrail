@@ -51,7 +51,7 @@ class AssignmentListResponse(BaseModel):
 
 
 class RecipientCreate(BaseModel):
-    recipients: List[UUID] = Field(..., min_items=1)
+    recipients: List[EmailStr] = Field(..., min_items=1)
 
 
 class SendPolicyRequest(BaseModel):
