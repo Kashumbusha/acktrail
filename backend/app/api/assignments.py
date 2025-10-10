@@ -12,7 +12,7 @@ from ..schemas.assignments import (
 )
 from ..models.database import get_db
 from ..models.models import (
-    Policy, User, Assignment, AssignmentStatus, EmailEvent, EmailEventType
+    Policy, User, Assignment, AssignmentStatus, EmailEvent, EmailEventType, Acknowledgment
 )
 from ..core.security import get_current_user, require_admin_role, create_magic_link_token
 from ..core.email import send_policy_assignment_email, send_reminder_email
@@ -30,6 +30,12 @@ def add_policy_recipients(
     current_user: dict = Depends(require_admin_role)
 ) -> BulkAssignmentResponse:
     """Add recipients to a policy (create assignments)."""
+    logger.info(f"=== ADD RECIPIENTS DEBUG ===")
+    logger.info(f"Policy ID: {policy_id}")
+    logger.info(f"Recipients object type: {type(recipients)}")
+    logger.info(f"Recipients object: {recipients}")
+    logger.info(f"Recipients.recipients: {recipients.recipients}")
+
     # Check if policy exists
     policy = db.query(Policy).filter(Policy.id == policy_id).first()
     if not policy:
@@ -41,6 +47,10 @@ def add_policy_recipients(
     created_assignments = 0
     existing_assignments = []
     created_users = 0
+
+    logger.info(f"Received recipients data: {recipients}")
+    logger.info(f"Recipients list: {recipients.recipients}")
+    logger.info(f"Number of recipients: {len(recipients.recipients)}")
 
     for email in recipients.recipients:
         # Check if user exists, create if not
@@ -230,9 +240,9 @@ def get_policy_assignments(
             continue
         
         # Check if acknowledgment exists
-        has_acknowledgment = db.query(Assignment).join(
-            "acknowledgment", isouter=True
-        ).filter(Assignment.id == assignment.id).first().acknowledgment is not None
+        has_acknowledgment = db.query(Acknowledgment).filter(
+            Acknowledgment.assignment_id == assignment.id
+        ).first() is not None
         
         assignment_with_details = AssignmentWithDetails(
             **assignment.__dict__,
