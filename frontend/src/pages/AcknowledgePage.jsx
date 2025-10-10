@@ -180,7 +180,7 @@ export default function AcknowledgePage() {
           </div>
 
           {/* Policy Content */}
-          <PolicyViewer policy={policy} />
+          <PolicyViewer policy={policy} token={token} />
 
           {/* Acknowledgment Form */}
           <AcknowledgeForm

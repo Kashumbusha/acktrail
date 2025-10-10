@@ -133,6 +133,26 @@ class B2Storage:
             Public URL string
         """
         return self.b2_api.get_download_url_for_file_name(self.bucket_name, file_key)
+
+    def download_file(self, file_key: str) -> bytes:
+        """
+        Download file content from B2.
+
+        Args:
+            file_key: The key of the file to download
+
+        Returns:
+            File content as bytes
+        """
+        try:
+            downloaded_file = self.bucket.download_file_by_name(file_key)
+            download_dest = BytesIO()
+            downloaded_file.save(download_dest)
+            download_dest.seek(0)
+            return download_dest.read()
+        except Exception as e:
+            logger.error(f"Failed to download file from B2: {e}")
+            raise RuntimeError(f"File download failed: {str(e)}")
     
     def file_exists(self, file_key: str) -> bool:
         """
@@ -215,11 +235,24 @@ def delete_policy_file(file_key: str) -> bool:
 def get_policy_file_url(file_key: str) -> str:
     """
     Get public URL for a policy file.
-    
+
     Args:
         file_key: The key of the file
-        
+
     Returns:
         Public URL string
     """
     return storage.get_file_url(file_key)
+
+
+def download_policy_file(file_key: str) -> bytes:
+    """
+    Download a policy file from B2 storage.
+
+    Args:
+        file_key: The key of the file to download
+
+    Returns:
+        File content as bytes
+    """
+    return storage.download_file(file_key)

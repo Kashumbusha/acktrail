@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import Optional, List
@@ -11,7 +12,7 @@ from ..schemas.policies import (
 from ..models.database import get_db
 from ..models.models import Policy, User, Assignment, Acknowledgment, AssignmentStatus
 from ..core.security import get_current_user, require_admin_role
-from ..core.storage import upload_policy_file, delete_policy_file
+from ..core.storage import upload_policy_file, delete_policy_file, download_policy_file
 from ..core.hashing import compute_policy_hash
 
 logger = logging.getLogger(__name__)
@@ -284,10 +285,57 @@ def delete_policy(
     
     db.delete(policy)
     db.commit()
-    
+
     logger.info(f"Deleted policy: {policy.title} (ID: {policy.id})")
-    
+
     return {"success": True, "message": "Policy deleted successfully"}
+
+
+@router.get("/{policy_id}/file")
+def get_policy_file(
+    policy_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Proxy policy PDF file to avoid CORS issues with B2."""
+    # Get policy
+    policy = db.query(Policy).filter(Policy.id == policy_id).first()
+    if not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy not found"
+        )
+
+    # Check if policy has a file
+    if not policy.file_url:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy has no file attached"
+        )
+
+    try:
+        # Extract file key from URL
+        # B2 URLs are like: https://f000.backblazeb2.com/file/bucket-name/path/to/file.pdf
+        file_key = policy.file_url.split(f"/{policy.file_url.split('/')[4]}/", 1)[1]
+
+        # Download file from B2
+        file_content = download_policy_file(file_key)
+
+        # Return file with appropriate headers
+        return Response(
+            content=file_content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename={policy.title}.pdf",
+                "Cache-Control": "public, max-age=3600"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed to proxy policy file: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve policy file"
+        )
 
 
 

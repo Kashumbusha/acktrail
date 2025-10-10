@@ -23,6 +23,7 @@ from ..models.models import (
 )
 from ..core.security import decode_magic_link_token
 from ..core.hashing import compute_policy_hash
+from ..core.storage import download_policy_file
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ack", tags=["acknowledgments"])
@@ -374,6 +375,70 @@ def generate_receipt_pdf(assignment: Assignment, acknowledgment: Acknowledgment,
     buffer.close()
     
     return pdf_data
+
+
+@router.get("/{token}/file")
+def get_policy_file_for_acknowledgment(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """Proxy policy PDF file for acknowledgment page (no auth required, uses magic link token)."""
+    try:
+        # Decode magic link token
+        payload = decode_magic_link_token(token)
+        assignment_id = UUID(payload["assignment_id"])
+    except Exception as e:
+        logger.error(f"Invalid magic link token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired magic link"
+        )
+
+    # Get assignment
+    assignment = db.query(Assignment).filter(Assignment.id == assignment_id).first()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Assignment not found"
+        )
+
+    # Get policy
+    policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
+    if not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy not found"
+        )
+
+    # Check if policy has a file
+    if not policy.file_url:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy has no file attached"
+        )
+
+    try:
+        # Extract file key from URL
+        file_key = policy.file_url.split(f"/{policy.file_url.split('/')[4]}/", 1)[1]
+
+        # Download file from B2
+        file_content = download_policy_file(file_key)
+
+        # Return file with appropriate headers
+        return Response(
+            content=file_content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename={policy.title}.pdf",
+                "Cache-Control": "public, max-age=3600"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed to proxy policy file: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve policy file"
+        )
 
 
 @router.get("/assignment/{assignment_id}/receipt.pdf")

@@ -7,7 +7,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-export default function PolicyViewer({ policy }) {
+export default function PolicyViewer({ policy, token }) {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,12 @@ export default function PolicyViewer({ policy }) {
 
   // Render PDF content
   if (policy.file_url && policy.file_url.endsWith('.pdf')) {
+    // Use proxy endpoint to avoid CORS issues with B2
+    // Use different endpoint based on whether we have a token (acknowledgment page) or not (admin page)
+    const pdfUrl = token
+      ? `/api/ack/${token}/file`
+      : `/api/policies/${policy.id}/file`;
+
     return (
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-4 border-b border-gray-200">
@@ -55,7 +61,7 @@ export default function PolicyViewer({ policy }) {
             </div>
             <div className="flex space-x-2">
               <button
-                onClick={() => window.open(policy.file_url, '_blank')}
+                onClick={() => window.open(pdfUrl, '_blank')}
                 className="inline-flex items-center px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100"
               >
                 <ArrowTopRightOnSquareIcon className="h-3 w-3 mr-1" />
@@ -85,7 +91,7 @@ export default function PolicyViewer({ policy }) {
               <div className="text-red-600 mb-2">Failed to load PDF</div>
               <div className="text-sm text-gray-500 mb-4">{error}</div>
               <button
-                onClick={() => window.open(policy.file_url, '_blank')}
+                onClick={() => window.open(pdfUrl, '_blank')}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
@@ -95,20 +101,20 @@ export default function PolicyViewer({ policy }) {
           )}
 
           {!loading && !error && (
-            <div 
+            <div
               className="max-h-96 overflow-y-auto border rounded-lg bg-gray-50"
               onScroll={handleScroll}
             >
               <Document
-                file={policy.file_url}
+                file={pdfUrl}
                 onLoadSuccess={onDocumentLoadSuccess}
                 onLoadError={onDocumentLoadError}
                 loading={null}
                 error={null}
                 noData={null}
               >
-                <Page 
-                  pageNumber={pageNumber} 
+                <Page
+                  pageNumber={pageNumber}
                   renderTextLayer={true}
                   renderAnnotationLayer={true}
                   className="mx-auto"
@@ -127,7 +133,7 @@ export default function PolicyViewer({ policy }) {
               >
                 Previous
               </button>
-              
+
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-700">
                   Page {pageNumber} of {numPages}
@@ -138,7 +144,7 @@ export default function PolicyViewer({ policy }) {
                   </div>
                 )}
               </div>
-              
+
               <button
                 onClick={goToNextPage}
                 disabled={pageNumber >= numPages}
