@@ -47,7 +47,15 @@ class Settings(BaseSettings):
     # CORS
     @property
     def cors_allow_origins(self) -> List[str]:
-        return [self.frontend_url]
+        # Allow multiple ports for development
+        return [
+            self.frontend_url,
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:5175",
+            "http://localhost:5176",
+            "http://localhost:5177"
+        ]
     
     class Config:
         env_file = ".env"
@@ -55,6 +63,7 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
 
 
 

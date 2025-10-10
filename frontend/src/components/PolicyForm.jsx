@@ -156,7 +156,7 @@ export default function PolicyForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Policy Title *
         </label>
         <input
@@ -164,20 +164,20 @@ export default function PolicyForm({
           id="title"
           value={formData.title}
           onChange={(e) => handleInputChange('title', e.target.value)}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-            errors.title ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500 ${
+            errors.title ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
           }`}
           placeholder="Enter policy title"
           disabled={loading}
         />
         {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
         )}
       </div>
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Description
         </label>
         <textarea
@@ -185,7 +185,7 @@ export default function PolicyForm({
           rows={3}
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500"
           placeholder="Brief description of the policy"
           disabled={loading}
         />
@@ -193,7 +193,7 @@ export default function PolicyForm({
 
       {/* Due Date */}
       <div>
-        <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Due Date (Optional)
         </label>
         <input
@@ -202,19 +202,19 @@ export default function PolicyForm({
           value={formData.due_date}
           onChange={(e) => handleInputChange('due_date', e.target.value)}
           min={today}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-            errors.due_date ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 ${
+            errors.due_date ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
           }`}
           disabled={loading}
         />
         {errors.due_date && (
-          <p className="mt-1 text-sm text-red-600">{errors.due_date}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date}</p>
         )}
       </div>
 
       {/* Content Type Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Content Type
         </label>
         <div className="flex space-x-4">
@@ -224,10 +224,10 @@ export default function PolicyForm({
               value="text"
               checked={formData.content_type === 'text'}
               onChange={(e) => handleInputChange('content_type', e.target.value)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600"
               disabled={loading}
             />
-            <span className="ml-2 text-sm text-gray-700">Text Content</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Text Content</span>
           </label>
           <label className="flex items-center">
             <input
@@ -235,10 +235,10 @@ export default function PolicyForm({
               value="pdf"
               checked={formData.content_type === 'pdf'}
               onChange={(e) => handleInputChange('content_type', e.target.value)}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600"
               disabled={loading}
             />
-            <span className="ml-2 text-sm text-gray-700">PDF Upload</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">PDF Upload</span>
           </label>
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function PolicyForm({
       {/* Content Input */}
       {formData.content_type === 'text' ? (
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Policy Content *
           </label>
           <textarea
@@ -254,22 +254,22 @@ export default function PolicyForm({
             rows={12}
             value={formData.content}
             onChange={(e) => handleInputChange('content', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-sm ${
-              errors.content ? 'border-red-300' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 font-mono text-sm placeholder-gray-400 dark:placeholder-gray-500 ${
+              errors.content ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
             }`}
             placeholder="Enter policy content (supports Markdown formatting)"
             disabled={loading}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             You can use Markdown formatting for headers, lists, and emphasis
           </p>
           {errors.content && (
-            <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
           )}
         </div>
       ) : (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Upload PDF File *
           </label>
           <div
@@ -278,16 +278,16 @@ export default function PolicyForm({
             onDragLeave={handleDragLeave}
             className={`relative border-2 border-dashed rounded-lg p-6 text-center ${
               dragOver
-                ? 'border-indigo-400 bg-indigo-50'
+                ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
                 : errors.file || errors.content
-                ? 'border-red-300'
-                : 'border-gray-300 hover:border-gray-400'
+                ? 'border-red-300 dark:border-red-500'
+                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
             } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
             <div className="mt-4">
               <label htmlFor="pdf-upload" className="cursor-pointer">
-                <span className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
                   Upload a PDF file
                 </span>
                 <input
@@ -299,21 +299,21 @@ export default function PolicyForm({
                   disabled={loading}
                 />
               </label>
-              <p className="text-sm text-gray-500">or drag and drop</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">or drag and drop</p>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               PDF files up to 10MB
             </p>
           </div>
 
           {formData.file && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-md">
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <DocumentTextIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
                   <div>
-                    <span className="text-sm text-gray-900">{formData.file.name}</span>
-                    <div className="text-xs text-gray-500">
+                    <span className="text-sm text-gray-900 dark:text-white">{formData.file.name}</span>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {(formData.file.size / 1024 / 1024).toFixed(2)} MB
                       {formData.fileHash && (
                         <span className="ml-2">• SHA-256: {formData.fileHash.substring(0, 16)}...</span>
@@ -326,7 +326,7 @@ export default function PolicyForm({
                   onClick={() => {
                     setFormData(prev => ({ ...prev, file: null, fileHash: null, content: '' }));
                   }}
-                  className="text-sm text-red-600 hover:text-red-800"
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                   disabled={loading}
                 >
                   Remove
@@ -336,27 +336,27 @@ export default function PolicyForm({
           )}
 
           {errors.file && (
-            <p className="mt-1 text-sm text-red-600">{errors.file}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.file}</p>
           )}
           {errors.content && (
-            <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
           )}
         </div>
       )}
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
           disabled={loading}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-500 border border-transparent rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? (

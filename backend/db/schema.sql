@@ -73,3 +73,4 @@ create index if not exists idx_email_events_assignment on public.email_events(as
 
 
 
+
