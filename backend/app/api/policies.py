@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import Optional, List
 from uuid import UUID
+from urllib.parse import unquote
 import logging
 
 from ..schemas.policies import (
@@ -357,6 +358,9 @@ async def get_policy_file(
         # Extract file key from URL
         # B2 URLs are like: https://f000.backblazeb2.com/file/bucket-name/path/to/file.pdf
         file_key = policy.file_url.split(f"/{policy.file_url.split('/')[4]}/", 1)[1]
+
+        # URL decode the file key (B2 expects decoded keys)
+        file_key = unquote(file_key)
 
         # Download file from B2
         file_content = download_policy_file(file_key)

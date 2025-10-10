@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
+from urllib.parse import unquote
 import logging
 from io import BytesIO
 
@@ -420,6 +421,9 @@ def get_policy_file_for_acknowledgment(
     try:
         # Extract file key from URL
         file_key = policy.file_url.split(f"/{policy.file_url.split('/')[4]}/", 1)[1]
+
+        # URL decode the file key (B2 expects decoded keys)
+        file_key = unquote(file_key)
 
         # Download file from B2
         file_content = download_policy_file(file_key)
