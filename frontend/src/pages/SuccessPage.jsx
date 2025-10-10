@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { CheckCircleIcon, DocumentArrowDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { formatDateTime } from '../utils/formatters';
 import toast from 'react-hot-toast';
+import { ackAPI } from '../api/client';
 
 export default function SuccessPage() {
   const location = useLocation();
@@ -17,13 +18,13 @@ export default function SuccessPage() {
 
     setDownloadingReceipt(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/ack/assignment/${assignmentId}/receipt.pdf`);
-      
-      if (!response.ok) {
+      const response = await ackAPI.downloadReceipt(assignmentId);
+
+      if (response.status !== 200) {
         throw new Error('Failed to download receipt');
       }
 
-      const blob = await response.blob();
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
