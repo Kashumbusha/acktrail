@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir poetry
 # Install Python dependencies
 WORKDIR /app/backend
 RUN poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi
+    && poetry install --only main --no-interaction --no-ansi --no-root
 
 # Expose port (Railway will set PORT env var)
 EXPOSE 8000
