@@ -1,11 +1,9 @@
 [phases.setup]
-nixPkgs = ["python310", "postgresql"]
+nixPkgs = ["python310", "python310Packages.pip", "python310Packages.poetry", "postgresql"]
 
 [phases.install]
 cmds = [
   "cd backend",
-  "python3 -m pip install --upgrade pip",
-  "python3 -m pip install poetry",
   "poetry config virtualenvs.create false",
   "poetry install --no-dev --no-interaction --no-ansi"
 ]
