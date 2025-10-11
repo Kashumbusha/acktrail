@@ -1,11 +1,41 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, ArrowDownTrayIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowDownTrayIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }) {
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
+export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, requireScrollTracking = false }) {
   const [viewingTime, setViewingTime] = useState(0);
   const [hasBeenViewed, setHasBeenViewed] = useState(false);
-  const MINIMUM_VIEWING_TIME = 5; // 5 seconds minimum
+  const [numPages, setNumPages] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewedPages, setViewedPages] = useState(new Set([1])); // Track which pages have been viewed
+  const [pdfLoadError, setPdfLoadError] = useState(false);
+  const MINIMUM_VIEWING_TIME = 10; // 10 seconds minimum
+
+  // Track page changes
+  useEffect(() => {
+    if (currentPage) {
+      setViewedPages(prev => new Set([...prev, currentPage]));
+    }
+  }, [currentPage]);
+
+  // Check if document has been fully viewed
+  const checkIfFullyViewed = () => {
+    if (requireScrollTracking && numPages) {
+      // For recipients: must view all pages AND meet minimum time
+      const allPagesViewed = viewedPages.size >= numPages;
+      const timeRequirementMet = viewingTime >= MINIMUM_VIEWING_TIME;
+      return allPagesViewed && timeRequirementMet;
+    } else {
+      // For non-recipients or time-only: just need minimum time
+      return viewingTime >= MINIMUM_VIEWING_TIME;
+    }
+  };
 
   // Track viewing time
   useEffect(() => {
@@ -14,7 +44,8 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }
     const interval = setInterval(() => {
       setViewingTime(prev => {
         const newTime = prev + 1;
-        if (newTime >= MINIMUM_VIEWING_TIME && !hasBeenViewed) {
+        const fullyViewed = checkIfFullyViewed();
+        if (fullyViewed && !hasBeenViewed) {
           setHasBeenViewed(true);
           if (onViewed) {
             onViewed();
@@ -27,14 +58,34 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }
     return () => {
       clearInterval(interval);
     };
-  }, [isOpen, hasBeenViewed, onViewed]);
+  }, [isOpen, hasBeenViewed, onViewed, viewingTime, viewedPages, numPages, requireScrollTracking]);
 
-  // Reset viewing time when modal closes
+  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setViewingTime(0);
+      setCurrentPage(1);
+      setViewedPages(new Set([1]));
     }
   }, [isOpen]);
+
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+    setPdfLoadError(false);
+  };
+
+  const onDocumentLoadError = (error) => {
+    console.error('PDF load error:', error);
+    setPdfLoadError(true);
+  };
+
+  const goToPrevPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(numPages || prev, prev + 1));
+  };
 
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -86,9 +137,14 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    {!hasBeenViewed && (
+                    {!hasBeenViewed && requireScrollTracking && numPages && (
                       <div className="text-sm text-amber-600 mr-2">
-                        Please review for at least {MINIMUM_VIEWING_TIME} seconds ({Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)}s remaining)
+                        View all {numPages} pages ({viewedPages.size}/{numPages}) & wait {Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)}s
+                      </div>
+                    )}
+                    {!hasBeenViewed && !requireScrollTracking && (
+                      <div className="text-sm text-amber-600 mr-2">
+                        Please review for {Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)} more seconds
                       </div>
                     )}
                     <button
@@ -111,13 +167,74 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }
                 </div>
 
                 {/* PDF Viewer */}
-                <div className="relative" style={{ height: '80vh' }}>
-                  <iframe
-                    src={pdfUrl}
-                    className="w-full h-full border-0"
-                    title="PDF Viewer"
-                  />
+                <div className="relative bg-gray-100" style={{ height: '75vh' }}>
+                  {pdfLoadError ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <p className="text-gray-600 mb-4">Unable to display PDF in viewer</p>
+                      <iframe
+                        src={pdfUrl}
+                        className="w-full h-full border-0"
+                        title="PDF Viewer Fallback"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full overflow-auto p-4">
+                      <Document
+                        file={pdfUrl}
+                        onLoadSuccess={onDocumentLoadSuccess}
+                        onLoadError={onDocumentLoadError}
+                        loading={
+                          <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <span className="ml-3 text-sm text-gray-600">Loading PDF...</span>
+                          </div>
+                        }
+                      >
+                        <Page
+                          pageNumber={currentPage}
+                          renderTextLayer={true}
+                          renderAnnotationLayer={true}
+                          className="shadow-lg"
+                          width={Math.min(window.innerWidth * 0.7, 800)}
+                        />
+                      </Document>
+                    </div>
+                  )}
                 </div>
+
+                {/* Page Navigation */}
+                {numPages && numPages > 1 && !pdfLoadError && (
+                  <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
+                    <button
+                      onClick={goToPrevPage}
+                      disabled={currentPage <= 1}
+                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeftIcon className="h-4 w-4 mr-1" />
+                      Previous
+                    </button>
+
+                    <div className="flex flex-col items-center">
+                      <span className="text-sm text-gray-700">
+                        Page {currentPage} of {numPages}
+                      </span>
+                      {requireScrollTracking && (
+                        <span className="text-xs text-gray-500 mt-1">
+                          {viewedPages.size === numPages ? '✓ All pages viewed' : `Viewed: ${viewedPages.size}/${numPages} pages`}
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage >= numPages}
+                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRightIcon className="h-4 w-4 ml-1" />
+                    </button>
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>

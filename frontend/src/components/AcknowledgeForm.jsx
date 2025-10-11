@@ -49,8 +49,8 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         ack_method: formData.ack_method
       };
 
-      // Add typed signature if this is a typed acknowledgment
-      if (formData.ack_method === 'typed' && formData.typed_signature) {
+      // Add typed signature if required or if typed method is selected
+      if ((ackPageData?.require_typed_signature || formData.ack_method === 'typed') && formData.typed_signature) {
         submissionData.typed_signature = formData.typed_signature;
       }
 

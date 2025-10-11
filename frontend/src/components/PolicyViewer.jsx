@@ -7,6 +7,10 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [hasViewedDocument, setHasViewedDocument] = useState(false);
 
+  // Only require viewing validation for recipients (when token exists), not admins
+  const isRecipientView = !!token;
+  const shouldShowValidation = isRecipientView && onDocumentViewed;
+
   // Track scroll to ensure user has seen the content
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -84,10 +88,14 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
 
           <div className="p-6">
             {/* PDF File Display */}
-            <div className={`border-2 rounded-lg p-6 ${hasViewedDocument ? 'border-green-200 bg-green-50' : 'border-amber-300 bg-amber-50'}`}>
+            <div className={`border-2 rounded-lg p-6 ${
+              shouldShowValidation
+                ? (hasViewedDocument ? 'border-green-200 bg-green-50' : 'border-amber-300 bg-amber-50')
+                : 'border-gray-200 bg-gray-50'
+            }`}>
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  {hasViewedDocument ? (
+                  {shouldShowValidation && hasViewedDocument ? (
                     <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
                       <EyeIcon className="h-6 w-6 text-green-600" />
                     </div>
@@ -107,7 +115,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
                       Click to view document
                     </p>
                   </button>
-                  {hasViewedDocument && (
+                  {shouldShowValidation && hasViewedDocument && (
                     <div className="mt-2 inline-flex items-center text-xs font-medium text-green-700">
                       <EyeIcon className="h-4 w-4 mr-1" />
                       Document reviewed
@@ -116,15 +124,17 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
                 </div>
               </div>
 
-              <div className={`mt-4 text-xs px-3 py-2 rounded border ${
-                hasViewedDocument
-                  ? 'text-green-700 bg-green-100 border-green-200'
-                  : 'text-amber-700 bg-amber-100 border-amber-200 animate-pulse'
-              }`}>
-                {hasViewedDocument
-                  ? '✓ You have reviewed this document. You may now proceed to acknowledge.'
-                  : '⚠ START HERE: Please open and review the entire policy document before acknowledging'}
-              </div>
+              {shouldShowValidation && (
+                <div className={`mt-4 text-xs px-3 py-2 rounded border ${
+                  hasViewedDocument
+                    ? 'text-green-700 bg-green-100 border-green-200'
+                    : 'text-amber-700 bg-amber-100 border-amber-200 animate-pulse'
+                }`}>
+                  {hasViewedDocument
+                    ? '✓ You have reviewed this document. You may now proceed to acknowledge.'
+                    : '⚠ START HERE: Please open and review the entire policy document before acknowledging'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -136,6 +146,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
           pdfUrl={pdfUrl}
           fileName={fileName}
           onViewed={handlePDFViewed}
+          requireScrollTracking={shouldShowValidation}
         />
       </>
     );
@@ -166,7 +177,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
       </div>
       
       <div className="p-6">
-        {!hasViewedDocument && policy.body_markdown && (
+        {shouldShowValidation && !hasViewedDocument && policy.body_markdown && (
           <div className="mb-4 text-sm text-amber-700 bg-amber-100 px-4 py-3 rounded border border-amber-200 animate-pulse font-medium">
             ⚠ START HERE: Please scroll to the bottom of the policy to continue
           </div>
@@ -190,7 +201,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
           )}
         </div>
 
-        {policy.body_markdown && (
+        {shouldShowValidation && policy.body_markdown && (
           <div className={`mt-4 text-xs px-3 py-2 rounded border ${
             hasViewedDocument
               ? 'text-green-700 bg-green-100 border-green-200'
