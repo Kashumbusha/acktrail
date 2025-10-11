@@ -12,6 +12,7 @@ export default function AcknowledgePage() {
   const { token } = useParams();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [hasViewedDocument, setHasViewedDocument] = useState(false);
 
   const { 
     data: ackPageData, 
@@ -44,8 +45,16 @@ export default function AcknowledgePage() {
   });
 
   const handleSubmit = (formData) => {
+    if (!hasViewedDocument) {
+      toast.error('Please review the policy document before acknowledging');
+      return;
+    }
     setSubmitting(true);
     submitMutation.mutate(formData);
+  };
+
+  const handleDocumentViewed = () => {
+    setHasViewedDocument(true);
   };
 
   if (isLoading) {
@@ -180,13 +189,18 @@ export default function AcknowledgePage() {
           </div>
 
           {/* Policy Content */}
-          <PolicyViewer policy={policy} token={token} />
+          <PolicyViewer
+            policy={policy}
+            token={token}
+            onDocumentViewed={handleDocumentViewed}
+          />
 
           {/* Acknowledgment Form */}
           <AcknowledgeForm
             ackPageData={ackPageData}
             onSubmit={handleSubmit}
             loading={submitting}
+            hasViewedDocument={hasViewedDocument}
           />
 
           {/* Footer */}

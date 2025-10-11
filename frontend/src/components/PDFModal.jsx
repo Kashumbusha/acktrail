@@ -1,8 +1,41 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ArrowDownTrayIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
-export default function PDFModal({ isOpen, onClose, pdfUrl, fileName }) {
+export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed }) {
+  const [viewingTime, setViewingTime] = useState(0);
+  const [hasBeenViewed, setHasBeenViewed] = useState(false);
+  const MINIMUM_VIEWING_TIME = 5; // 5 seconds minimum
+
+  // Track viewing time
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const interval = setInterval(() => {
+      setViewingTime(prev => {
+        const newTime = prev + 1;
+        if (newTime >= MINIMUM_VIEWING_TIME && !hasBeenViewed) {
+          setHasBeenViewed(true);
+          if (onViewed) {
+            onViewed();
+          }
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isOpen, hasBeenViewed, onViewed]);
+
+  // Reset viewing time when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setViewingTime(0);
+    }
+  }, [isOpen]);
+
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = pdfUrl;
@@ -41,10 +74,23 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName }) {
               <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
-                    {fileName || 'Document Preview'}
-                  </Dialog.Title>
+                  <div className="flex items-center space-x-3">
+                    <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
+                      {fileName || 'Document Preview'}
+                    </Dialog.Title>
+                    {hasBeenViewed && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Reviewed
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-2">
+                    {!hasBeenViewed && (
+                      <div className="text-sm text-amber-600 mr-2">
+                        Please review for at least {MINIMUM_VIEWING_TIME} seconds ({Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)}s remaining)
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={handleDownload}

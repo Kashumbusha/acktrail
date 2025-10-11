@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { CheckIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false }) {
+export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false, hasViewedDocument = false }) {
   const [formData, setFormData] = useState({
     signer_name: ackPageData?.user_name || '',
     signer_email: ackPageData?.user_email || '',
@@ -252,19 +252,45 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
           </dl>
         </div>
 
+        {/* Document Review Warning */}
+        {!hasViewedDocument && (
+          <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <EyeSlashIcon className="h-5 w-5 text-amber-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-amber-700 font-medium">
+                  Please review the policy document above before submitting your acknowledgment.
+                </p>
+                <p className="text-xs text-amber-600 mt-1">
+                  You must open and review the document to enable the submit button.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Submit Button */}
         <div className="flex justify-end pt-4">
           <button
             type="submit"
-            disabled={loading}
-            className="flex items-center px-6 py-3 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !hasViewedDocument}
+            className={`flex items-center px-6 py-3 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+              hasViewedDocument && !loading
+                ? 'bg-indigo-600 hover:bg-indigo-700'
+                : 'bg-gray-400 cursor-not-allowed'
+            }`}
+            title={!hasViewedDocument ? 'Please review the policy document first' : ''}
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            ) : (
+            ) : hasViewedDocument ? (
               <CheckIcon className="h-4 w-4 mr-2" />
+            ) : (
+              <EyeSlashIcon className="h-4 w-4 mr-2" />
             )}
-            {loading ? 'Submitting...' : 'Submit Acknowledgment'}
+            {loading ? 'Submitting...' : hasViewedDocument ? 'Submit Acknowledgment' : 'Review Document First'}
           </button>
         </div>
       </form>

@@ -1,18 +1,42 @@
-import { useState } from 'react';
-import { PrinterIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import { PrinterIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
 import PDFModal from './PDFModal';
 
-export default function PolicyViewer({ policy, token }) {
+export default function PolicyViewer({ policy, token, onDocumentViewed }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false);
+  const [hasViewedDocument, setHasViewedDocument] = useState(false);
 
   // Track scroll to ensure user has seen the content
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     if (scrollTop + clientHeight >= scrollHeight - 10) {
       setHasScrolledToBottom(true);
+      if (!hasViewedDocument) {
+        setHasViewedDocument(true);
+        if (onDocumentViewed) {
+          onDocumentViewed();
+        }
+      }
     }
   };
+
+  // Callback when PDF has been viewed
+  const handlePDFViewed = () => {
+    if (!hasViewedDocument) {
+      setHasViewedDocument(true);
+      if (onDocumentViewed) {
+        onDocumentViewed();
+      }
+    }
+  };
+
+  // Notify parent when document viewing state changes
+  useEffect(() => {
+    if (hasViewedDocument && onDocumentViewed) {
+      onDocumentViewed();
+    }
+  }, [hasViewedDocument, onDocumentViewed]);
 
   // Render PDF content
   if (policy.file_url && policy.file_url.endsWith('.pdf')) {
@@ -60,10 +84,16 @@ export default function PolicyViewer({ policy, token }) {
 
           <div className="p-6">
             {/* PDF File Display */}
-            <div className="border-2 border-gray-200 rounded-lg p-6 bg-gray-50">
+            <div className={`border-2 rounded-lg p-6 ${hasViewedDocument ? 'border-green-200 bg-green-50' : 'border-amber-300 bg-amber-50'}`}>
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  <DocumentTextIcon className="h-12 w-12 text-red-500" />
+                  {hasViewedDocument ? (
+                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <EyeIcon className="h-6 w-6 text-green-600" />
+                    </div>
+                  ) : (
+                    <DocumentTextIcon className="h-12 w-12 text-red-500" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <button
@@ -77,11 +107,23 @@ export default function PolicyViewer({ policy, token }) {
                       Click to view document
                     </p>
                   </button>
+                  {hasViewedDocument && (
+                    <div className="mt-2 inline-flex items-center text-xs font-medium text-green-700">
+                      <EyeIcon className="h-4 w-4 mr-1" />
+                      Document reviewed
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-4 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded border border-amber-200">
-                Please open and review the entire policy document before acknowledging
+              <div className={`mt-4 text-xs px-3 py-2 rounded border ${
+                hasViewedDocument
+                  ? 'text-green-700 bg-green-100 border-green-200'
+                  : 'text-amber-700 bg-amber-100 border-amber-200 animate-pulse'
+              }`}>
+                {hasViewedDocument
+                  ? '✓ You have reviewed this document. You may now proceed to acknowledge.'
+                  : '⚠ START HERE: Please open and review the entire policy document before acknowledging'}
               </div>
             </div>
           </div>
@@ -93,6 +135,7 @@ export default function PolicyViewer({ policy, token }) {
           onClose={() => setShowPDFModal(false)}
           pdfUrl={pdfUrl}
           fileName={fileName}
+          onViewed={handlePDFViewed}
         />
       </>
     );
@@ -123,12 +166,18 @@ export default function PolicyViewer({ policy, token }) {
       </div>
       
       <div className="p-6">
-        <div 
-          className="prose max-w-none text-gray-900 max-h-96 overflow-y-auto"
+        {!hasViewedDocument && policy.body_markdown && (
+          <div className="mb-4 text-sm text-amber-700 bg-amber-100 px-4 py-3 rounded border border-amber-200 animate-pulse font-medium">
+            ⚠ START HERE: Please scroll to the bottom of the policy to continue
+          </div>
+        )}
+
+        <div
+          className="prose max-w-none text-gray-900 max-h-96 overflow-y-auto border rounded-lg p-4"
           onScroll={handleScroll}
         >
           {policy.body_markdown ? (
-            <div 
+            <div
               className="whitespace-pre-wrap leading-relaxed"
               style={{ whiteSpace: 'pre-wrap' }}
             >
@@ -140,10 +189,21 @@ export default function PolicyViewer({ policy, token }) {
             </div>
           )}
         </div>
-        
+
         {policy.body_markdown && (
-          <div className="mt-4 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded">
-            Please scroll through and read the entire policy content before acknowledging
+          <div className={`mt-4 text-xs px-3 py-2 rounded border ${
+            hasViewedDocument
+              ? 'text-green-700 bg-green-100 border-green-200'
+              : 'text-amber-600 bg-amber-50 border-amber-200'
+          }`}>
+            {hasViewedDocument ? (
+              <div className="flex items-center">
+                <EyeIcon className="h-4 w-4 mr-2" />
+                ✓ You have read the entire policy. You may now proceed to acknowledge.
+              </div>
+            ) : (
+              'Please scroll through and read the entire policy content before acknowledging'
+            )}
           </div>
         )}
       </div>
