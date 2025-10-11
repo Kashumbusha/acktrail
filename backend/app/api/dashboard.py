@@ -145,7 +145,7 @@ def get_dashboard_stats(
         recent_policies_data.append(RecentPolicyItem(
             id=policy.id,
             title=policy.title,
-            description=policy.description,
+            description=None,  # Policy model doesn't have description field
             assignments_count=assignments_count,
             acknowledged_count=acknowledged_count,
             created_at=policy.created_at
