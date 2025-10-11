@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import PolicyList from './pages/PolicyList';
 import AdminUsers from './pages/AdminUsers';
 import PlatformDashboard from './pages/PlatformDashboard';
+import Teams from './pages/Teams';
 import PolicyCreate from './pages/PolicyCreate';
 import PolicyEdit from './pages/PolicyEdit';
 import PolicyDetail from './pages/PolicyDetail';
@@ -95,6 +96,16 @@ function App() {
                   <PrivateRoute>
                     <Layout>
                       <PolicyEdit />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/teams"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Teams />
                     </Layout>
                   </PrivateRoute>
                 }

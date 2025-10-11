@@ -45,6 +45,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [teamName, setTeamName] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('medium'); // Default to medium (popular)
+  const [ssoEnabled, setSsoEnabled] = useState(false); // SSO addon
   const [workspaceId, setWorkspaceId] = useState(null);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -77,8 +78,8 @@ export default function Signup() {
     console.log('Creating workspace:', { teamName, email });
 
     try {
-      // Register workspace (team) with selected plan
-      const registerResponse = await teamsAPI.register(teamName, email, selectedPlan);
+      // Register workspace (team) with selected plan and SSO addon
+      const registerResponse = await teamsAPI.register(teamName, email, selectedPlan, ssoEnabled);
       console.log('Workspace registered:', registerResponse.data);
       const newWorkspaceId = registerResponse.data.workspace_id;
 
@@ -218,6 +219,27 @@ export default function Signup() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* SSO Addon */}
+                <div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg p-4">
+                  <label className="flex items-start cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={ssoEnabled}
+                      onChange={(e) => setSsoEnabled(e.target.checked)}
+                      className="mt-1 h-4 w-4 text-indigo-600 rounded"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900 dark:text-slate-100">SSO Add-on</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-slate-100">$199<span className="text-xs font-normal text-gray-500">/month</span></span>
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
+                        Enable Single Sign-On (SAML, OAuth) for seamless authentication across your organization
+                      </p>
+                    </div>
+                  </label>
                 </div>
 
                 <div>

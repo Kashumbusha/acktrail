@@ -45,11 +45,13 @@ class Workspace(Base):
     slug = Column(String(255), nullable=True, unique=True)
     plan = Column(SQLEnum(PlanTier), default=PlanTier.SMALL, nullable=False)
     trial_ends_at = Column(DateTime, nullable=True)  # 7-day free trial for all plans
+    sso_enabled = Column(Boolean, default=False, nullable=False)  # SSO addon ($199/month)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="workspace")
     policies = relationship("Policy", back_populates="workspace")
     assignments = relationship("Assignment", back_populates="workspace")
+    teams = relationship("Team", back_populates="workspace")
 
 
 class Team(Base):

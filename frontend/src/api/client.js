@@ -55,8 +55,12 @@ export const authAPI = {
 
 // Teams/Workspace API
 export const teamsAPI = {
-  register: (teamName, email, plan = 'small') => apiClient.post('/api/teams/register', { team_name: teamName, email, plan }),
+  register: (teamName, email, plan = 'small', ssoEnabled = false) => apiClient.post('/api/teams/register', { team_name: teamName, email, plan, sso_enabled: ssoEnabled }),
   checkWorkspace: (workspaceName) => apiClient.post('/api/teams/check-workspace', { workspace_name: workspaceName }),
+  list: () => apiClient.get('/api/teams/list'),
+  create: (name) => apiClient.post('/api/teams/create', { name }),
+  update: (id, name) => apiClient.patch(`/api/teams/${id}`, { name }),
+  delete: (id) => apiClient.delete(`/api/teams/${id}`),
 };
 
 // Policies API
