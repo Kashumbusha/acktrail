@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from uuid import UUID
+import logging
 
 from ..models.database import get_db
 from ..models.models import User, Assignment, Policy, UserRole
 from ..core.security import get_current_user, require_admin_role
+from ..core.email import send_invitation_email
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
 
 
@@ -96,6 +99,24 @@ def invite_user(
     if current_user.get("workspace_id"):
         user.workspace_id = UUID(current_user["workspace_id"])  # type: ignore
     db.commit()
+
+    # Send invitation email
+    try:
+        invited_by_name = current_user.get("name", "Your administrator")
+        send_invitation_email(
+            user_email=email,
+            user_name=name,
+            role=role,
+            is_guest=is_guest,
+            can_login=can_login,
+            invited_by=invited_by_name
+        )
+        logger.info(f"Invitation email sent to {email}")
+    except Exception as e:
+        logger.error(f"Failed to send invitation email to {email}: {e}")
+        # Don't fail the invitation if email fails
+        # User is still created/updated successfully
+
     return {"success": True, "id": str(user.id)}
 
 

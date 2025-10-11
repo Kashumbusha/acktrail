@@ -384,12 +384,170 @@ def send_reminder_email(
     html_content = render_reminder_email(
         user_name, policy_title, magic_link_url, days_remaining, reminder_count
     )
-    
+
     return send_brevo_email(
         to_email=user_email,
         subject=subject,
         html_content=html_content,
         tags=["policy_reminder"]
+    )
+
+
+def render_invitation_email(
+    user_name: str,
+    role: str,
+    is_guest: bool,
+    can_login: bool,
+    invited_by: str,
+    login_url: str,
+    org_name: str = None
+) -> str:
+    """Render the user invitation email template."""
+    if org_name is None:
+        org_name = settings.org_name
+
+    # Determine user type description
+    if is_guest:
+        user_type = "Guest User"
+        user_type_desc = "You have been invited as a guest user. You will receive policy acknowledgment requests via email."
+        access_desc = "You do not have login access to the system, but you will be able to acknowledge policies through email links."
+    elif role == "admin":
+        user_type = "Administrator"
+        user_type_desc = f"You have been invited as an administrator of {org_name}. You have full access to manage policies, users, and assignments."
+        access_desc = "You can log in to the system using the button below to access your admin dashboard."
+    else:
+        user_type = "Employee"
+        user_type_desc = f"You have been invited as an employee of {org_name}. You will receive policy acknowledgment requests and can track your compliance."
+        access_desc = "You can log in to the system using the button below to view your assigned policies."
+
+    template = Template("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Welcome to {{ org_name }}</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .header { text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px; color: white; }
+            .logo { font-size: 28px; font-weight: bold; }
+            .welcome { font-size: 18px; margin-top: 10px; }
+            .content { line-height: 1.6; color: #333; }
+            .role-badge { background-color: #667eea; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; display: inline-block; margin: 15px 0; }
+            .info-box { background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #667eea; }
+            .cta-button { display: inline-block; background-color: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; text-align: center; }
+            .cta-button:hover { background-color: #5568d3; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: center; }
+            .section-title { color: #667eea; font-weight: bold; margin-top: 25px; margin-bottom: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="logo">{{ org_name }}</div>
+                <div class="welcome">Welcome to the team!</div>
+            </div>
+
+            <div class="content">
+                <h2>Hello {{ user_name }},</h2>
+                <p>{{ invited_by }} has invited you to join {{ org_name }}'s policy management system.</p>
+
+                <div style="text-align: center;">
+                    <span class="role-badge">{{ user_type }}</span>
+                </div>
+
+                <div class="info-box">
+                    <strong>Your Role:</strong> {{ user_type }}<br>
+                    <p style="margin-top: 10px; margin-bottom: 0;">{{ user_type_desc }}</p>
+                </div>
+
+                {% if can_login %}
+                <div class="section-title">Getting Started</div>
+                <p>{{ access_desc }}</p>
+
+                <div style="text-align: center;">
+                    <a href="{{ login_url }}" class="cta-button">Access Your Account</a>
+                </div>
+
+                <p style="font-size: 14px; color: #666;">
+                    You can log in using your email address ({{ user_email }}). When you visit the login page,
+                    you'll receive a verification code via email to complete the login process.
+                </p>
+                {% else %}
+                <div class="section-title">What to Expect</div>
+                <p>{{ access_desc }}</p>
+
+                <p>When policies are assigned to you, you'll receive an email with a unique link to review and acknowledge each policy.
+                No login is required - simply click the link in the email to access the policy.</p>
+                {% endif %}
+
+                <div class="info-box" style="border-left-color: #28a745; background-color: #f0f9f4;">
+                    <strong>📧 Important:</strong> Keep an eye on your inbox for policy assignments and important updates from {{ org_name }}.
+                </div>
+
+                {% if can_login %}
+                <p style="font-size: 13px; color: #666; margin-top: 30px;">
+                    <strong>First time logging in?</strong><br>
+                    1. Click the "Access Your Account" button above<br>
+                    2. Enter your email address<br>
+                    3. Check your inbox for the verification code<br>
+                    4. Enter the code to complete login
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="footer">
+                <p>This is an automated invitation from {{ org_name }}. Please do not reply to this email.</p>
+                <p>If you have any questions, please contact your administrator.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """)
+
+    return template.render(
+        user_name=user_name,
+        user_email="",  # Will be filled in by send function
+        role=role,
+        user_type=user_type,
+        user_type_desc=user_type_desc,
+        access_desc=access_desc,
+        can_login=can_login,
+        invited_by=invited_by,
+        login_url=login_url,
+        org_name=org_name
+    )
+
+
+def send_invitation_email(
+    user_email: str,
+    user_name: str,
+    role: str,
+    is_guest: bool,
+    can_login: bool,
+    invited_by: str
+) -> Optional[str]:
+    """Send user invitation email."""
+    login_url = f"{settings.frontend_url}/login"
+
+    subject = f"Welcome to {settings.org_name}!"
+    html_content = render_invitation_email(
+        user_name=user_name,
+        role=role,
+        is_guest=is_guest,
+        can_login=can_login,
+        invited_by=invited_by,
+        login_url=login_url
+    )
+
+    # Replace placeholder with actual email
+    html_content = html_content.replace('{{ user_email }}', user_email)
+
+    return send_brevo_email(
+        to_email=user_email,
+        subject=subject,
+        html_content=html_content,
+        tags=["user_invitation"]
     )
 
 
