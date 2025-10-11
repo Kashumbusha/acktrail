@@ -112,4 +112,10 @@ export const usersAPI = {
   getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
 };
 
+// Platform API (for platform admins)
+export const platformAPI = {
+  stats: () => apiClient.get('/api/platform/stats'),
+  workspaces: (params) => apiClient.get('/api/platform/workspaces', { params }),
+};
+
 export default apiClient;
