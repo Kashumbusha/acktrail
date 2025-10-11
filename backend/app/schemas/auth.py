@@ -10,6 +10,7 @@ class SendCodeRequest(BaseModel):
 class VerifyCodeRequest(BaseModel):
     email: EmailStr
     code: str
+    workspace_id: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

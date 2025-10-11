@@ -7,11 +7,12 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login, sendCode, isAuthenticated } = useAuth();
+  const { login, sendCode, isAuthenticated, availableWorkspaces, requiresWorkspaceSelection } = useAuth();
   const location = useLocation();
-  const [step, setStep] = useState(1); // 1: email, 2: code
+  const [step, setStep] = useState(1); // 1: email, 2: workspace selection (if multiple), 3: code
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [codeError, setCodeError] = useState('');
@@ -37,8 +38,18 @@ export default function Login() {
     try {
       const result = await sendCode(email);
       if (result.success) {
-        setStep(2);
-        toast.success('Verification code sent to your email');
+        // If user has multiple workspaces, show workspace selection
+        if (result.requiresWorkspaceSelection) {
+          setStep(2); // Workspace selection
+          toast.success('Verification code sent to your email');
+        } else {
+          // Auto-select the first (or only) workspace
+          if (result.workspaces && result.workspaces.length > 0) {
+            setSelectedWorkspace(result.workspaces[0].workspace_id);
+          }
+          setStep(3); // Code verification
+          toast.success('Verification code sent to your email');
+        }
       } else {
         setEmailError(result.error);
       }
@@ -61,7 +72,7 @@ export default function Login() {
     setCodeError('');
 
     try {
-      const result = await login(email, code);
+      const result = await login(email, code, selectedWorkspace);
       if (result.success) {
         toast.success('Successfully logged in');
         // Navigation will be handled by the auth state change
@@ -73,6 +84,11 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleWorkspaceSelect = (workspaceId) => {
+    setSelectedWorkspace(workspaceId);
+    setStep(3); // Move to code verification
   };
 
   const handleBackToEmail = () => {
@@ -113,15 +129,17 @@ export default function Login() {
           <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 dark:bg-slate-900 dark:border dark:border-slate-800">
             <div className="text-center">
               <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">
-                {step === 1 ? 'Sign in' : 'Verify your email'}
+                {step === 1 ? 'Sign in' : step === 2 ? 'Select Workspace' : 'Verify your email'}
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                 {step === 1
                   ? 'Enter your email address to receive a verification code'
+                  : step === 2
+                  ? 'You belong to multiple workspaces. Select one to continue.'
                   : `We sent a 6-digit code to`
                 }
               </p>
-              {step === 2 && (
+              {step === 3 && (
                 <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{email}</p>
               )}
             </div>
@@ -171,6 +189,29 @@ export default function Login() {
                   {loading ? 'Sending code...' : 'Continue'}
                 </button>
               </form>
+            ) : step === 2 ? (
+              <div className="space-y-4">
+                {availableWorkspaces.map((workspace) => (
+                  <button
+                    key={workspace.workspace_id}
+                    onClick={() => handleWorkspaceSelect(workspace.workspace_id)}
+                    className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all dark:border-slate-700 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30"
+                  >
+                    <div className="text-left">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{workspace.workspace_name}</h3>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 capitalize">Role: {workspace.user_role}</p>
+                    </div>
+                    <ArrowLeftIcon className="h-5 w-5 text-gray-400 transform rotate-180" />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
+                >
+                  Back
+                </button>
+              </div>
             ) : (
               <form className="space-y-5" onSubmit={handleCodeSubmit}>
                 <div>

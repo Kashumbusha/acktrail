@@ -13,8 +13,10 @@ const authReducer = (state, action) => {
       return { ...state, user: action.payload, isAuthenticated: !!action.payload };
     case 'SET_TOKEN':
       return { ...state, token: action.payload };
+    case 'SET_WORKSPACES':
+      return { ...state, availableWorkspaces: action.payload, requiresWorkspaceSelection: action.payload.length > 1 };
     case 'LOGOUT':
-      return { ...state, user: null, token: null, isAuthenticated: false };
+      return { ...state, user: null, token: null, isAuthenticated: false, availableWorkspaces: [], requiresWorkspaceSelection: false };
     default:
       return state;
   }
@@ -26,6 +28,8 @@ const initialState = {
   token: null,
   isAuthenticated: false,
   loading: true,
+  availableWorkspaces: [],
+  requiresWorkspaceSelection: false,
 };
 
 // Auth provider component
@@ -65,26 +69,29 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (email, code) => {
+  const login = async (email, code, workspaceId = null) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await authAPI.verifyCode(email, code);
+      const response = await authAPI.verifyCode(email, code, workspaceId);
       const token = response.data?.access_token || response.data?.token;
       const user = response.data?.user;
-      
+
       // Store in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       // Update state
       dispatch({ type: 'SET_TOKEN', payload: token });
       dispatch({ type: 'SET_USER', payload: user });
-      
+
+      // Clear workspace selection state
+      dispatch({ type: 'SET_WORKSPACES', payload: [] });
+
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Login failed' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Login failed'
       };
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -101,12 +108,22 @@ export const AuthProvider = ({ children }) => {
   // Send verification code
   const sendCode = async (email) => {
     try {
-      await authAPI.sendCode(email);
-      return { success: true };
+      const response = await authAPI.sendCode(email);
+      const workspaces = response.data?.workspaces || [];
+      const requiresSelection = response.data?.requires_workspace_selection || false;
+
+      // Store available workspaces if user belongs to multiple
+      dispatch({ type: 'SET_WORKSPACES', payload: workspaces });
+
+      return {
+        success: true,
+        workspaces,
+        requiresWorkspaceSelection: requiresSelection
+      };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Failed to send code' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Failed to send code'
       };
     }
   };

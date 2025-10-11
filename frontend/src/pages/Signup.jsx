@@ -8,12 +8,13 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function Signup() {
-  const { login, sendCode, isAuthenticated } = useAuth();
+  const { login, sendCode, isAuthenticated, availableWorkspaces, requiresWorkspaceSelection } = useAuth();
   const location = useLocation();
-  const [step, setStep] = useState(1); // 1: workspace+email, 2: code
+  const [step, setStep] = useState(1); // 1: workspace+email, 2: workspace selection (if multiple), 3: code
   const [email, setEmail] = useState('');
   const [teamName, setTeamName] = useState('');
   const [code, setCode] = useState('');
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [teamError, setTeamError] = useState('');

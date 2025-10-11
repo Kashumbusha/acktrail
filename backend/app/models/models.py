@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -66,9 +66,14 @@ class Team(Base):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        # Composite unique constraint: same email can exist in different workspaces
+        # but not twice in the same workspace
+        UniqueConstraint('email', 'workspace_id', name='uix_email_workspace'),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False, index=True)
+    email = Column(String(255), nullable=False, index=True)  # Removed unique=True
     name = Column(String(255), nullable=False)
     password_hash = Column(String(255), nullable=True)  # Optional password for quick login
     role = Column(SQLEnum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
@@ -78,7 +83,7 @@ class User(Base):
     active = Column(Boolean, default=True, nullable=False)
     is_guest = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    
+
     created_policies = relationship("Policy", back_populates="creator", foreign_keys="Policy.created_by")
     assignments = relationship("Assignment", back_populates="user")
     workspace = relationship("Workspace", back_populates="users")

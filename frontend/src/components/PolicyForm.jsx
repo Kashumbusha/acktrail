@@ -257,11 +257,11 @@ export default function PolicyForm({
             className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 font-mono text-sm placeholder-gray-400 dark:placeholder-gray-500 ${
               errors.content ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
             }`}
-            placeholder="Enter policy content (supports Markdown formatting)"
+            placeholder="Enter or paste your policy text here..."
             disabled={loading}
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            You can use Markdown formatting for headers, lists, and emphasis
+            Simply type or paste plain text. Markdown formatting is optional (e.g. # for headers, ** for bold).
           </p>
           {errors.content && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
