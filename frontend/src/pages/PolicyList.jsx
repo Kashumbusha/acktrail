@@ -104,8 +104,8 @@ export default function PolicyList() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Policies</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Policies</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
             Manage your policy documents and assignments
           </p>
         </div>
@@ -138,7 +138,7 @@ export default function PolicyList() {
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
         {filteredPolicies.length === 0 ? (
             <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
+            <div className="text-gray-500 dark:text-slate-400 mb-4">
               {policies?.length === 0 ? 'No policies created yet' : 'No policies match your search'}
             </div>
             {policies?.length === 0 && (
@@ -196,32 +196,32 @@ export default function PolicyList() {
                         {getStatusText(policy.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">
                       <div>
                         <div>{policy.assignments_count || 0} total</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-slate-400">
                           {policy.acknowledged_count || 0} acknowledged
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
                       <div>
                         <div>{formatDate(policy.created_at)}</div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-400 dark:text-slate-500">
                           {formatRelativeTime(policy.created_at)}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
                       {policy.due_date ? (
                         <div>
                           <div>{formatDate(policy.due_date)}</div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-400 dark:text-slate-500">
                             {formatRelativeTime(policy.due_date)}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-400">No due date</span>
+                        <span className="text-gray-400 dark:text-slate-500">No due date</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -267,17 +267,17 @@ export default function PolicyList() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-slate-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-900 dark:border-slate-700">
             <div className="mt-3 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <TrashIcon className="h-6 w-6 text-red-600" />
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                <TrashIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mt-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mt-4">
                 Delete Policy
               </h3>
               <div className="mt-2 px-7 py-3">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   Are you sure you want to delete this policy? This action cannot be undone and will also delete all associated assignments.
                 </p>
               </div>

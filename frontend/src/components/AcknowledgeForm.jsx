@@ -103,7 +103,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
             id="signer_name"
             value={formData.signer_name}
             onChange={(e) => handleInputChange('signer_name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
               errors.signer_name ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter your full name"
@@ -124,7 +124,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
             id="signer_email"
             value={formData.signer_email}
             onChange={(e) => handleInputChange('signer_email', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
               errors.signer_email ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter your email address"
@@ -190,7 +190,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
               id="typed_signature"
               value={formData.typed_signature}
               onChange={(e) => handleInputChange('typed_signature', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+              className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
                 errors.typed_signature ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Type your full name as your digital signature"

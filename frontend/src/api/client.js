@@ -103,4 +103,12 @@ export const dashboardAPI = {
   getStats: () => apiClient.get('/api/dashboard/stats'),
 };
 
+// Users API
+export const usersAPI = {
+  list: (params) => apiClient.get('/api/users/', { params }),
+  invite: (data) => apiClient.post('/api/users/invite', data),
+  update: (id, data) => apiClient.patch(`/api/users/${id}`, data),
+  getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
+};
+
 export default apiClient;

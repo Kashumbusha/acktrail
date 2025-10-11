@@ -64,12 +64,12 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
 
     return (
       <>
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-4 border-b border-gray-200">
+        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border dark:border-slate-700">
+          <div className="p-4 border-b border-gray-200 dark:border-slate-700">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-medium text-gray-900">{policy.title}</h3>
-                <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100">{policy.title}</h3>
+                <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-slate-400 space-x-4">
                   <span>Version {policy.version}</span>
                   <span>PDF Document</span>
                 </div>
@@ -77,7 +77,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
               <div className="flex space-x-2">
                 <button
                   onClick={() => window.print()}
-                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100"
+                  className="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700"
                 >
                   <PrinterIcon className="h-3 w-3 mr-1" />
                   Print
@@ -154,12 +154,12 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
 
   // Render markdown/text content
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
-      <div className="p-4 border-b border-gray-200">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border dark:border-slate-700">
+      <div className="p-4 border-b border-gray-200 dark:border-slate-700">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">{policy.title}</h3>
-            <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100">{policy.title}</h3>
+            <div className="mt-1 flex items-center text-sm text-gray-500 dark:text-slate-400 space-x-4">
               <span>Version {policy.version}</span>
               <span>Text Document</span>
             </div>
@@ -167,7 +167,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
           <div className="flex space-x-2">
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100"
+              className="inline-flex items-center px-3 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700"
             >
               <PrinterIcon className="h-3 w-3 mr-1" />
               Print
@@ -184,7 +184,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
         )}
 
         <div
-          className="prose max-w-none text-gray-900 max-h-96 overflow-y-auto border rounded-lg p-4"
+          className="prose max-w-none text-gray-900 dark:text-slate-100 max-h-96 overflow-y-auto border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800"
           onScroll={handleScroll}
         >
           {policy.body_markdown ? (
@@ -195,7 +195,7 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
               {policy.body_markdown}
             </div>
           ) : (
-            <div className="text-gray-500 italic text-center py-12">
+            <div className="text-gray-500 dark:text-slate-400 italic text-center py-12">
               No content available for this policy
             </div>
           )}
