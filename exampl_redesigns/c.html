@@ -1,0 +1,717 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComplianceHub - Policy Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            border-radius: 9999px;
+            height: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        @media (max-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+            .sidebar-visible {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed lg:relative inset-y-0 left-0 z-30 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 sidebar-hidden lg:sidebar-visible">
+        <div class="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-primary-600 to-primary-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-white text-sm"></i>
+                </div>
+                <span class="text-white font-semibold text-lg">ComplianceHub</span>
+            </div>
+        </div>
+        
+        <nav class="mt-8 px-4 space-y-2">
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-tachometer-alt w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-file-alt w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Policies</span>
+                <span class="ml-auto bg-primary-100 text-primary-800 px-2 py-0.5 rounded-full text-xs font-semibold">12</span>
+            </a>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-users w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Employees</span>
+                <span class="ml-auto bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-semibold">247</span>
+            </a>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-envelope w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Notifications</span>
+                <span class="ml-auto bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-semibold">3</span>
+            </a>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-chart-bar w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Analytics</span>
+            </a>
+            
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                <i class="fas fa-clipboard-list w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                <span class="font-medium">Audit Trail</span>
+            </a>
+            
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                    <i class="fas fa-cog w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                    <span class="font-medium">Settings</span>
+                </a>
+                
+                <a href="#" class="flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-primary-50 hover:text-primary-700 group transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt w-5 text-gray-400 group-hover:text-primary-600 mr-3"></i>
+                    <span class="font-medium">Logout</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg">
+        <i class="fas fa-bars text-gray-600 text-xl"></i>
+    </button>
+    
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p class="text-gray-600 mt-1">Welcome back, Sarah! Here's what's happening with your compliance tracking.</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden md:block">
+                            <input type="text" placeholder="Search policies, employees..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent w-64">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                        
+                        <!-- User Menu -->
+                        <div class="relative">
+                            <button id="userMenuBtn" class="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">S</span>
+                                </div>
+                                <div class="hidden md:block">
+                                    <p class="text-sm font-medium text-gray-900">Sarah Johnson</p>
+                                    <p class="text-xs text-gray-500">Administrator</p>
+                                </div>
+                                <i class="fas fa-chevron-down text-gray-400 ml-1"></i>
+                            </button>
+                            
+                            <!-- User Menu Dropdown -->
+                            <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 hidden animate-fade-in">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Billing</a>
+                                <hr class="my-1">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content Area -->
+        <main class="p-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover glass-effect">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-primary-100">
+                            <i class="fas fa-file-contract text-primary-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Policies</p>
+                            <p class="text-3xl font-bold text-gray-900">12</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-green-600">+2 this month</span>
+                            <i class="fas fa-arrow-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover glass-effect">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Compliance Rate</p>
+                            <p class="text-3xl font-bold text-gray-900">94%</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="progress-bar w-24/30"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover glass-effect">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Pending Reviews</p>
+                            <p class="text-3xl font-bold text-gray-900">8</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-yellow-600">Due in 3 days</span>
+                            <i class="fas fa-exclamation-triangle text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover glass-effect">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Active Users</p>
+                            <p class="text-3xl font-bold text-gray-900">247</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-blue-600">85% engagement</span>
+                            <i class="fas fa-chart-line text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Policies Section -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Recent Policies</h2>
+                                    <p class="text-sm text-gray-600">Track policy distribution and employee acknowledgments</p>
+                                </div>
+                                <button class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>New Policy</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Policy Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                                                    <i class="fas fa-file-alt text-primary-600 text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900">Code of Conduct</div>
+                                                    <div class="text-sm text-gray-500">Annual mandatory training</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">All Departments</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="flex items-center">
+                                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-3">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 89%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium">89%</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 days ago</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary-600 hover:text-primary-900 mr-3">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                                    <i class="fas fa-shield-alt text-green-600 text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900">Data Privacy Policy</div>
+                                                    <div class="text-sm text-gray-500">GDPR compliance requirements</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">IT & Legal</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="flex items-center">
+                                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-3">
+                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 67%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium">67%</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 days ago</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary-600 hover:text-primary-900 mr-3">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                                    <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900">Health & Safety</div>
+                                                    <div class="text-sm text-gray-500">Workplace safety protocols</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Operations</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Draft</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <div class="flex items-center">
+                                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-3">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 23%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium">23%</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 week ago</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-primary-600 hover:text-primary-900 mr-3">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Showing 1-3 of 12 policies</span>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Previous</button>
+                                    <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions & Recent Activity -->
+                <div class="space-y-6">
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 group">
+                                <i class="fas fa-file-upload text-primary-600 mr-3 group-hover:text-primary-700"></i>
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-primary-700">Upload New Policy</span>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all duration-200 group">
+                                <i class="fas fa-bullhorn text-green-600 mr-3 group-hover:text-green-700"></i>
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-green-700">Send Bulk Notification</span>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                                <i class="fas fa-chart-pie text-blue-600 mr-3 group-hover:text-blue-700"></i>
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-blue-700">Generate Report</span>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 group">
+                                <i class="fas fa-user-plus text-purple-600 mr-3 group-hover:text-purple-700"></i>
+                                <span class="text-sm font-medium text-gray-700 group-hover:text-purple-700">Add Employee</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-xl shadow-sm">
+                        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                        </div>
+                        <div class="divide-y divide-gray-200 scrollbar-thin max-h-96 overflow-y-auto">
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">John Smith acknowledged Code of Conduct</p>
+                                        <p class="text-sm text-gray-500 mt-1">2 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-file-upload text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">New policy "Remote Work Guidelines" uploaded</p>
+                                        <p class="text-sm text-gray-500 mt-1">4 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-envelope text-yellow-600 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">Reminder email sent to 23 employees</p>
+                                        <p class="text-sm text-gray-500 mt-1">6 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-download text-purple-600 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">Compliance report downloaded</p>
+                                        <p class="text-sm text-gray-500 mt-1">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">Policy review overdue for Marketing team</p>
+                                        <p class="text-sm text-gray-500 mt-1">2 days ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-hidden');
+            sidebar.classList.toggle('sidebar-visible');
+            mobileMenuOverlay.classList.toggle('hidden');
+        });
+
+        mobileMenuOverlay.addEventListener('click', () => {
+            sidebar.classList.add('sidebar-hidden');
+            sidebar.classList.remove('sidebar-visible');
+            mobileMenuOverlay.classList.add('hidden');
+        });
+
+        // User menu toggle
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenu = document.getElementById('userMenu');
+
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+            userMenu.classList.add('hidden');
+        });
+
+        // Add animation classes on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card-hover');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Add pulse animation to notification badge
+            const notificationBadge = document.querySelector('.bg-red-500');
+            if (notificationBadge) {
+                notificationBadge.classList.add('animate-pulse-slow');
+            }
+        });
+
+        // Table row hover effects
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateX(4px)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Quick action button interactions
+        const quickActionBtns = document.querySelectorAll('.space-y-3 button');
+        quickActionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    btn.style.transform = 'scale(1)';
+                }, 150);
+                
+                // Add ripple effect
+                const ripple = document.createElement('span');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(59, 130, 246, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                
+                btn.style.position = 'relative';
+                btn.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Auto-hide success messages (if any)
+        const alerts = document.querySelectorAll('.alert-success');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.3s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        });
+
+        // Search functionality (basic)
+        const searchInput = document.querySelector('input[placeholder*="Search"]');
+        if (searchInput) {
+            searchInput.addEventListener('focus', () => {
+                searchInput.parentElement.classList.add('ring-2', 'ring-primary-500');
+            });
+            searchInput.addEventListener('blur', () => {
+                searchInput.parentElement.classList.remove('ring-2', 'ring-primary-500');
+            });
+        }
+
+        // Sidebar scroll behavior
+        const sidebarNav = document.querySelector('nav');
+        if (sidebarNav) {
+            sidebarNav.addEventListener('scroll', () => {
+                const scrolled = sidebarNav.scrollTop > 0;
+                document.querySelector('.bg-gradient-to-r').style.boxShadow = scrolled ? 
+                    '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none';
+            });
+        }
+
+        // Add loading states to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.dataset.loading !== 'true') {
+                    const originalText = this.innerHTML;
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>Loading...</span>';
+                        this.dataset.loading = 'true';
+                        this.disabled = true;
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.dataset.loading = 'false';
+                            this.disabled = false;
+                        }, 2000);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+```
+
+I prefer left
+1
+
+2
+I prefer right
