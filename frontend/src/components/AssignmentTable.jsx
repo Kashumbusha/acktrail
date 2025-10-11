@@ -28,6 +28,7 @@ export default function AssignmentTable({
   const [remindingAssignments, setRemindingAssignments] = useState(new Set());
   const [deletingAssignments, setDeletingAssignments] = useState(new Set());
   const [resendingAssignments, setResendingAssignments] = useState(new Set());
+  const [selectedAssignments, setSelectedAssignments] = useState(new Set());
 
   // Filter and sort assignments
   const filteredAssignments = assignments
@@ -136,6 +137,72 @@ export default function AssignmentTable({
     return 'bg-red-100 text-red-800';
   };
 
+  // Bulk actions handlers
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedAssignments(new Set(filteredAssignments.map(a => a.id)));
+    } else {
+      setSelectedAssignments(new Set());
+    }
+  };
+
+  const handleSelectAssignment = (assignmentId) => {
+    setSelectedAssignments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(assignmentId)) {
+        newSet.delete(assignmentId);
+      } else {
+        newSet.add(assignmentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkRemind = async () => {
+    const selectedArray = Array.from(selectedAssignments);
+    const eligibleAssignments = filteredAssignments.filter(a =>
+      selectedArray.includes(a.id) && canSendReminder(a) && (a.reminder_count || 0) < 3
+    );
+
+    if (eligibleAssignments.length === 0) {
+      alert('No eligible assignments selected for reminders');
+      return;
+    }
+
+    if (!window.confirm(`Send reminders to ${eligibleAssignments.length} selected assignment(s)?`)) {
+      return;
+    }
+
+    for (const assignment of eligibleAssignments) {
+      await handleRemind(assignment.id);
+    }
+    setSelectedAssignments(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    const selectedArray = Array.from(selectedAssignments);
+    const eligibleAssignments = filteredAssignments.filter(a =>
+      selectedArray.includes(a.id) && canDelete(a)
+    );
+
+    if (eligibleAssignments.length === 0) {
+      alert('No eligible assignments selected for deletion');
+      return;
+    }
+
+    if (!window.confirm(`Delete ${eligibleAssignments.length} selected assignment(s)? This action cannot be undone.`)) {
+      return;
+    }
+
+    for (const assignment of eligibleAssignments) {
+      await onDelete(assignment.id);
+    }
+    setSelectedAssignments(new Set());
+  };
+
+  const allSelected = filteredAssignments.length > 0 && selectedAssignments.size === filteredAssignments.length;
+  const someSelected = selectedAssignments.size > 0;
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -153,9 +220,32 @@ export default function AssignmentTable({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg font-medium text-gray-900 mb-4 sm:mb-0">
             Assignments ({filteredAssignments.length})
+            {someSelected && (
+              <span className="ml-2 text-sm text-indigo-600">
+                ({selectedAssignments.size} selected)
+              </span>
+            )}
           </h3>
-          
+
           <div className="flex items-center space-x-4">
+            {someSelected && (
+              <>
+                <button
+                  onClick={handleBulkRemind}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Bulk Remind
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Bulk Delete
+                </button>
+              </>
+            )}
             {onRefresh && (
               <button
                 onClick={onRefresh}
@@ -206,7 +296,15 @@ export default function AssignmentTable({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th 
+              <th className="px-6 py-3 text-left">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+              </th>
+              <th
                 onClick={() => handleSort('user_email')}
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
               >
@@ -298,7 +396,7 @@ export default function AssignmentTable({
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredAssignments.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-12 text-center">
+                <td colSpan={10} className="px-6 py-12 text-center">
                   <div className="text-gray-500">
                     {assignments?.length === 0 ? 'No assignments found' : 'No assignments match your filters'}
                   </div>
@@ -307,6 +405,14 @@ export default function AssignmentTable({
             ) : (
               filteredAssignments.map((assignment) => (
                 <tr key={assignment.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedAssignments.has(assignment.id)}
+                      onChange={() => handleSelectAssignment(assignment.id)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {assignment.user_email}
                   </td>
