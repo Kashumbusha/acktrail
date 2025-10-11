@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
+import { Disclosure } from '@headlessui/react';
 import {
   DocumentTextIcon,
   ShieldCheckIcon,
   BellIcon,
   ChartBarIcon,
   ClockIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -15,31 +18,45 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800">
         <div className="container-page">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <div className="bg-indigo-600 rounded-xl p-2 shadow">
-                <DocumentTextIcon className="h-6 w-6 text-white" />
-              </div>
-              <span className="ml-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Policy Acknowledgment Tracker
-              </span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <ThemeToggle />
-              <Link
-                to="/login"
-                className="btn btn-secondary"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="btn btn-primary"
-              >
-                Sign up
-              </Link>
-            </div>
-          </div>
+          <Disclosure>
+            {({ open }) => (
+              <>
+                <div className="flex justify-between h-16">
+                  <div className="flex items-center min-w-0">
+                    <div className="bg-indigo-600 rounded-xl p-2 shadow">
+                      <DocumentTextIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="ml-3 text-lg font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap truncate">
+                      Policy Acknowledgment Tracker
+                    </span>
+                  </div>
+                  <div className="hidden sm:flex items-center space-x-3">
+                    <ThemeToggle />
+                    <Link to="/login" className="btn btn-secondary">Sign In</Link>
+                    <Link to="/signup" className="btn btn-primary">Sign up</Link>
+                  </div>
+                  <div className="-mr-2 flex items-center sm:hidden">
+                    <ThemeToggle />
+                    <Disclosure.Button className="ml-1 inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset">
+                      <span className="sr-only">Open main menu</span>
+                      {open ? (
+                        <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                      ) : (
+                        <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                      )}
+                    </Disclosure.Button>
+                  </div>
+                </div>
+
+                <Disclosure.Panel className="sm:hidden">
+                  <div className="space-y-2 pb-3 pt-2 px-2">
+                    <Link to="/login" className="btn btn-secondary w-full">Sign In</Link>
+                    <Link to="/signup" className="btn btn-primary w-full">Sign up</Link>
+                  </div>
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
         </div>
       </nav>
 
