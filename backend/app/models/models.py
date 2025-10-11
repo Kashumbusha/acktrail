@@ -44,6 +44,7 @@ class Workspace(Base):
     name = Column(String(255), nullable=False, unique=True)  # Workspace names must be unique
     slug = Column(String(255), nullable=True, unique=True)
     plan = Column(SQLEnum(PlanTier), default=PlanTier.SMALL, nullable=False)
+    trial_ends_at = Column(DateTime, nullable=True)  # 7-day free trial for all plans
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="workspace")

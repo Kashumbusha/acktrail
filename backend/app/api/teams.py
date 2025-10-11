@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from ..models.database import get_db
-from ..models.models import Workspace, User, UserRole
+from ..models.models import Workspace, User, UserRole, PlanTier
 
 router = APIRouter(prefix="/teams", tags=["teams"])  # "teams" path label, models use Workspaces
 
@@ -11,15 +12,25 @@ router = APIRouter(prefix="/teams", tags=["teams"])  # "teams" path label, model
 def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     """Register a new workspace (aka team) and seed first admin user.
 
-    Expected body: {"team_name": str, "email": str}
+    Expected body: {"team_name": str, "email": str, "plan": str (optional)}
     """
     team_name = (payload.get("team_name") or "").strip()
     email = (payload.get("email") or "").strip().lower()
+    plan_str = (payload.get("plan") or "small").strip().lower()
 
     if not team_name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Team name is required")
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
+
+    # Validate plan
+    try:
+        plan = PlanTier(plan_str)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid plan. Must be one of: {', '.join([p.value for p in PlanTier])}"
+        )
 
     # Check if workspace name already exists
     existing_workspace = db.query(Workspace).filter(Workspace.name == team_name).first()
@@ -29,8 +40,9 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
             detail=f"Workspace '{team_name}' already exists. Please choose a different name."
         )
 
-    # Create workspace
-    workspace = Workspace(name=team_name)
+    # Create workspace with 7-day free trial
+    trial_ends_at = datetime.utcnow() + timedelta(days=7)
+    workspace = Workspace(name=team_name, plan=plan, trial_ends_at=trial_ends_at)
     db.add(workspace)
     db.flush()
 
@@ -48,7 +60,12 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     # Note: No email sent here - frontend will call /auth/send-code to send verification email
     # This prevents duplicate emails during signup flow
 
-    return {"success": True, "workspace_id": str(workspace.id)}
+    return {
+        "success": True,
+        "workspace_id": str(workspace.id),
+        "plan": workspace.plan.value,
+        "trial_ends_at": workspace.trial_ends_at.isoformat() if workspace.trial_ends_at else None
+    }
 
 
 @router.post("/check-workspace", response_model=dict)

@@ -55,7 +55,7 @@ export const authAPI = {
 
 // Teams/Workspace API
 export const teamsAPI = {
-  register: (teamName, email) => apiClient.post('/api/teams/register', { team_name: teamName, email }),
+  register: (teamName, email, plan = 'small') => apiClient.post('/api/teams/register', { team_name: teamName, email, plan }),
   checkWorkspace: (workspaceName) => apiClient.post('/api/teams/check-workspace', { workspace_name: workspaceName }),
 };
 

@@ -7,12 +7,44 @@ import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
+const PLANS = [
+  {
+    id: 'small',
+    name: 'Small Team',
+    price: '$49',
+    period: '/month',
+    users: 'Up to 10 users',
+    policies: 'Unlimited policies',
+    features: ['Email support', 'Basic analytics', 'Standard templates']
+  },
+  {
+    id: 'medium',
+    name: 'Medium Team',
+    price: '$99',
+    period: '/month',
+    users: 'Up to 50 users',
+    policies: 'Unlimited policies',
+    features: ['Priority support', 'Advanced analytics', 'Custom branding', 'API access'],
+    popular: true
+  },
+  {
+    id: 'large',
+    name: 'Enterprise',
+    price: '$249',
+    period: '/month',
+    users: 'Unlimited users',
+    policies: 'Unlimited policies',
+    features: ['24/7 phone support', 'Advanced security', 'Dedicated success manager', 'Custom integrations', 'SLA guarantee']
+  }
+];
+
 export default function Signup() {
   const { login, sendCode, isAuthenticated } = useAuth();
   const location = useLocation();
   const [step, setStep] = useState(1); // 1: workspace+email, 2: code
   const [email, setEmail] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('medium'); // Default to medium (popular)
   const [workspaceId, setWorkspaceId] = useState(null);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,8 +77,8 @@ export default function Signup() {
     console.log('Creating workspace:', { teamName, email });
 
     try {
-      // Register workspace (team)
-      const registerResponse = await teamsAPI.register(teamName, email);
+      // Register workspace (team) with selected plan
+      const registerResponse = await teamsAPI.register(teamName, email, selectedPlan);
       console.log('Workspace registered:', registerResponse.data);
       const newWorkspaceId = registerResponse.data.workspace_id;
 
@@ -141,6 +173,53 @@ export default function Signup() {
           <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 dark:bg-slate-900 dark:border dark:border-slate-800">
             {step === 1 ? (
               <form className="space-y-5" onSubmit={handleEmailSubmit}>
+                {/* Plan Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-slate-300">
+                    Choose your plan <span className="text-xs text-gray-500">(7-day free trial, no credit card required)</span>
+                  </label>
+                  <div className="grid gap-3">
+                    {PLANS.map((plan) => (
+                      <div
+                        key={plan.id}
+                        onClick={() => setSelectedPlan(plan.id)}
+                        className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                          selectedPlan === plan.id
+                            ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/20'
+                            : 'border-gray-200 hover:border-gray-300 dark:border-slate-700 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        {plan.popular && (
+                          <span className="absolute -top-2 right-4 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                            Popular
+                          </span>
+                        )}
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{plan.name}</h3>
+                            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">{plan.users} • {plan.policies}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">{plan.price}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">{plan.period}</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center">
+                          <input
+                            type="radio"
+                            checked={selectedPlan === plan.id}
+                            onChange={() => setSelectedPlan(plan.id)}
+                            className="h-4 w-4 text-indigo-600"
+                          />
+                          <span className="ml-2 text-sm text-gray-600 dark:text-slate-400">
+                            {plan.features.join(' • ')}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="team" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
                     Workspace name
