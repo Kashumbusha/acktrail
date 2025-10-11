@@ -31,10 +31,10 @@ export default function MagicLinkVerify() {
         setStatus('success');
         setMessage('Successfully authenticated! Redirecting...');
 
-        // Redirect to dashboard after 2 seconds
+        // Force a full page reload to dashboard to ensure auth context updates
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+          window.location.href = '/dashboard';
+        }, 1500);
       })
       .catch((error) => {
         setStatus('error');
