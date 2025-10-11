@@ -160,6 +160,32 @@ export default function PolicyDetail() {
     deleteMutation.mutate(assignmentId);
   };
 
+  const resendLinkMutation = useMutation({
+    mutationFn: (assignmentId) => assignmentsAPI.regenerateLink(assignmentId),
+    onSuccess: (response) => {
+      refetchAssignments();
+      const data = response.data;
+      toast.success(data.message || 'Fresh link sent successfully');
+
+      // Copy the magic link to clipboard
+      if (data.magic_link_url) {
+        navigator.clipboard.writeText(data.magic_link_url).then(() => {
+          toast.success('Magic link copied to clipboard!', { icon: '📋' });
+        }).catch(() => {
+          toast.error('Failed to copy link to clipboard');
+        });
+      }
+    },
+    onError: (error) => {
+      const message = error.response?.data?.detail || 'Failed to regenerate link';
+      toast.error(message);
+    },
+  });
+
+  const handleResendLink = (assignmentId) => {
+    resendLinkMutation.mutate(assignmentId);
+  };
+
   const handleExport = () => {
     exportMutation.mutate(id);
   };
@@ -370,6 +396,7 @@ export default function PolicyDetail() {
           onRemind={handleRemind}
           onDelete={handleDelete}
           onRefresh={refetchAssignments}
+          onResendLink={handleResendLink}
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MagnifyingGlassIcon, ArrowPathIcon, ExclamationCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowPathIcon, ExclamationCircleIcon, TrashIcon, PaperAirplaneIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { formatDate, formatRelativeTime, getStatusBadgeClass, getStatusText } from '../utils/formatters';
 import { ASSIGNMENT_STATUS } from '../utils/constants';
 import LoadingSpinner from './LoadingSpinner';
@@ -17,7 +17,9 @@ export default function AssignmentTable({
   loading = false,
   onRemind,
   onDelete,
-  onRefresh
+  onRefresh,
+  onResendLink,
+  onCopyLink
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -25,6 +27,7 @@ export default function AssignmentTable({
   const [sortDirection, setSortDirection] = useState('desc');
   const [remindingAssignments, setRemindingAssignments] = useState(new Set());
   const [deletingAssignments, setDeletingAssignments] = useState(new Set());
+  const [resendingAssignments, setResendingAssignments] = useState(new Set());
 
   // Filter and sort assignments
   const filteredAssignments = assignments
@@ -93,12 +96,37 @@ export default function AssignmentTable({
     }
   };
 
+  const handleResendLink = async (assignmentId) => {
+    setResendingAssignments(prev => new Set(prev).add(assignmentId));
+    try {
+      await onResendLink(assignmentId);
+    } catch (error) {
+      console.error('Failed to resend link:', error);
+    } finally {
+      setResendingAssignments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(assignmentId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleCopyLink = (assignmentId, magicLinkUrl) => {
+    if (onCopyLink) {
+      onCopyLink(assignmentId, magicLinkUrl);
+    }
+  };
+
   const canSendReminder = (assignment) => {
     return assignment.status === 'pending' || assignment.status === 'viewed';
   };
 
   const canDelete = (assignment) => {
     return assignment.status !== 'acknowledged';
+  };
+
+  const canResendLink = (assignment) => {
+    return assignment.status === 'pending' || assignment.status === 'viewed';
   };
 
   const getReminderBadgeColor = (count) => {
@@ -339,6 +367,20 @@ export default function AssignmentTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
+                      {canResendLink(assignment) && onResendLink && (
+                        <button
+                          onClick={() => handleResendLink(assignment.id)}
+                          disabled={resendingAssignments.has(assignment.id)}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-600 hover:text-green-900 hover:bg-green-50 disabled:opacity-50"
+                          title="Regenerate and send fresh magic link"
+                        >
+                          {resendingAssignments.has(assignment.id) ? (
+                            <LoadingSpinner size="sm" className="mr-1" />
+                          ) : (
+                            <PaperAirplaneIcon className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
                       {canSendReminder(assignment) && onRemind && (
                         <button
                           onClick={() => handleRemind(assignment.id)}

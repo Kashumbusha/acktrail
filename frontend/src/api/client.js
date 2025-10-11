@@ -72,6 +72,7 @@ export const policiesAPI = {
 export const assignmentsAPI = {
   remind: (id) => apiClient.post(`/api/assignments/${id}/remind`),
   delete: (id) => apiClient.delete(`/api/policies/assignments/${id}`),
+  regenerateLink: (id) => apiClient.post(`/api/policies/assignments/${id}/regenerate-link`),
 };
 
 // Create a separate axios instance for acknowledgment API (no auth required)

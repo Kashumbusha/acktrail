@@ -363,6 +363,84 @@ def send_assignment_reminder(
         )
 
 
+@router.post("/assignments/{assignment_id}/regenerate-link", response_model=dict)
+def regenerate_magic_link(
+    assignment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+) -> dict:
+    """Regenerate magic link for an assignment and optionally resend email."""
+    # Get assignment
+    assignment = db.query(Assignment).filter(Assignment.id == assignment_id).first()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Assignment not found"
+        )
+
+    # Check if assignment is still pending/viewed
+    if assignment.status not in [AssignmentStatus.PENDING, AssignmentStatus.VIEWED]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot regenerate link for acknowledged or declined assignment"
+        )
+
+    # Get user and policy
+    user = db.query(User).filter(User.id == assignment.user_id).first()
+    policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
+
+    if not user or not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User or policy not found"
+        )
+
+    try:
+        # Force regenerate magic link token
+        magic_token = create_magic_link_token(
+            assignment_id=str(assignment.id),
+            user_email=user.email
+        )
+        assignment.magic_link_token = magic_token
+
+        magic_link_url = f"{settings.frontend_url}/ack/{magic_token}"
+
+        # Send fresh email with new link
+        message_id = send_policy_assignment_email(
+            user_email=user.email,
+            user_name=user.name,
+            policy_title=policy.title,
+            magic_link_url=magic_link_url,
+            due_date=policy.due_at
+        )
+
+        # Record email event
+        email_event = EmailEvent(
+            assignment_id=assignment.id,
+            type=EmailEventType.SEND,
+            provider_message_id=message_id
+        )
+        db.add(email_event)
+
+        db.commit()
+
+        logger.info(f"Regenerated magic link and sent fresh email to {user.email} for policy {policy.title}")
+
+        return {
+            "success": True,
+            "message": f"Fresh link sent to {user.email}",
+            "magic_link_url": magic_link_url
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to regenerate link: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to regenerate link"
+        )
+
+
 @router.delete("/assignments/{assignment_id}", response_model=dict)
 def delete_assignment(
     assignment_id: UUID,
