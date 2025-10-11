@@ -188,28 +188,21 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                 {/* PDF Viewer */}
                 <div className="relative bg-gray-100" style={{ height: '75vh' }}>
                   {pdfLoadError || isSafari ? (
-                    <div className="h-full flex flex-col">
-                      {isSafari && (
-                        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 text-sm text-blue-800">
-                          <strong>Safari detected:</strong> Using native PDF viewer for best compatibility
-                        </div>
-                      )}
-                      <iframe
-                        src={pdfUrl}
-                        className="w-full flex-1 border-0"
-                        title="PDF Viewer"
-                        onLoad={() => {
-                          setIsLoading(false);
-                          // Auto-mark as viewed after 10 seconds for iframe viewers
-                          if (requireScrollTracking && !hasBeenViewed) {
-                            setTimeout(() => {
-                              setHasBeenViewed(true);
-                              if (onViewed) onViewed();
-                            }, MINIMUM_VIEWING_TIME * 1000);
-                          }
-                        }}
-                      />
-                    </div>
+                    <iframe
+                      src={pdfUrl}
+                      className="w-full h-full border-0"
+                      title="PDF Viewer"
+                      onLoad={() => {
+                        setIsLoading(false);
+                        // Auto-mark as viewed after 10 seconds for iframe viewers
+                        if (requireScrollTracking && !hasBeenViewed) {
+                          setTimeout(() => {
+                            setHasBeenViewed(true);
+                            if (onViewed) onViewed();
+                          }, MINIMUM_VIEWING_TIME * 1000);
+                        }
+                      }}
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full overflow-auto p-4">
                       <Document

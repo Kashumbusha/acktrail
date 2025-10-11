@@ -44,10 +44,27 @@ export default function SuccessPage() {
   };
 
   const closeWindow = () => {
-    if (window.opener) {
+    // Try to close the window
+    try {
       window.close();
-    } else {
-      toast.info('You can safely close this tab');
+
+      // If we're still here after 100ms, the browser blocked window.close()
+      setTimeout(() => {
+        // Try to go back in browser history as alternative
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // As last resort, navigate to a blank page
+          window.location.href = 'about:blank';
+        }
+      }, 100);
+    } catch (error) {
+      // Fallback: try to navigate back
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'about:blank';
+      }
     }
   };
 
