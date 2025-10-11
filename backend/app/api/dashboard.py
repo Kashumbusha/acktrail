@@ -26,36 +26,49 @@ def get_dashboard_stats(
     current_user: dict = Depends(get_current_user)
 ) -> DashboardResponse:
     """Get dashboard statistics and recent activity."""
-    
-    # Basic counts
-    total_policies = db.query(Policy).count()
-    total_users = db.query(User).count()
-    total_assignments = db.query(Assignment).count()
-    
-    # Assignment status counts
+
+    # Get workspace_id from current user
+    workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
+
+    # Basic counts - filtered by workspace
+    total_policies = db.query(Policy).filter(
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).count()
+
+    total_users = db.query(User).filter(
+        User.workspace_id == workspace_id if workspace_id else True
+    ).count()
+
+    total_assignments = db.query(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).count()
+
+    # Assignment status counts - filtered by workspace
     pending_assignments = db.query(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True,
         Assignment.status == AssignmentStatus.PENDING
     ).count()
-    
+
     acknowledged_assignments = db.query(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True,
         Assignment.status == AssignmentStatus.ACKNOWLEDGED
     ).count()
-    
-    # Overdue assignments (past due date and not acknowledged)
+
+    # Overdue assignments (past due date and not acknowledged) - filtered by workspace
     overdue_assignments = db.query(Assignment).join(Policy).filter(
-        and_(
-            Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]),
-            Policy.due_at < datetime.utcnow()
-        )
+        Assignment.workspace_id == workspace_id if workspace_id else True,
+        Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]),
+        Policy.due_at < datetime.utcnow()
     ).count()
-    
+
     # Calculate acknowledgment rate
     acknowledgment_rate = 0.0
     if total_assignments > 0:
         acknowledgment_rate = (acknowledged_assignments / total_assignments) * 100
-    
-    # Count active policies (policies with pending assignments)
+
+    # Count active policies (policies with pending assignments) - filtered by workspace
     active_policies = db.query(Policy).join(Assignment).filter(
+        Policy.workspace_id == workspace_id if workspace_id else True,
         Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED])
     ).distinct().count()
     
@@ -70,11 +83,14 @@ def get_dashboard_stats(
         acknowledgment_rate=round(acknowledgment_rate, 1)
     )
     
-    # Get recent activity (last 10 items)
+    # Get recent activity (last 10 items) - filtered by workspace
     recent_activity = []
-    
-    # Recent policy creations
-    recent_policies = db.query(Policy).order_by(Policy.created_at.desc()).limit(5).all()
+
+    # Recent policy creations - filtered by workspace
+    recent_policies = db.query(Policy).filter(
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).order_by(Policy.created_at.desc()).limit(5).all()
+
     for policy in recent_policies:
         creator = db.query(User).filter(User.id == policy.created_by).first()
         recent_activity.append(RecentActivity(
@@ -85,11 +101,11 @@ def get_dashboard_stats(
             user_name=creator.name if creator else "Unknown",
             policy_title=policy.title
         ))
-    
-    # Recent acknowledgments
-    recent_acknowledgments = db.query(Acknowledgment).order_by(
-        Acknowledgment.created_at.desc()
-    ).limit(5).all()
+
+    # Recent acknowledgments - filtered by workspace through assignments
+    recent_acknowledgments = db.query(Acknowledgment).join(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).order_by(Acknowledgment.created_at.desc()).limit(5).all()
 
     for ack in recent_acknowledgments:
         assignment = db.query(Assignment).filter(Assignment.id == ack.assignment_id).first()
@@ -106,11 +122,11 @@ def get_dashboard_stats(
                     user_name=user.name,
                     policy_title=policy.title
                 ))
-    
-    # Recent assignment sends (we'll approximate this by looking at assignments created recently)
-    recent_assignments = db.query(Assignment).order_by(
-        Assignment.created_at.desc()
-    ).limit(5).all()
+
+    # Recent assignment sends - filtered by workspace
+    recent_assignments = db.query(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).order_by(Assignment.created_at.desc()).limit(5).all()
 
     for assignment in recent_assignments:
         policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
@@ -125,20 +141,26 @@ def get_dashboard_stats(
                 user_name=user.name,
                 policy_title=policy.title
             ))
-    
+
     # Sort all recent activity by date and limit to 10
     recent_activity.sort(key=lambda x: x.created_at, reverse=True)
     recent_activity = recent_activity[:10]
 
-    # Get recent policies with assignment stats
+    # Get recent policies with assignment stats - filtered by workspace
     recent_policies_data = []
-    recent_policies_query = db.query(Policy).order_by(Policy.created_at.desc()).limit(5).all()
+    recent_policies_query = db.query(Policy).filter(
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).order_by(Policy.created_at.desc()).limit(5).all()
 
     for policy in recent_policies_query:
-        # Get assignment counts for this policy
-        assignments_count = db.query(Assignment).filter(Assignment.policy_id == policy.id).count()
+        # Get assignment counts for this policy - filtered by workspace
+        assignments_count = db.query(Assignment).filter(
+            Assignment.policy_id == policy.id,
+            Assignment.workspace_id == workspace_id if workspace_id else True
+        ).count()
         acknowledged_count = db.query(Assignment).filter(
             Assignment.policy_id == policy.id,
+            Assignment.workspace_id == workspace_id if workspace_id else True,
             Assignment.status == AssignmentStatus.ACKNOWLEDGED
         ).count()
 
@@ -165,17 +187,26 @@ def export_policy_assignments(
     current_user: dict = Depends(require_admin_role)
 ) -> Response:
     """Export policy assignments to CSV."""
-    
-    # Check if policy exists
-    policy = db.query(Policy).filter(Policy.id == policy_id).first()
+
+    # Get workspace_id from current user
+    workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
+
+    # Check if policy exists and belongs to user's workspace
+    policy = db.query(Policy).filter(
+        Policy.id == policy_id,
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).first()
     if not policy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Policy not found"
         )
-    
-    # Get all assignments for this policy with related data
-    assignments = db.query(Assignment).filter(Assignment.policy_id == policy_id).all()
+
+    # Get all assignments for this policy with related data - filtered by workspace
+    assignments = db.query(Assignment).filter(
+        Assignment.policy_id == policy_id,
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).all()
     
     if not assignments:
         raise HTTPException(
@@ -275,9 +306,14 @@ def export_all_policies_summary(
     current_user: dict = Depends(require_admin_role)
 ) -> Response:
     """Export summary of all policies to CSV."""
-    
-    # Get all policies with stats
-    policies = db.query(Policy).all()
+
+    # Get workspace_id from current user
+    workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
+
+    # Get all policies with stats - filtered by workspace
+    policies = db.query(Policy).filter(
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).all()
     
     if not policies:
         raise HTTPException(

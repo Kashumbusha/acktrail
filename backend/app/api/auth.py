@@ -92,13 +92,9 @@ def verify_code(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    # Enforce can_login
-    if hasattr(user, 'can_login') and not user.can_login:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Login disabled for this user"
-        )
-    
+    # Note: can_login is workspace-specific, not enforced at authentication
+    # Users can always authenticate to create/access their own workspaces
+
     # Check auth code
     auth_code = db.query(AuthCode).filter(
         AuthCode.email == email,
@@ -219,12 +215,8 @@ def login_with_password(
             detail="Invalid email or password"
         )
 
-    # Enforce can_login
-    if hasattr(user, 'can_login') and not user.can_login:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Login disabled for this user"
-        )
+    # Note: can_login is workspace-specific, not enforced at authentication
+    # Users can always authenticate to create/access their own workspaces
 
     # Create JWT token
     token = create_jwt_token(
@@ -288,12 +280,8 @@ def verify_magic_link(
             detail="User not found"
         )
 
-    # Enforce can_login
-    if hasattr(user, 'can_login') and not user.can_login:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Login disabled for this user"
-        )
+    # Note: can_login is workspace-specific, not enforced at authentication
+    # Users can always authenticate to create/access their own workspaces
 
     # Mark code as used
     auth_code.used = True
