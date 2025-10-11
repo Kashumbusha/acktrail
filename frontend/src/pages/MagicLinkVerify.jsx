@@ -12,6 +12,7 @@ export default function MagicLinkVerify() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const workspaceId = searchParams.get('workspace_id');
 
     if (!token) {
       setStatus('error');
@@ -19,8 +20,14 @@ export default function MagicLinkVerify() {
       return;
     }
 
+    if (!workspaceId) {
+      setStatus('error');
+      setMessage('Workspace ID is required');
+      return;
+    }
+
     // Verify the magic link token
-    authAPI.verifyMagicLink(token)
+    authAPI.verifyMagicLink(token, workspaceId)
       .then((response) => {
         const { access_token, user } = response.data;
 
