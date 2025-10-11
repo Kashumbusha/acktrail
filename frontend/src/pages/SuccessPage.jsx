@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { CheckCircleIcon, DocumentArrowDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { formatDateTime } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import { ackAPI } from '../api/client';
@@ -43,30 +43,6 @@ export default function SuccessPage() {
     }
   };
 
-  const closeWindow = () => {
-    // Try to close the window
-    try {
-      window.close();
-
-      // If we're still here after 100ms, the browser blocked window.close()
-      setTimeout(() => {
-        // Try to go back in browser history as alternative
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          // As last resort, navigate to a blank page
-          window.location.href = 'about:blank';
-        }
-      }, 100);
-    } catch (error) {
-      // Fallback: try to navigate back
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = 'about:blank';
-      }
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -122,35 +98,25 @@ export default function SuccessPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-4">
-          {assignmentId && (
-            <button
-              onClick={downloadReceipt}
-              disabled={downloadingReceipt}
-              className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {downloadingReceipt ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Downloading...
-                </>
-              ) : (
-                <>
-                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                  Download Receipt (PDF)
-                </>
-              )}
-            </button>
-          )}
-
+        {assignmentId && (
           <button
-            onClick={closeWindow}
-            className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={downloadReceipt}
+            disabled={downloadingReceipt}
+            className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <XMarkIcon className="h-4 w-4 mr-2" />
-            Close Window
+            {downloadingReceipt ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Downloading...
+              </>
+            ) : (
+              <>
+                <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                Download Receipt (PDF)
+              </>
+            )}
           </button>
-        </div>
+        )}
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex">
