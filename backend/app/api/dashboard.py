@@ -87,16 +87,16 @@ def get_dashboard_stats(
         ))
     
     # Recent acknowledgments
-    recent_acknowledgments = db.query(Acknowledgment).join(Assignment).join(Policy).join(User).order_by(
+    recent_acknowledgments = db.query(Acknowledgment).order_by(
         Acknowledgment.created_at.desc()
     ).limit(5).all()
-    
+
     for ack in recent_acknowledgments:
         assignment = db.query(Assignment).filter(Assignment.id == ack.assignment_id).first()
         if assignment:
             policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
             user = db.query(User).filter(User.id == assignment.user_id).first()
-            
+
             if policy and user:
                 recent_activity.append(RecentActivity(
                     id=ack.id,
@@ -108,14 +108,14 @@ def get_dashboard_stats(
                 ))
     
     # Recent assignment sends (we'll approximate this by looking at assignments created recently)
-    recent_assignments = db.query(Assignment).join(Policy).join(User).order_by(
+    recent_assignments = db.query(Assignment).order_by(
         Assignment.created_at.desc()
     ).limit(5).all()
-    
+
     for assignment in recent_assignments:
         policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
         user = db.query(User).filter(User.id == assignment.user_id).first()
-        
+
         if policy and user:
             recent_activity.append(RecentActivity(
                 id=assignment.id,
