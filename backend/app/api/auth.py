@@ -85,6 +85,12 @@ def verify_code(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+    # Enforce can_login
+    if hasattr(user, 'can_login') and not user.can_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Login disabled for this user"
+        )
     
     # Check auth code
     auth_code = db.query(AuthCode).filter(
