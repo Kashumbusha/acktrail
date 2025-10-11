@@ -20,7 +20,7 @@ const PLANS = [
   {
     id: 'medium',
     name: 'Medium Team',
-    price: '$99',
+    price: '$149',
     period: '/month',
     users: 'Up to 50 users',
     policies: 'Unlimited policies',
