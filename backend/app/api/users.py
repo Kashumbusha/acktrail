@@ -64,6 +64,26 @@ def invite_user(
 
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email required")
+
+    # Validation: Enforce business rules
+    if is_guest and role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guest users cannot have admin role"
+        )
+
+    if is_guest and can_login:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guest users cannot have login access"
+        )
+
+    if not is_guest and not can_login:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Staff users must have login access"
+        )
+
     user = db.query(User).filter(User.email == email).first()
     if not user:
         user = User(email=email, name=name)
@@ -89,12 +109,38 @@ def update_user(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Apply updates to temporary values for validation
+    updated_role = UserRole(payload["role"]) if "role" in payload else user.role
+    updated_can_login = bool(payload["can_login"]) if "can_login" in payload else user.can_login
+    updated_is_guest = user.is_guest  # is_guest cannot be changed via update
+
+    # Validation: Enforce business rules
+    if updated_is_guest and updated_role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guest users cannot have admin role"
+        )
+
+    if updated_is_guest and updated_can_login:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guest users cannot have login access"
+        )
+
+    if not updated_is_guest and not updated_can_login:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Staff users must have login access"
+        )
+
+    # Apply validated updates
     if "name" in payload:
         user.name = payload["name"]
     if "role" in payload:
-        user.role = UserRole(payload["role"])
+        user.role = updated_role
     if "can_login" in payload:
-        user.can_login = bool(payload["can_login"])
+        user.can_login = updated_can_login
     if "active" in payload:
         user.active = bool(payload["active"])
     db.commit()

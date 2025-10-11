@@ -6,9 +6,7 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
   const [formData, setFormData] = useState({
     email: '',
     name: '',
-    role: 'employee',
-    is_guest: false,
-    can_login: true,
+    user_type: 'staff_employee', // staff_employee, staff_admin, guest
   });
   const [errors, setErrors] = useState({});
 
@@ -32,7 +30,15 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onInvite(formData);
+      // Transform user_type into backend format
+      const submissionData = {
+        email: formData.email,
+        name: formData.name,
+        role: formData.user_type === 'staff_admin' ? 'admin' : 'employee',
+        is_guest: formData.user_type === 'guest',
+        can_login: formData.user_type !== 'guest',
+      };
+      onInvite(submissionData);
     }
   };
 
@@ -49,9 +55,7 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
       setFormData({
         email: '',
         name: '',
-        role: 'employee',
-        is_guest: false,
-        can_login: true,
+        user_type: 'staff_employee',
       });
       setErrors({});
       onClose();
@@ -119,71 +123,82 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
             )}
           </div>
 
-          {/* Role Field */}
+          {/* User Type Selection */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
-              Role *
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
+              User Type *
             </label>
-            <select
-              id="role"
-              value={formData.role}
-              onChange={(e) => handleInputChange('role', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600"
-              disabled={loading}
-            >
-              <option value="employee">Employee</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+            <div className="space-y-3">
+              {/* Staff Employee */}
+              <div className="flex items-start p-3 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer">
+                <div className="flex items-center h-5">
+                  <input
+                    id="staff_employee"
+                    type="radio"
+                    name="user_type"
+                    value="staff_employee"
+                    checked={formData.user_type === 'staff_employee'}
+                    onChange={(e) => handleInputChange('user_type', e.target.value)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="ml-3">
+                  <label htmlFor="staff_employee" className="text-sm font-medium text-gray-900 dark:text-slate-100 cursor-pointer">
+                    Staff Employee
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                    Internal employee with login access (role: employee)
+                  </p>
+                </div>
+              </div>
 
-          {/* User Type Checkboxes */}
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="is_guest"
-                  type="checkbox"
-                  checked={formData.is_guest}
-                  onChange={(e) => {
-                    const isGuest = e.target.checked;
-                    setFormData(prev => ({
-                      ...prev,
-                      is_guest: isGuest,
-                      can_login: !isGuest // Auto-disable login for guests
-                    }));
-                  }}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  disabled={loading}
-                />
+              {/* Staff Admin */}
+              <div className="flex items-start p-3 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer">
+                <div className="flex items-center h-5">
+                  <input
+                    id="staff_admin"
+                    type="radio"
+                    name="user_type"
+                    value="staff_admin"
+                    checked={formData.user_type === 'staff_admin'}
+                    onChange={(e) => handleInputChange('user_type', e.target.value)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="ml-3">
+                  <label htmlFor="staff_admin" className="text-sm font-medium text-gray-900 dark:text-slate-100 cursor-pointer">
+                    Staff Admin
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                    Internal admin with full access and login (role: admin)
+                  </p>
+                </div>
               </div>
-              <div className="ml-3">
-                <label htmlFor="is_guest" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                  Guest User
-                </label>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
-                  Guest users are external users (e.g., contractors, vendors)
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="can_login"
-                  type="checkbox"
-                  checked={formData.can_login}
-                  onChange={(e) => handleInputChange('can_login', e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  disabled={loading || formData.is_guest}
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor="can_login" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-                  Can Login
-                </label>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
-                  Allow this user to log into the system
-                </p>
+              {/* Guest */}
+              <div className="flex items-start p-3 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer">
+                <div className="flex items-center h-5">
+                  <input
+                    id="guest"
+                    type="radio"
+                    name="user_type"
+                    value="guest"
+                    checked={formData.user_type === 'guest'}
+                    onChange={(e) => handleInputChange('user_type', e.target.value)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="ml-3">
+                  <label htmlFor="guest" className="text-sm font-medium text-gray-900 dark:text-slate-100 cursor-pointer">
+                    Guest User
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                    External user (contractor, vendor) - no login access
+                  </p>
+                </div>
               </div>
             </div>
           </div>
