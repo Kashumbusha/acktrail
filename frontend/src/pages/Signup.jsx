@@ -8,13 +8,13 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function Signup() {
-  const { login, sendCode, isAuthenticated, availableWorkspaces, requiresWorkspaceSelection } = useAuth();
+  const { login, sendCode, isAuthenticated } = useAuth();
   const location = useLocation();
-  const [step, setStep] = useState(1); // 1: workspace+email, 2: workspace selection (if multiple), 3: code
+  const [step, setStep] = useState(1); // 1: workspace+email, 2: code
   const [email, setEmail] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [workspaceId, setWorkspaceId] = useState(null);
   const [code, setCode] = useState('');
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [teamError, setTeamError] = useState('');
@@ -41,11 +41,16 @@ export default function Signup() {
 
     setLoading(true);
     setEmailError('');
+    setTeamError('');
 
     try {
-      // Register workspace (team) then send code
-      await teamsAPI.register(teamName, email);
-      const result = await sendCode(email);
+      // Register workspace (team)
+      const registerResponse = await teamsAPI.register(teamName, email);
+      const newWorkspaceId = registerResponse.data.workspace_id;
+      setWorkspaceId(newWorkspaceId);
+
+      // Send verification code
+      const result = await sendCode(email, newWorkspaceId);
       if (result.success) {
         setStep(2);
         toast.success('We sent you a verification code');
@@ -53,7 +58,12 @@ export default function Signup() {
         setEmailError(result.error);
       }
     } catch (error) {
-      setEmailError('Failed to send verification code');
+      const errorMsg = error.response?.data?.detail || 'Failed to create workspace';
+      if (errorMsg.includes('already exists')) {
+        setTeamError(errorMsg);
+      } else {
+        setEmailError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -71,7 +81,7 @@ export default function Signup() {
     setCodeError('');
 
     try {
-      const result = await login(email, code);
+      const result = await login(email, code, workspaceId);
       if (result.success) {
         toast.success('Welcome! You are signed up');
       } else {
@@ -255,7 +265,7 @@ export default function Signup() {
                     type="button"
                     onClick={() => {
                       setLoading(true);
-                      sendCode(email)
+                      sendCode(email, workspaceId)
                         .then((result) => {
                           if (result.success) {
                             toast.success('New code sent');

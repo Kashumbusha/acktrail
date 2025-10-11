@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
-import { EnvelopeIcon, KeyIcon, ArrowLeftIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, KeyIcon, ArrowLeftIcon, DocumentTextIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
+import { teamsAPI } from '../api/client';
 import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const { login, sendCode, isAuthenticated, availableWorkspaces, requiresWorkspaceSelection } = useAuth();
+  const { login, sendCode, isAuthenticated } = useAuth();
   const location = useLocation();
-  const [step, setStep] = useState(1); // 1: email, 2: workspace selection (if multiple), 3: code
+  const [step, setStep] = useState(1); // 1: workspace name, 2: email, 3: code
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceId, setWorkspaceId] = useState(null);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [codeError, setCodeError] = useState('');
 
@@ -23,6 +26,30 @@ export default function Login() {
   if (isAuthenticated) {
     return <Navigate to={from} replace />;
   }
+
+  const handleWorkspaceSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!workspaceName.trim()) {
+      setWorkspaceError('Please enter a workspace name');
+      return;
+    }
+
+    setLoading(true);
+    setWorkspaceError('');
+
+    try {
+      const response = await teamsAPI.checkWorkspace(workspaceName);
+      if (response.data.success) {
+        setWorkspaceId(response.data.workspace_id);
+        setStep(2); // Move to email input
+      }
+    } catch (error) {
+      setWorkspaceError(error.response?.data?.detail || 'Workspace not found');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -36,20 +63,10 @@ export default function Login() {
     setEmailError('');
 
     try {
-      const result = await sendCode(email);
+      const result = await sendCode(email, workspaceId);
       if (result.success) {
-        // If user has multiple workspaces, show workspace selection
-        if (result.requiresWorkspaceSelection) {
-          setStep(2); // Workspace selection
-          toast.success('Verification code sent to your email');
-        } else {
-          // Auto-select the first (or only) workspace
-          if (result.workspaces && result.workspaces.length > 0) {
-            setSelectedWorkspace(result.workspaces[0].workspace_id);
-          }
-          setStep(3); // Code verification
-          toast.success('Verification code sent to your email');
-        }
+        setStep(3); // Move to code verification
+        toast.success('Verification code sent to your email');
       } else {
         setEmailError(result.error);
       }
@@ -72,7 +89,7 @@ export default function Login() {
     setCodeError('');
 
     try {
-      const result = await login(email, code, selectedWorkspace);
+      const result = await login(email, code, workspaceId);
       if (result.success) {
         toast.success('Successfully logged in');
         // Navigation will be handled by the auth state change
@@ -86,15 +103,16 @@ export default function Login() {
     }
   };
 
-  const handleWorkspaceSelect = (workspaceId) => {
-    setSelectedWorkspace(workspaceId);
-    setStep(3); // Move to code verification
-  };
-
   const handleBackToEmail = () => {
-    setStep(1);
+    setStep(2);
     setCode('');
     setCodeError('');
+  };
+
+  const handleBackToWorkspace = () => {
+    setStep(1);
+    setEmail('');
+    setEmailError('');
   };
 
   return (
@@ -129,22 +147,64 @@ export default function Login() {
           <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 dark:bg-slate-900 dark:border dark:border-slate-800">
             <div className="text-center">
               <h2 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100">
-                {step === 1 ? 'Sign in' : step === 2 ? 'Select Workspace' : 'Verify your email'}
+                {step === 1 ? 'Sign in' : step === 2 ? 'Enter your email' : 'Verify your email'}
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                 {step === 1
-                  ? 'Enter your email address to receive a verification code'
+                  ? 'Enter your workspace name to continue'
                   : step === 2
-                  ? 'You belong to multiple workspaces. Select one to continue.'
-                  : `We sent a 6-digit code to`
+                  ? `Enter your email for workspace "${workspaceName}"`
+                  : `We sent a 6-digit code to ${email}`
                 }
               </p>
-              {step === 3 && (
-                <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{email}</p>
-              )}
             </div>
 
             {step === 1 ? (
+              <form className="space-y-5" onSubmit={handleWorkspaceSubmit}>
+                <div>
+                  <label htmlFor="workspace" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
+                    Workspace Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="workspace"
+                      name="workspace"
+                      type="text"
+                      autoComplete="organization"
+                      required
+                      value={workspaceName}
+                      onChange={(e) => {
+                        setWorkspaceName(e.target.value);
+                        setWorkspaceError('');
+                      }}
+                      className={`appearance-none block w-full px-3 py-3 pl-10 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 ${
+                        workspaceError ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-gray-300 dark:border-slate-700'
+                      }`}
+                      placeholder="acme"
+                      disabled={loading}
+                    />
+                  </div>
+                  {workspaceError && (
+                    <p className="mt-2 text-sm text-red-600 flex items-start dark:text-red-400">
+                      <span className="mr-1">⚠️</span>
+                      {workspaceError}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || !workspaceName}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                >
+                  {loading && <LoadingSpinner size="sm" className="mr-2" />}
+                  {loading ? 'Checking...' : 'Continue'}
+                </button>
+              </form>
+            ) : step === 2 ? (
               <form className="space-y-5" onSubmit={handleEmailSubmit}>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
@@ -180,38 +240,25 @@ export default function Login() {
                   )}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading || !email}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-                >
-                  {loading && <LoadingSpinner size="sm" className="mr-2" />}
-                  {loading ? 'Sending code...' : 'Continue'}
-                </button>
-              </form>
-            ) : step === 2 ? (
-              <div className="space-y-4">
-                {availableWorkspaces.map((workspace) => (
+                <div className="flex space-x-3">
                   <button
-                    key={workspace.workspace_id}
-                    onClick={() => handleWorkspaceSelect(workspace.workspace_id)}
-                    className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all dark:border-slate-700 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/30"
+                    type="button"
+                    onClick={handleBackToWorkspace}
+                    className="flex-1 flex justify-center items-center py-3 px-4 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
+                    disabled={loading}
                   >
-                    <div className="text-left">
-                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{workspace.workspace_name}</h3>
-                      <p className="text-sm text-gray-500 dark:text-slate-400 capitalize">Role: {workspace.user_role}</p>
-                    </div>
-                    <ArrowLeftIcon className="h-5 w-5 text-gray-400 transform rotate-180" />
+                    Back
                   </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
-                >
-                  Back
-                </button>
-              </div>
+                  <button
+                    type="submit"
+                    disabled={loading || !email}
+                    className="flex-1 flex justify-center items-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                  >
+                    {loading && <LoadingSpinner size="sm" className="mr-2" />}
+                    {loading ? 'Sending code...' : 'Continue'}
+                  </button>
+                </div>
+              </form>
             ) : (
               <form className="space-y-5" onSubmit={handleCodeSubmit}>
                 <div>
@@ -276,7 +323,7 @@ export default function Login() {
                     type="button"
                     onClick={() => {
                       setLoading(true);
-                      sendCode(email)
+                      sendCode(email, workspaceId)
                         .then((result) => {
                           if (result.success) {
                             toast.success('New code sent');
@@ -295,6 +342,14 @@ export default function Login() {
               </form>
             )}
           </div>
+
+          {/* Footer - Link to signup */}
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-slate-400">
+            Don't have a workspace?{' '}
+            <Link to="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">
+              Create one
+            </Link>
+          </p>
 
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-slate-400">
