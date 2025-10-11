@@ -11,6 +11,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import PolicyList from './pages/PolicyList';
 import AdminUsers from './pages/AdminUsers';
+import PlatformDashboard from './pages/PlatformDashboard';
 import PolicyCreate from './pages/PolicyCreate';
 import PolicyEdit from './pages/PolicyEdit';
 import PolicyDetail from './pages/PolicyDetail';
@@ -44,6 +45,7 @@ function App() {
               <Route path="/verify" element={<MagicLinkVerify />} />
               <Route path="/ack/:token" element={<AcknowledgePage />} />
               <Route path="/admin/users" element={<PrivateRoute><Layout><AdminUsers /></Layout></PrivateRoute>} />
+              <Route path="/platform" element={<PrivateRoute><Layout><PlatformDashboard /></Layout></PrivateRoute>} />
               <Route path="/success" element={<SuccessPage />} />
 
               {/* Private routes */}

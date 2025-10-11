@@ -15,8 +15,12 @@ const authReducer = (state, action) => {
       return { ...state, token: action.payload };
     case 'SET_WORKSPACES':
       return { ...state, availableWorkspaces: action.payload, requiresWorkspaceSelection: action.payload.length > 1 };
+    case 'SET_SCOPE':
+      return { ...state, scope: action.payload };
+    case 'SET_ACTIVE_WORKSPACE':
+      return { ...state, activeWorkspaceId: action.payload };
     case 'LOGOUT':
-      return { ...state, user: null, token: null, isAuthenticated: false, availableWorkspaces: [], requiresWorkspaceSelection: false };
+      return { ...state, user: null, token: null, isAuthenticated: false, availableWorkspaces: [], requiresWorkspaceSelection: false, scope: 'workspace', activeWorkspaceId: null };
     default:
       return state;
   }
@@ -30,6 +34,8 @@ const initialState = {
   loading: true,
   availableWorkspaces: [],
   requiresWorkspaceSelection: false,
+  scope: 'workspace',
+  activeWorkspaceId: null,
 };
 
 // Auth provider component
@@ -42,10 +48,14 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
+        const scope = localStorage.getItem('scope') || 'workspace';
+        const activeWorkspaceId = localStorage.getItem('activeWorkspaceId');
         
         if (token && userData) {
           dispatch({ type: 'SET_TOKEN', payload: token });
           dispatch({ type: 'SET_USER', payload: JSON.parse(userData) });
+          dispatch({ type: 'SET_SCOPE', payload: scope });
+          if (activeWorkspaceId) dispatch({ type: 'SET_ACTIVE_WORKSPACE', payload: activeWorkspaceId });
           
           // Verify token is still valid
           try {
@@ -79,6 +89,10 @@ export const AuthProvider = ({ children }) => {
       // Store in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      if (user?.workspace_id) {
+        localStorage.setItem('activeWorkspaceId', user.workspace_id);
+        dispatch({ type: 'SET_ACTIVE_WORKSPACE', payload: user.workspace_id });
+      }
 
       // Update state
       dispatch({ type: 'SET_TOKEN', payload: token });
@@ -99,6 +113,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('activeWorkspaceId');
+    localStorage.removeItem('scope');
     dispatch({ type: 'LOGOUT' });
   };
 
@@ -106,10 +122,7 @@ export const AuthProvider = ({ children }) => {
   const sendCode = async (email, workspaceId) => {
     try {
       const response = await authAPI.sendCode(email, workspaceId);
-      return {
-        success: true,
-        workspaceName: response.data?.workspace_name
-      };
+      return { success: true, workspaceName: response.data?.workspace_name };
     } catch (error) {
       return {
         success: false,
@@ -120,6 +133,14 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     ...state,
+    setScope: (scope) => {
+      localStorage.setItem('scope', scope);
+      dispatch({ type: 'SET_SCOPE', payload: scope });
+    },
+    setActiveWorkspace: (id) => {
+      if (id) localStorage.setItem('activeWorkspaceId', id);
+      dispatch({ type: 'SET_ACTIVE_WORKSPACE', payload: id });
+    },
     login,
     logout,
     sendCode,

@@ -203,6 +203,7 @@ def verify_code(
             "email": user.email,
             "name": user.name,
             "role": user.role.value,
+            "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
             "department": user.department,
             "created_at": user.created_at.isoformat()
         }

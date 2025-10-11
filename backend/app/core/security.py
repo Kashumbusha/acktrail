@@ -203,6 +203,7 @@ def get_current_user(
         "name": user.name,
         "role": user.role.value,
         "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
+        "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
         "department": user.department,
         "created_at": user.created_at.isoformat()
     }
@@ -214,6 +215,16 @@ def require_admin_role(current_user: dict = Depends(get_current_user)) -> dict:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
+        )
+    return current_user
+
+
+def require_platform_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """Require platform admin role for endpoint access."""
+    if not current_user.get("is_platform_admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Platform admin access required"
         )
     return current_user
 

@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     # CORS - can be set from environment variable or use default
     cors_allow_origins: Union[List[str], str] = ""
 
+    # Platform admins (emails). Comma-separated or JSON array in env; default seeded for owner.
+    platform_admins: Union[List[str], str] = "kashustephen@gmail.com"
+
     @field_validator('cors_allow_origins', mode='before')
     @classmethod
     def parse_cors_origins(cls, v, info):
@@ -75,6 +78,26 @@ class Settings(BaseSettings):
             "http://localhost:5176",
             "http://localhost:5177"
         ]
+
+    @field_validator('platform_admins', mode='before')
+    @classmethod
+    def parse_platform_admins(cls, v):
+        # Accept list, JSON string, or comma-separated string
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if not s:
+                return []
+            try:
+                parsed = json.loads(s)
+                if isinstance(parsed, list):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
+            # Fallback comma-separated
+            return [email.strip().lower() for email in s.split(',') if email.strip()]
+        return []
 
     class Config:
         env_file = ".env"

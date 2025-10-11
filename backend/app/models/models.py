@@ -82,6 +82,7 @@ class User(Base):
     can_login = Column(Boolean, default=True, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
     is_guest = Column(Boolean, default=False, nullable=False)
+    is_platform_admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     created_policies = relationship("Policy", back_populates="creator", foreign_keys="Policy.created_by")
