@@ -30,6 +30,15 @@ def list_policies(
 ) -> PolicyListResponse:
     """List all policies with pagination and search."""
     query = db.query(Policy)
+
+    # Scope by workspace if available
+    workspace_id = current_user.get("workspace_id")
+    if workspace_id:
+        from uuid import UUID as _UUID
+        try:
+            query = query.filter(Policy.workspace_id == _UUID(workspace_id))
+        except Exception:
+            pass
     
     # Apply search filter
     if search:
@@ -156,7 +165,8 @@ def create_policy(
         content_sha256=content_hash,
         due_at=due_at_datetime,
         require_typed_signature=require_typed_signature,
-        created_by=UUID(current_user["id"])
+        created_by=UUID(current_user["id"]),
+        workspace_id=UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
     )
     
     db.add(policy)

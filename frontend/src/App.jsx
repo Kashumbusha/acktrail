@@ -5,10 +5,12 @@ import { AuthProvider } from './store/authStore';
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import Landing from './pages/Landing';
+import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import PolicyList from './pages/PolicyList';
+import AdminUsers from './pages/AdminUsers';
 import PolicyCreate from './pages/PolicyCreate';
 import PolicyEdit from './pages/PolicyEdit';
 import PolicyDetail from './pages/PolicyDetail';
@@ -36,8 +38,10 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/ack/:token" element={<AcknowledgePage />} />
+              <Route path="/admin/users" element={<PrivateRoute><Layout><AdminUsers /></Layout></PrivateRoute>} />
               <Route path="/success" element={<SuccessPage />} />
 
               {/* Private routes */}

@@ -16,6 +16,8 @@ from .api.policies import router as policies_router
 from .api.assignments import router as assignments_router
 from .api.acknowledgments import router as acknowledgments_router
 from .api.dashboard import router as dashboard_router
+from .api.teams import router as teams_router
+from .api.users import router as users_router
 
 # Configure logging
 logging.basicConfig(
@@ -135,6 +137,8 @@ def create_app() -> FastAPI:
     app.include_router(assignments_router, prefix="/api")
     app.include_router(acknowledgments_router, prefix="/api")
     app.include_router(dashboard_router, prefix="/api")
+    app.include_router(teams_router, prefix="/api")
+    app.include_router(users_router, prefix="/api")
 
     # Health check endpoint
     @app.get("/health", tags=["health"])

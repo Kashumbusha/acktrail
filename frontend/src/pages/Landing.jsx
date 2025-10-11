@@ -32,6 +32,7 @@ export default function Landing() {
                   </div>
                   <div className="hidden sm:flex items-center space-x-3">
                     <ThemeToggle />
+                    <Link to="/pricing" className="btn btn-secondary">Pricing</Link>
                     <Link to="/login" className="btn btn-secondary">Sign In</Link>
                     <Link to="/signup" className="btn btn-primary">Sign up</Link>
                   </div>
@@ -50,6 +51,7 @@ export default function Landing() {
 
                 <Disclosure.Panel className="sm:hidden">
                   <div className="space-y-2 pb-3 pt-2 px-2">
+                    <Link to="/pricing" className="btn btn-secondary w-full">Pricing</Link>
                     <Link to="/login" className="btn btn-secondary w-full">Sign In</Link>
                     <Link to="/signup" className="btn btn-primary w-full">Sign up</Link>
                   </div>

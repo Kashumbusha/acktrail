@@ -131,7 +131,8 @@ def verify_code(
     token = create_jwt_token(
         user_id=str(user.id),
         email=user.email,
-        role=user.role.value
+        role=user.role.value,
+        workspace_id=str(user.workspace_id) if getattr(user, 'workspace_id', None) else None
     )
     
     expires_in = settings.jwt_expire_days * 24 * 3600  # Convert to seconds

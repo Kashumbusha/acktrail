@@ -50,6 +50,11 @@ export const authAPI = {
   getMe: () => apiClient.get('/api/auth/me'),
 };
 
+// Teams/Workspace API
+export const teamsAPI = {
+  register: (teamName, email) => apiClient.post('/api/teams/register', { team_name: teamName, email }),
+};
+
 // Policies API
 export const policiesAPI = {
   list: () => apiClient.get('/api/policies/'),

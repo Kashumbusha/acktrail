@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { EnvelopeIcon, KeyIcon, ArrowLeftIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
+import { teamsAPI } from '../api/client';
 import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -9,11 +10,13 @@ import toast from 'react-hot-toast';
 export default function Signup() {
   const { login, sendCode, isAuthenticated } = useAuth();
   const location = useLocation();
-  const [step, setStep] = useState(1); // 1: email, 2: code
+  const [step, setStep] = useState(1); // 1: workspace+email, 2: code
   const [email, setEmail] = useState('');
+  const [teamName, setTeamName] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [teamError, setTeamError] = useState('');
   const [codeError, setCodeError] = useState('');
 
   const from = location.state?.from?.pathname || '/dashboard';
@@ -25,6 +28,11 @@ export default function Signup() {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
 
+    if (!teamName.trim()) {
+      setTeamError('Please enter a workspace name');
+      return;
+    }
+
     if (!isValidEmail(email)) {
       setEmailError('Please enter a valid email address');
       return;
@@ -34,6 +42,8 @@ export default function Signup() {
     setEmailError('');
 
     try {
+      // Register workspace (team) then send code
+      await teamsAPI.register(teamName, email);
       const result = await sendCode(email);
       if (result.success) {
         setStep(2);
@@ -100,16 +110,43 @@ export default function Signup() {
               </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-              Create your account
+              Create your workspace
             </h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-              Sign up with your work email. We'll send a verification code.
+              Add a workspace name and your email. We'll send a verification code.
             </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 dark:bg-slate-900 dark:border dark:border-slate-800">
             {step === 1 ? (
               <form className="space-y-5" onSubmit={handleEmailSubmit}>
+                <div>
+                  <label htmlFor="team" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
+                    Workspace name
+                  </label>
+                  <input
+                    id="team"
+                    name="team"
+                    type="text"
+                    required
+                    value={teamName}
+                    onChange={(e) => {
+                      setTeamName(e.target.value);
+                      setTeamError('');
+                    }}
+                    className={`appearance-none block w-full px-3 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400 ${
+                      teamError ? 'border-red-300 bg-red-50 dark:bg-red-950/20' : 'border-gray-300 dark:border-slate-700'
+                    }`}
+                    placeholder="Acme Workspace"
+                    disabled={loading}
+                  />
+                  {teamError && (
+                    <p className="mt-2 text-sm text-red-600 flex items-start dark:text-red-400">
+                      <span className="mr-1">⚠️</span>
+                      {teamError}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">
                     Work email

@@ -12,6 +12,12 @@ class UserRole(str, enum.Enum):
     EMPLOYEE = "employee"
 
 
+class PlanTier(str, enum.Enum):
+    SMALL = "small"
+    MEDIUM = "medium"
+    LARGE = "large"
+
+
 class AssignmentStatus(str, enum.Enum):
     PENDING = "pending"
     VIEWED = "viewed"
@@ -31,6 +37,33 @@ class AckMethod(str, enum.Enum):
     ONECLICK = "oneclick"
 
 
+class Workspace(Base):
+    __tablename__ = "workspaces"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    slug = Column(String(255), nullable=True, unique=True)
+    plan = Column(SQLEnum(PlanTier), default=PlanTier.SMALL, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    users = relationship("User", back_populates="workspace")
+    policies = relationship("Policy", back_populates="workspace")
+    assignments = relationship("Assignment", back_populates="workspace")
+
+
+class Team(Base):
+    __tablename__ = "teams"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    workspace = relationship("Workspace")
+    policies = relationship("Policy", back_populates="team")
+    assignments = relationship("Assignment", back_populates="team")
+
+
 class User(Base):
     __tablename__ = "users"
     
@@ -39,10 +72,15 @@ class User(Base):
     name = Column(String(255), nullable=False)
     role = Column(SQLEnum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     department = Column(String(255), nullable=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
+    can_login = Column(Boolean, default=True, nullable=False)
+    active = Column(Boolean, default=True, nullable=False)
+    is_guest = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     created_policies = relationship("Policy", back_populates="creator", foreign_keys="Policy.created_by")
     assignments = relationship("Assignment", back_populates="user")
+    workspace = relationship("Workspace", back_populates="users")
 
 
 class Policy(Base):
@@ -58,9 +96,13 @@ class Policy(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     due_at = Column(DateTime, nullable=True)
     require_typed_signature = Column(Boolean, default=False, nullable=False)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
     creator = relationship("User", back_populates="created_policies", foreign_keys=[created_by])
     assignments = relationship("Assignment", back_populates="policy", cascade="all, delete-orphan")
+    workspace = relationship("Workspace", back_populates="policies")
+    team = relationship("Team", back_populates="policies")
 
 
 class Assignment(Base):
@@ -75,11 +117,15 @@ class Assignment(Base):
     reminder_count = Column(Integer, default=0, nullable=False)
     magic_link_token = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
     policy = relationship("Policy", back_populates="assignments")
     user = relationship("User", back_populates="assignments")
     acknowledgment = relationship("Acknowledgment", back_populates="assignment", uselist=False)
     email_events = relationship("EmailEvent", back_populates="assignment")
+    workspace = relationship("Workspace", back_populates="assignments")
+    team = relationship("Team", back_populates="assignments")
 
 
 class Acknowledgment(Base):

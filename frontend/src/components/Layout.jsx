@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'Policies', href: '/policies' },
+  { name: 'Users', href: '/admin/users', adminOnly: true },
 ];
 
 function classNames(...classes) {
@@ -38,7 +39,7 @@ export default function Layout({ children }) {
                     </Link>
                   </div>
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    {navigation.map((item) => (
+                    {navigation.filter(n => !n.adminOnly || user?.role === 'admin').map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
@@ -110,7 +111,7 @@ export default function Layout({ children }) {
 
             <Disclosure.Panel className="sm:hidden">
               <div className="space-y-1 pb-3 pt-2">
-                {navigation.map((item) => (
+                {navigation.filter(n => !n.adminOnly || user?.role === 'admin').map((item) => (
                   <Disclosure.Button
                     key={item.name}
                     as={Link}

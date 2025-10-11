@@ -60,7 +60,9 @@ def add_policy_recipients(
             user = User(
                 email=email,
                 name=email.split('@')[0],  # Use email prefix as name
-                role='employee'
+                role='employee',
+                is_guest=True,
+                can_login=False
             )
             db.add(user)
             db.flush()  # Get the user ID
@@ -81,7 +83,8 @@ def add_policy_recipients(
         assignment = Assignment(
             policy_id=policy_id,
             user_id=user.id,
-            status=AssignmentStatus.PENDING
+            status=AssignmentStatus.PENDING,
+            workspace_id=policy.workspace_id
         )
         db.add(assignment)
         created_assignments += 1

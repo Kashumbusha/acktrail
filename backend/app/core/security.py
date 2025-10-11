@@ -53,6 +53,7 @@ def create_jwt_token(
     user_id: str,
     email: str,
     role: str = "employee",
+    workspace_id: Optional[str] = None,
     expire_days: Optional[int] = None
 ) -> str:
     """Create a JWT token for user authentication."""
@@ -66,6 +67,7 @@ def create_jwt_token(
         "sub": user_id,
         "email": email,
         "role": role,
+        "workspace_id": workspace_id,
         "iat": now.timestamp(),
         "exp": exp.timestamp(),
         "type": "access"
@@ -187,6 +189,7 @@ def get_current_user(
         "email": user.email,
         "name": user.name,
         "role": user.role.value,
+        "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
         "department": user.department,
         "created_at": user.created_at.isoformat()
     }
