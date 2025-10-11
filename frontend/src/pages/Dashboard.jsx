@@ -48,15 +48,21 @@ export default function Dashboard() {
     );
   }
 
+  // Extract stats from nested structure
+  const dashboardStats = stats?.stats || {};
+  const recentActivity = stats?.recent_activity || [];
+
   const {
     total_policies = 0,
     total_assignments = 0,
     acknowledged_assignments = 0,
     pending_assignments = 0,
     overdue_assignments = 0,
-    recent_policies = [],
     acknowledgment_rate = 0
-  } = stats || {};
+  } = dashboardStats;
+
+  // Get recent policies from backend (convert recent_activity to a list of unique policies)
+  const recent_policies = stats?.recent_policies || [];
 
   return (
     <div className="space-y-6">
