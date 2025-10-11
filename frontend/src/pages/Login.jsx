@@ -40,12 +40,14 @@ export default function Login() {
 
     try {
       const response = await teamsAPI.checkWorkspace(workspaceName);
-      if (response.data.success) {
+      if (response.data.success && response.data.workspace_id) {
         setWorkspaceId(response.data.workspace_id);
         setStep(2); // Move to email input
+      } else {
+        throw new Error('Workspace ID not returned from server');
       }
     } catch (error) {
-      setWorkspaceError(error.response?.data?.detail || 'Workspace not found');
+      setWorkspaceError(error.response?.data?.detail || error.message || 'Workspace not found');
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,11 @@ export default function Login() {
 
     if (!isValidEmail(email)) {
       setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    if (!workspaceId) {
+      setEmailError('Workspace information is missing. Please start over.');
       return;
     }
 
@@ -71,7 +78,7 @@ export default function Login() {
         setEmailError(result.error);
       }
     } catch (error) {
-      setEmailError('Failed to send verification code');
+      setEmailError(error.response?.data?.detail || error.message || 'Failed to send verification code');
     } finally {
       setLoading(false);
     }

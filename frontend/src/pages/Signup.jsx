@@ -42,14 +42,24 @@ export default function Signup() {
     setLoading(true);
     setEmailError('');
     setTeamError('');
+    console.log('Creating workspace:', { teamName, email });
 
     try {
       // Register workspace (team)
       const registerResponse = await teamsAPI.register(teamName, email);
+      console.log('Workspace registered:', registerResponse.data);
       const newWorkspaceId = registerResponse.data.workspace_id;
+
+      if (!newWorkspaceId) {
+        console.error('No workspace ID in response:', registerResponse.data);
+        throw new Error('Failed to create workspace - no workspace ID returned');
+      }
+
+      console.log('Setting workspace ID:', newWorkspaceId);
       setWorkspaceId(newWorkspaceId);
 
       // Send verification code
+      console.log('Sending verification code to:', email, 'for workspace:', newWorkspaceId);
       const result = await sendCode(email, newWorkspaceId);
       if (result.success) {
         setStep(2);
@@ -58,7 +68,7 @@ export default function Signup() {
         setEmailError(result.error);
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.detail || 'Failed to create workspace';
+      const errorMsg = error.response?.data?.detail || error.message || 'Failed to create workspace';
       if (errorMsg.includes('already exists')) {
         setTeamError(errorMsg);
       } else {
