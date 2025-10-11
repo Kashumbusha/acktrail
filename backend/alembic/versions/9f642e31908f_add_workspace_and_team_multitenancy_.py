@@ -19,13 +19,22 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Create enum type if it doesn't exist
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE plantier AS ENUM ('small', 'medium', 'large');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
     # Create workspaces table
     op.create_table(
         'workspaces',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('slug', sa.String(255), nullable=True, unique=True),
-        sa.Column('plan', sa.Enum('small', 'medium', 'large', name='plantier'), nullable=False, server_default='small'),
+        sa.Column('plan', postgresql.ENUM('small', 'medium', 'large', name='plantier', create_type=False), nullable=False, server_default='small'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('now()')),
     )
 
