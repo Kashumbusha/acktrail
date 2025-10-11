@@ -16,6 +16,7 @@ import PolicyEdit from './pages/PolicyEdit';
 import PolicyDetail from './pages/PolicyDetail';
 import AcknowledgePage from './pages/AcknowledgePage';
 import SuccessPage from './pages/SuccessPage';
+import MagicLinkVerify from './pages/MagicLinkVerify';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/verify" element={<MagicLinkVerify />} />
               <Route path="/ack/:token" element={<AcknowledgePage />} />
               <Route path="/admin/users" element={<PrivateRoute><Layout><AdminUsers /></Layout></PrivateRoute>} />
               <Route path="/success" element={<SuccessPage />} />

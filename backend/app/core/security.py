@@ -4,6 +4,7 @@ from typing import Dict, Tuple, Optional
 from datetime import datetime, timedelta
 from uuid import UUID
 import jwt
+import bcrypt
 from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends
@@ -24,6 +25,18 @@ def generate_six_digit_code() -> str:
 def generate_magic_link_token() -> str:
     """Generate a secure token for magic links."""
     return secrets.token_urlsafe(32)
+
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt."""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Verify a password against a hash."""
+    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
 
 
 def store_login_code(email: str, code: str, ttl_seconds: int = 600) -> None:

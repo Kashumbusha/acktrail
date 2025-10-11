@@ -54,8 +54,8 @@ def send_brevo_email(
         raise
 
 
-def render_auth_code_email(name: str, code: str, org_name: str) -> str:
-    """Render the authentication code email template."""
+def render_auth_code_email(name: str, code: str, org_name: str, magic_link: str = None) -> str:
+    """Render the authentication code email template with optional magic link."""
     template = Template("""
     <!DOCTYPE html>
     <html>
@@ -69,6 +69,10 @@ def render_auth_code_email(name: str, code: str, org_name: str) -> str:
             .logo { font-size: 24px; font-weight: bold; color: #333; }
             .code { font-size: 32px; font-weight: bold; text-align: center; background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0; color: #007bff; letter-spacing: 2px; }
             .content { line-height: 1.6; color: #333; }
+            .cta-button { display: inline-block; background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; text-align: center; }
+            .cta-button:hover { background-color: #0056b3; }
+            .divider { text-align: center; margin: 30px 0; color: #999; font-size: 14px; }
+            .divider::before, .divider::after { content: "────"; color: #ddd; }
             .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: center; }
         </style>
     </head>
@@ -77,18 +81,28 @@ def render_auth_code_email(name: str, code: str, org_name: str) -> str:
             <div class="header">
                 <div class="logo">{{ org_name }}</div>
             </div>
-            
+
             <div class="content">
                 <h2>Hello {{ name }},</h2>
+                {% if magic_link %}
+                <p>You can sign in instantly by clicking the button below:</p>
+
+                <div style="text-align: center;">
+                    <a href="{{ magic_link }}" class="cta-button">Sign In Instantly</a>
+                </div>
+
+                <div class="divider">OR</div>
+
+                <p>If you prefer, enter this code in the application:</p>
+                {% else %}
                 <p>Your authentication code is:</p>
-                
+                {% endif %}
+
                 <div class="code">{{ code }}</div>
-                
+
                 <p>This code will expire in 10 minutes. If you didn't request this code, you can safely ignore this email.</p>
-                
-                <p>Enter this code in the application to complete your sign-in.</p>
             </div>
-            
+
             <div class="footer">
                 <p>This is an automated message from {{ org_name }}. Please do not reply to this email.</p>
             </div>
@@ -96,8 +110,8 @@ def render_auth_code_email(name: str, code: str, org_name: str) -> str:
     </body>
     </html>
     """)
-    
-    return template.render(name=name, code=code, org_name=org_name)
+
+    return template.render(name=name, code=code, org_name=org_name, magic_link=magic_link)
 
 
 def render_magic_link_email(
@@ -323,11 +337,11 @@ def render_reminder_email(
     )
 
 
-def send_auth_code_email(user_email: str, user_name: str, code: str) -> Optional[str]:
-    """Send authentication code email."""
+def send_auth_code_email(user_email: str, user_name: str, code: str, magic_link: str = None) -> Optional[str]:
+    """Send authentication code email with optional magic link."""
     subject = f"Your {settings.org_name} Authentication Code"
-    html_content = render_auth_code_email(user_name, code, settings.org_name)
-    
+    html_content = render_auth_code_email(user_name, code, settings.org_name, magic_link)
+
     return send_brevo_email(
         to_email=user_email,
         subject=subject,

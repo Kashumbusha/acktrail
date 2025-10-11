@@ -66,10 +66,11 @@ class Team(Base):
 
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # Optional password for quick login
     role = Column(SQLEnum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     department = Column(String(255), nullable=True)
     workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
@@ -160,10 +161,11 @@ class EmailEvent(Base):
 
 class AuthCode(Base):
     __tablename__ = "auth_codes"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), nullable=False, index=True)
     code = Column(String(6), nullable=False)
+    magic_token = Column(String(255), nullable=True)  # Token for magic link login
     expires_at = Column(DateTime, nullable=False)
     used = Column(Boolean, default=False, nullable=False)
     attempts = Column(Integer, default=0, nullable=False)
