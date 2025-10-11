@@ -125,8 +125,8 @@ def send_policy_emails(
     if send_request.assignment_ids:
         query = query.filter(Assignment.id.in_(send_request.assignment_ids))
     else:
-        # Send to all pending assignments by default
-        query = query.filter(Assignment.status == AssignmentStatus.PENDING)
+        # Send to all pending and viewed assignments by default (not already acknowledged)
+        query = query.filter(Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]))
     
     assignments = query.all()
     
@@ -147,14 +147,15 @@ def send_policy_emails(
                 failed_emails.append(f"User {assignment.user_id} not found")
                 continue
             
-            # Generate magic link token
-            magic_token = create_magic_link_token(
-                assignment_id=str(assignment.id),
-                user_email=user.email
-            )
-            
-            # Update assignment with magic link token
-            assignment.magic_link_token = magic_token
+            # Generate or reuse existing magic link token
+            if not assignment.magic_link_token:
+                magic_token = create_magic_link_token(
+                    assignment_id=str(assignment.id),
+                    user_email=user.email
+                )
+                assignment.magic_link_token = magic_token
+            else:
+                magic_token = assignment.magic_link_token
             
             # Create magic link URL
             magic_link_url = f"{settings.frontend_url}/ack/{magic_token}"
@@ -359,6 +360,59 @@ def send_assignment_reminder(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send reminder email"
+        )
+
+
+@router.delete("/assignments/{assignment_id}", response_model=dict)
+def delete_assignment(
+    assignment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+) -> dict:
+    """Delete an assignment and its related data."""
+    # Get assignment
+    assignment = db.query(Assignment).filter(Assignment.id == assignment_id).first()
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Assignment not found"
+        )
+
+    # Get user email for logging
+    user = db.query(User).filter(User.id == assignment.user_id).first()
+    user_email = user.email if user else "unknown"
+
+    # Only allow deletion of assignments that haven't been acknowledged
+    if assignment.status == AssignmentStatus.ACKNOWLEDGED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete acknowledged assignment"
+        )
+
+    try:
+        # Delete related acknowledgments (if any)
+        db.query(Acknowledgment).filter(Acknowledgment.assignment_id == assignment_id).delete()
+
+        # Delete related email events
+        db.query(EmailEvent).filter(EmailEvent.assignment_id == assignment_id).delete()
+
+        # Delete the assignment
+        db.delete(assignment)
+        db.commit()
+
+        logger.info(f"Deleted assignment {assignment_id} for user {user_email}")
+
+        return {
+            "success": True,
+            "message": f"Assignment for {user_email} deleted successfully"
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to delete assignment {assignment_id}: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete assignment"
         )
 
 
