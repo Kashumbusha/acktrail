@@ -9,7 +9,7 @@ import logging
 import csv
 from io import StringIO
 
-from ..schemas.dashboard import DashboardStats, RecentActivity, DashboardResponse, PolicyExportRow
+from ..schemas.dashboard import DashboardStats, RecentActivity, DashboardResponse, PolicyExportRow, RecentPolicyItem
 from ..models.database import get_db
 from ..models.models import (
     Policy, User, Assignment, Acknowledgment, AssignmentStatus, AckMethod
@@ -129,10 +129,32 @@ def get_dashboard_stats(
     # Sort all recent activity by date and limit to 10
     recent_activity.sort(key=lambda x: x.created_at, reverse=True)
     recent_activity = recent_activity[:10]
-    
+
+    # Get recent policies with assignment stats
+    recent_policies_data = []
+    recent_policies_query = db.query(Policy).order_by(Policy.created_at.desc()).limit(5).all()
+
+    for policy in recent_policies_query:
+        # Get assignment counts for this policy
+        assignments_count = db.query(Assignment).filter(Assignment.policy_id == policy.id).count()
+        acknowledged_count = db.query(Assignment).filter(
+            Assignment.policy_id == policy.id,
+            Assignment.status == AssignmentStatus.ACKNOWLEDGED
+        ).count()
+
+        recent_policies_data.append(RecentPolicyItem(
+            id=policy.id,
+            title=policy.title,
+            description=policy.description,
+            assignments_count=assignments_count,
+            acknowledged_count=acknowledged_count,
+            created_at=policy.created_at
+        ))
+
     return DashboardResponse(
         stats=stats,
-        recent_activity=recent_activity
+        recent_activity=recent_activity,
+        recent_policies=recent_policies_data
     )
 
 

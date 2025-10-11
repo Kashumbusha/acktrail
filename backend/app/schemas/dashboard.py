@@ -24,9 +24,19 @@ class RecentActivity(BaseModel):
     policy_title: Optional[str] = None
 
 
+class RecentPolicyItem(BaseModel):
+    id: UUID
+    title: str
+    description: Optional[str] = None
+    assignments_count: int = 0
+    acknowledged_count: int = 0
+    created_at: datetime
+
+
 class DashboardResponse(BaseModel):
     stats: DashboardStats
     recent_activity: List[RecentActivity]
+    recent_policies: List[RecentPolicyItem]
 
 
 class PolicyExportRow(BaseModel):
