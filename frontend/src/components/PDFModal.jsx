@@ -37,9 +37,9 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
     }
   };
 
-  // Track viewing time
+  // Track viewing time (only if scroll tracking is required)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !requireScrollTracking) return;
 
     const interval = setInterval(() => {
       setViewingTime(prev => {
@@ -142,11 +142,6 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                         View all {numPages} pages ({viewedPages.size}/{numPages}) & wait {Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)}s
                       </div>
                     )}
-                    {!hasBeenViewed && !requireScrollTracking && (
-                      <div className="text-sm text-amber-600 mr-2">
-                        Please review for {Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)} more seconds
-                      </div>
-                    )}
                     <button
                       type="button"
                       onClick={handleDownload}
@@ -169,14 +164,11 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                 {/* PDF Viewer */}
                 <div className="relative bg-gray-100" style={{ height: '75vh' }}>
                   {pdfLoadError ? (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <p className="text-gray-600 mb-4">Unable to display PDF in viewer</p>
-                      <iframe
-                        src={pdfUrl}
-                        className="w-full h-full border-0"
-                        title="PDF Viewer Fallback"
-                      />
-                    </div>
+                    <iframe
+                      src={pdfUrl}
+                      className="w-full h-full border-0"
+                      title="PDF Viewer"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full overflow-auto p-4">
                       <Document

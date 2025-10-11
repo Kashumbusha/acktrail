@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MagnifyingGlassIcon, ArrowPathIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowPathIcon, ExclamationCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { formatDate, formatRelativeTime, getStatusBadgeClass, getStatusText } from '../utils/formatters';
 import { ASSIGNMENT_STATUS } from '../utils/constants';
 import LoadingSpinner from './LoadingSpinner';
@@ -12,17 +12,19 @@ const statusOptions = [
   { value: ASSIGNMENT_STATUS.DECLINED, label: 'Declined' },
 ];
 
-export default function AssignmentTable({ 
-  assignments, 
-  loading = false, 
+export default function AssignmentTable({
+  assignments,
+  loading = false,
   onRemind,
-  onRefresh 
+  onDelete,
+  onRefresh
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [remindingAssignments, setRemindingAssignments] = useState(new Set());
+  const [deletingAssignments, setDeletingAssignments] = useState(new Set());
 
   // Filter and sort assignments
   const filteredAssignments = assignments
@@ -72,8 +74,31 @@ export default function AssignmentTable({
     }
   };
 
+  const handleDelete = async (assignmentId, userEmail) => {
+    if (!window.confirm(`Are you sure you want to delete the assignment for ${userEmail}?`)) {
+      return;
+    }
+
+    setDeletingAssignments(prev => new Set(prev).add(assignmentId));
+    try {
+      await onDelete(assignmentId);
+    } catch (error) {
+      console.error('Failed to delete assignment:', error);
+    } finally {
+      setDeletingAssignments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(assignmentId);
+        return newSet;
+      });
+    }
+  };
+
   const canSendReminder = (assignment) => {
     return assignment.status === 'pending' || assignment.status === 'viewed';
+  };
+
+  const canDelete = (assignment) => {
+    return assignment.status !== 'acknowledged';
   };
 
   const getReminderBadgeColor = (count) => {
@@ -328,6 +353,19 @@ export default function AssignmentTable({
                             <LoadingSpinner size="sm" className="mr-1" />
                           ) : null}
                           {(assignment.reminder_count || 0) >= 3 ? 'Max Reached' : 'Remind'}
+                        </button>
+                      )}
+                      {canDelete(assignment) && onDelete && (
+                        <button
+                          onClick={() => handleDelete(assignment.id, assignment.user_email)}
+                          disabled={deletingAssignments.has(assignment.id)}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-red-600 hover:text-red-900 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          {deletingAssignments.has(assignment.id) ? (
+                            <LoadingSpinner size="sm" className="mr-1" />
+                          ) : (
+                            <TrashIcon className="h-4 w-4" />
+                          )}
                         </button>
                       )}
                       {assignment.status === 'acknowledged' && assignment.has_acknowledgment && (

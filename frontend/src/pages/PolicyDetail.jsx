@@ -144,6 +144,22 @@ export default function PolicyDetail() {
     remindMutation.mutate(assignmentId);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (assignmentId) => assignmentsAPI.delete(assignmentId),
+    onSuccess: () => {
+      refetchAssignments();
+      toast.success('Assignment deleted successfully');
+    },
+    onError: (error) => {
+      const message = error.response?.data?.detail || 'Failed to delete assignment';
+      toast.error(message);
+    },
+  });
+
+  const handleDelete = (assignmentId) => {
+    deleteMutation.mutate(assignmentId);
+  };
+
   const handleExport = () => {
     exportMutation.mutate(id);
   };
@@ -352,6 +368,7 @@ export default function PolicyDetail() {
           assignments={assignments?.assignments || []}
           loading={assignmentsLoading}
           onRemind={handleRemind}
+          onDelete={handleDelete}
           onRefresh={refetchAssignments}
         />
       </div>

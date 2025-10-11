@@ -62,7 +62,7 @@ export const policiesAPI = {
   update: (id, data) => apiClient.put(`/api/policies/${id}`, data),
   delete: (id) => apiClient.delete(`/api/policies/${id}`),
   addRecipients: (id, recipients) => apiClient.post(`/api/policies/${id}/recipients`, { recipients }),
-  send: (id) => apiClient.post(`/api/policies/${id}/send`, {}),
+  send: (id) => apiClient.post(`/api/policies/${id}/send`, { assignment_ids: null }),
   getAssignments: (id) => apiClient.get(`/api/policies/${id}/assignments`),
   exportCSV: (id) => apiClient.get(`/api/dashboard/policies/${id}/export.csv`, { responseType: 'blob' }),
   sendBulkReminders: (id) => apiClient.post(`/api/policies/${id}/remind-all`),
@@ -71,6 +71,7 @@ export const policiesAPI = {
 // Assignments API
 export const assignmentsAPI = {
   remind: (id) => apiClient.post(`/api/assignments/${id}/remind`),
+  delete: (id) => apiClient.delete(`/api/policies/assignments/${id}`),
 };
 
 // Create a separate axios instance for acknowledgment API (no auth required)
