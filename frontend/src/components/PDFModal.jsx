@@ -15,7 +15,12 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   const [currentPage, setCurrentPage] = useState(1);
   const [viewedPages, setViewedPages] = useState(new Set([1])); // Track which pages have been viewed
   const [pdfLoadError, setPdfLoadError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const MINIMUM_VIEWING_TIME = 10; // 10 seconds minimum
+  const LOADING_TIMEOUT = 5000; // 5 second timeout for PDF loading
+
+  // Detect Safari browser
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
   // Track page changes
   useEffect(() => {
@@ -66,17 +71,36 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
       setViewingTime(0);
       setCurrentPage(1);
       setViewedPages(new Set([1]));
+      setPdfLoadError(false);
+      setIsLoading(true);
     }
   }, [isOpen]);
+
+  // Add timeout for PDF loading - fallback to iframe if taking too long
+  useEffect(() => {
+    if (!isOpen || !isLoading) return;
+
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('PDF loading timeout - falling back to iframe viewer');
+        setPdfLoadError(true);
+        setIsLoading(false);
+      }
+    }, LOADING_TIMEOUT);
+
+    return () => clearTimeout(timeout);
+  }, [isOpen, isLoading]);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
     setPdfLoadError(false);
+    setIsLoading(false);
   };
 
   const onDocumentLoadError = (error) => {
     console.error('PDF load error:', error);
     setPdfLoadError(true);
+    setIsLoading(false);
   };
 
   const goToPrevPage = () => {
@@ -163,12 +187,29 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
 
                 {/* PDF Viewer */}
                 <div className="relative bg-gray-100" style={{ height: '75vh' }}>
-                  {pdfLoadError ? (
-                    <iframe
-                      src={pdfUrl}
-                      className="w-full h-full border-0"
-                      title="PDF Viewer"
-                    />
+                  {pdfLoadError || isSafari ? (
+                    <div className="h-full flex flex-col">
+                      {isSafari && (
+                        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 text-sm text-blue-800">
+                          <strong>Safari detected:</strong> Using native PDF viewer for best compatibility
+                        </div>
+                      )}
+                      <iframe
+                        src={pdfUrl}
+                        className="w-full flex-1 border-0"
+                        title="PDF Viewer"
+                        onLoad={() => {
+                          setIsLoading(false);
+                          // Auto-mark as viewed after 10 seconds for iframe viewers
+                          if (requireScrollTracking && !hasBeenViewed) {
+                            setTimeout(() => {
+                              setHasBeenViewed(true);
+                              if (onViewed) onViewed();
+                            }, MINIMUM_VIEWING_TIME * 1000);
+                          }
+                        }}
+                      />
+                    </div>
                   ) : (
                     <div className="flex items-center justify-center h-full overflow-auto p-4">
                       <Document
@@ -195,7 +236,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                 </div>
 
                 {/* Page Navigation */}
-                {numPages && numPages > 1 && !pdfLoadError && (
+                {numPages && numPages > 1 && !pdfLoadError && !isSafari && (
                   <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
                     <button
                       onClick={goToPrevPage}
