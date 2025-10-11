@@ -45,28 +45,10 @@ apiClient.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  sendCode: (email) => apiClient.post('/api/auth/send-code', { email }),
-  verifyCode: (email, code, workspaceId = null) => {
-    const payload = { email, code };
-    if (workspaceId) {
-      payload.workspace_id = workspaceId;
-    }
-    return apiClient.post('/api/auth/verify-code', payload);
-  },
-  loginPassword: (email, password, workspaceId = null) => {
-    const payload = { email, password };
-    if (workspaceId) {
-      payload.workspace_id = workspaceId;
-    }
-    return apiClient.post('/api/auth/login-password', payload);
-  },
-  verifyMagicLink: (token, workspaceId = null) => {
-    const payload = { token };
-    if (workspaceId) {
-      payload.workspace_id = workspaceId;
-    }
-    return apiClient.post('/api/auth/verify-magic-link', payload);
-  },
+  sendCode: (email, workspaceId) => apiClient.post('/api/auth/send-code', { email, workspace_id: workspaceId }),
+  verifyCode: (email, code, workspaceId) => apiClient.post('/api/auth/verify-code', { email, code, workspace_id: workspaceId }),
+  loginPassword: (email, password, workspaceId) => apiClient.post('/api/auth/login-password', { email, password, workspace_id: workspaceId }),
+  verifyMagicLink: (token, workspaceId) => apiClient.post('/api/auth/verify-magic-link', { token, workspace_id: workspaceId }),
   setPassword: (password) => apiClient.post('/api/auth/set-password', { password }),
   getMe: () => apiClient.get('/api/auth/me'),
 };
@@ -74,6 +56,7 @@ export const authAPI = {
 // Teams/Workspace API
 export const teamsAPI = {
   register: (teamName, email) => apiClient.post('/api/teams/register', { team_name: teamName, email }),
+  checkWorkspace: (workspaceName) => apiClient.post('/api/teams/check-workspace', { workspace_name: workspaceName }),
 };
 
 // Policies API

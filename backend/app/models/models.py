@@ -41,7 +41,7 @@ class Workspace(Base):
     __tablename__ = "workspaces"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(255), nullable=False)
+    name = Column(String(255), nullable=False, unique=True)  # Workspace names must be unique
     slug = Column(String(255), nullable=True, unique=True)
     plan = Column(SQLEnum(PlanTier), default=PlanTier.SMALL, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

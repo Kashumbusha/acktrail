@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (email, code, workspaceId = null) => {
+  const login = async (email, code, workspaceId) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await authAPI.verifyCode(email, code, workspaceId);
@@ -83,9 +83,6 @@ export const AuthProvider = ({ children }) => {
       // Update state
       dispatch({ type: 'SET_TOKEN', payload: token });
       dispatch({ type: 'SET_USER', payload: user });
-
-      // Clear workspace selection state
-      dispatch({ type: 'SET_WORKSPACES', payload: [] });
 
       return { success: true };
     } catch (error) {
@@ -106,19 +103,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Send verification code
-  const sendCode = async (email) => {
+  const sendCode = async (email, workspaceId) => {
     try {
-      const response = await authAPI.sendCode(email);
-      const workspaces = response.data?.workspaces || [];
-      const requiresSelection = response.data?.requires_workspace_selection || false;
-
-      // Store available workspaces if user belongs to multiple
-      dispatch({ type: 'SET_WORKSPACES', payload: workspaces });
-
+      const response = await authAPI.sendCode(email, workspaceId);
       return {
         success: true,
-        workspaces,
-        requiresWorkspaceSelection: requiresSelection
+        workspaceName: response.data?.workspace_name
       };
     } catch (error) {
       return {

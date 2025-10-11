@@ -25,41 +25,51 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/send-code", response_model=dict)
 def send_code(
-    payload: SendCodeRequest,
+    payload: dict,
     db: Session = Depends(get_db)
 ) -> dict:
-    """Send authentication code to user's email."""
-    email = payload.email.lower()
+    """Send authentication code to user's email for a specific workspace."""
+    email = (payload.get("email") or "").strip().lower()
+    workspace_id = payload.get("workspace_id")
 
-    # Get ALL users with this email (could be in multiple workspaces)
-    users = db.query(User).filter(User.email == email).all()
-
-    if not users:
-        # Create new user with employee role (no workspace yet)
-        user = User(
-            email=email,
-            name=email.split('@')[0].title(),  # Use email prefix as name
-            role=UserRole.EMPLOYEE
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required"
         )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        logger.info(f"Created new user: {email}")
-    else:
-        # Use first user for name (all should have same name ideally)
-        user = users[0]
 
-    # Get workspaces this user belongs to
-    workspaces = []
-    for u in users if users else []:
-        if u.workspace_id:
-            workspace = db.query(Workspace).filter(Workspace.id == u.workspace_id).first()
-            if workspace:
-                workspaces.append({
-                    "workspace_id": str(workspace.id),
-                    "workspace_name": workspace.name,
-                    "user_role": u.role.value
-                })
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Workspace ID is required"
+        )
+
+    # Validate workspace exists
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found"
+        )
+
+    # Find user in this workspace
+    user = db.query(User).filter(
+        User.email == email,
+        User.workspace_id == workspace_id
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email {email} is not a member of workspace '{workspace.name}'"
+        )
+
+    # Check if user is allowed to login
+    if not user.can_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account does not have login access. Please contact your administrator."
+        )
 
     # Generate and store code in database
     code = generate_six_digit_code()
@@ -81,14 +91,13 @@ def send_code(
 
     try:
         # Send email with both code and magic link
-        magic_link = f"{settings.frontend_url}/verify?token={magic_token}"
+        magic_link = f"{settings.frontend_url}/verify?token={magic_token}&workspace_id={workspace_id}"
         send_auth_code_email(email, user.name, code, magic_link)
-        logger.info(f"Authentication code and magic link sent to {email}")
+        logger.info(f"Authentication code sent to {email} for workspace {workspace.name}")
         return {
             "success": True,
             "message": "Authentication code sent to your email",
-            "workspaces": workspaces,  # Return available workspaces
-            "requires_workspace_selection": len(workspaces) > 1
+            "workspace_name": workspace.name
         }
     except Exception as e:
         logger.error(f"Failed to send email to {email}: {e}")
@@ -107,29 +116,30 @@ def verify_code(
     email = payload.email.lower()
     workspace_id = payload.workspace_id
 
-    # Get ALL users with this email
-    users = db.query(User).filter(User.email == email).all()
-    if not users:
+    if not workspace_id:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Workspace ID is required"
         )
 
-    # If workspace_id provided, find user in that workspace
-    if workspace_id:
-        user = next((u for u in users if str(u.workspace_id) == workspace_id), None)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found in selected workspace"
-            )
-    else:
-        # If no workspace specified and multiple users exist, use first one
-        # (This maintains backward compatibility)
-        user = users[0]
+    # Find user in specified workspace
+    user = db.query(User).filter(
+        User.email == email,
+        User.workspace_id == workspace_id
+    ).first()
 
-    # Note: can_login is workspace-specific, not enforced at authentication
-    # Users can always authenticate to create/access their own workspaces
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found in workspace"
+        )
+
+    # Check if user can login
+    if not user.can_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Login access disabled. Contact your administrator."
+        )
 
     # Check auth code
     auth_code = db.query(AuthCode).filter(
@@ -219,7 +229,7 @@ def login_with_password(
     payload: dict,
     db: Session = Depends(get_db)
 ) -> TokenResponse:
-    """Login with email and password."""
+    """Login with email and password for a specific workspace."""
     email = payload.get("email", "").lower()
     password = payload.get("password", "")
     workspace_id = payload.get("workspace_id")
@@ -230,25 +240,30 @@ def login_with_password(
             detail="Email and password are required"
         )
 
-    # Get ALL users with this email
-    users = db.query(User).filter(User.email == email).all()
-    if not users:
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Workspace ID is required"
+        )
+
+    # Find user in specified workspace
+    user = db.query(User).filter(
+        User.email == email,
+        User.workspace_id == workspace_id
+    ).first()
+
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
 
-    # If workspace_id provided, find user in that workspace
-    if workspace_id:
-        user = next((u for u in users if str(u.workspace_id) == workspace_id), None)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
-            )
-    else:
-        # If no workspace specified, use first user
-        user = users[0]
+    # Check if user can login
+    if not user.can_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Login access disabled. Contact your administrator."
+        )
 
     # Check if user has password set
     if not user.password_hash:
@@ -263,9 +278,6 @@ def login_with_password(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-
-    # Note: can_login is workspace-specific, not enforced at authentication
-    # Users can always authenticate to create/access their own workspaces
 
     # Create JWT token
     token = create_jwt_token(
@@ -309,6 +321,12 @@ def verify_magic_link(
             detail="Token is required"
         )
 
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Workspace ID is required"
+        )
+
     # Find auth code with this magic token
     auth_code = db.query(AuthCode).filter(
         AuthCode.magic_token == magic_token,
@@ -322,28 +340,24 @@ def verify_magic_link(
             detail="Invalid or expired magic link"
         )
 
-    # Get ALL users with this email
-    users = db.query(User).filter(User.email == auth_code.email).all()
-    if not users:
+    # Find user in specified workspace
+    user = db.query(User).filter(
+        User.email == auth_code.email,
+        User.workspace_id == workspace_id
+    ).first()
+
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="User not found in workspace"
         )
 
-    # If workspace_id provided, find user in that workspace
-    if workspace_id:
-        user = next((u for u in users if str(u.workspace_id) == workspace_id), None)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found in selected workspace"
-            )
-    else:
-        # If no workspace specified, use first user
-        user = users[0]
-
-    # Note: can_login is workspace-specific, not enforced at authentication
-    # Users can always authenticate to create/access their own workspaces
+    # Check if user can login
+    if not user.can_login:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Login access disabled. Contact your administrator."
+        )
 
     # Mark code as used
     auth_code.used = True

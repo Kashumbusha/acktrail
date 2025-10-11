@@ -17,8 +17,13 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Drop the unique constraint on email column
-    op.drop_constraint('users_email_key', 'users', type_='unique')
+    # Drop the unique constraint on email column (if it exists)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    constraints = [c['name'] for c in inspector.get_unique_constraints('users')]
+
+    if 'users_email_key' in constraints:
+        op.drop_constraint('users_email_key', 'users', type_='unique')
 
     # Create composite unique constraint on email + workspace_id
     op.create_unique_constraint('uix_email_workspace', 'users', ['email', 'workspace_id'])

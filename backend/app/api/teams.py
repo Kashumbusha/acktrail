@@ -21,6 +21,14 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
 
+    # Check if workspace name already exists
+    existing_workspace = db.query(Workspace).filter(Workspace.name == team_name).first()
+    if existing_workspace:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Workspace '{team_name}' already exists. Please choose a different name."
+        )
+
     # Create workspace
     workspace = Workspace(name=team_name)
     db.add(workspace)
@@ -41,5 +49,31 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     # This prevents duplicate emails during signup flow
 
     return {"success": True, "workspace_id": str(workspace.id)}
+
+
+@router.post("/check-workspace", response_model=dict)
+def check_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
+    """Check if a workspace exists and return its ID if it does.
+
+    Expected body: {"workspace_name": str}
+    """
+    workspace_name = (payload.get("workspace_name") or "").strip()
+
+    if not workspace_name:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Workspace name is required")
+
+    workspace = db.query(Workspace).filter(Workspace.name == workspace_name).first()
+
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workspace '{workspace_name}' not found"
+        )
+
+    return {
+        "success": True,
+        "workspace_id": str(workspace.id),
+        "workspace_name": workspace.name
+    }
 
 
