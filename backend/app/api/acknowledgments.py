@@ -199,18 +199,13 @@ def create_acknowledgment(
     # Additional validation for typed acknowledgments
     typed_signature = None
     if acknowledgment.ack_method == AckMethod.TYPED:
-        if isinstance(acknowledgment, TypedAcknowledgmentCreate):
-            if not acknowledgment.typed_signature.strip():
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Typed signature cannot be empty"
-                )
-            typed_signature = acknowledgment.typed_signature
-        else:
+        # Check if typed_signature is provided and not empty
+        if not acknowledgment.typed_signature or not acknowledgment.typed_signature.strip():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Typed signature is required for this acknowledgment method"
             )
+        typed_signature = acknowledgment.typed_signature
     
     # Get client information
     client_ip = get_client_ip(request)

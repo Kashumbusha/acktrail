@@ -12,6 +12,7 @@ class AcknowledgmentBase(BaseModel):
 
 class AcknowledgmentCreate(AcknowledgmentBase):
     ack_method: AckMethod = AckMethod.ONECLICK
+    typed_signature: Optional[str] = None  # Optional field for typed acknowledgments
 
 
 class TypedAcknowledgmentCreate(AcknowledgmentBase):
