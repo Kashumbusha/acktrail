@@ -12,17 +12,44 @@ router = APIRouter(prefix="/teams", tags=["teams"])  # "teams" path label, model
 def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     """Register a new workspace (aka team) and seed first admin user.
 
-    Expected body: {"team_name": str, "email": str, "plan": str (optional), "sso_enabled": bool (optional)}
+    Expected body: {
+        "team_name": str,
+        "email": str,
+        "first_name": str,
+        "last_name": str,
+        "phone": str,
+        "country": str,
+        "password": str (optional),
+        "plan": str (optional),
+        "sso_enabled": bool (optional),
+        "staff_count": int (optional),
+        "billing_interval": str (optional)
+    }
     """
     team_name = (payload.get("team_name") or "").strip()
     email = (payload.get("email") or "").strip().lower()
+    first_name = (payload.get("first_name") or "").strip()
+    last_name = (payload.get("last_name") or "").strip()
+    phone = (payload.get("phone") or "").strip()
+    country = (payload.get("country") or "").strip()
+    password = payload.get("password", "").strip()
     plan_str = (payload.get("plan") or "small").strip().lower()
     sso_enabled = payload.get("sso_enabled", False)
+    staff_count = payload.get("staff_count", 1)
+    billing_interval = payload.get("billing_interval", "month")
 
     if not team_name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Team name is required")
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
+    if not first_name:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="First name is required")
+    if not last_name:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is required")
+    if not phone:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone is required")
+    if not country:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Country is required")
 
     # Validate plan
     try:
@@ -43,16 +70,53 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
 
     # Create workspace with 7-day free trial
     trial_ends_at = datetime.utcnow() + timedelta(days=7)
-    workspace = Workspace(name=team_name, plan=plan, trial_ends_at=trial_ends_at, sso_enabled=sso_enabled)
+    # Normalize billing interval (month -> monthly, year -> annual)
+    normalized_interval = "annual" if billing_interval == "year" else "monthly"
+    workspace = Workspace(
+        name=team_name,
+        plan=plan,
+        trial_ends_at=trial_ends_at,
+        sso_enabled=sso_enabled,
+        staff_count=staff_count,  # Set licensed seats during registration
+        billing_interval=normalized_interval
+    )
     db.add(workspace)
     db.flush()
 
     # Create or attach user as admin
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        user = User(email=email, name=email.split('@')[0].title(), role=UserRole.ADMIN)
+        # Create full name from first and last name
+        full_name = f"{first_name} {last_name}".strip()
+
+        # Hash password if provided
+        password_hash = None
+        if password and len(password) >= 8:
+            from ..core.security import hash_password
+            password_hash = hash_password(password)
+
+        user = User(
+            email=email,
+            name=full_name,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            country=country,
+            password_hash=password_hash,
+            role=UserRole.ADMIN
+        )
         db.add(user)
         db.flush()
+    else:
+        # Update existing user with new details
+        user.first_name = first_name
+        user.last_name = last_name
+        user.phone = phone
+        user.country = country
+        user.name = f"{first_name} {last_name}".strip()
+        if password and len(password) >= 8:
+            from ..core.security import hash_password
+            user.password_hash = hash_password(password)
 
     user.role = UserRole.ADMIN
     user.workspace_id = workspace.id
@@ -228,6 +292,140 @@ def update_team(team_id: str, payload: dict, current_user: dict = Depends(get_cu
     }
 
 
+@router.get("/{team_id}", response_model=dict)
+def get_team_detail(team_id: str, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+    """Get team details including members."""
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not associated with a workspace")
+
+    from uuid import UUID
+    team = db.query(Team).filter(
+        Team.id == UUID(team_id),
+        Team.workspace_id == UUID(workspace_id)
+    ).first()
+
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
+
+    # Get team members
+    members = db.query(User).filter(User.team_id == UUID(team_id)).all()
+
+    return {
+        "success": True,
+        "team": {
+            "id": str(team.id),
+            "name": team.name,
+            "created_at": team.created_at.isoformat(),
+            "member_count": len(members),
+            "policy_count": len(team.policies),
+            "members": [
+                {
+                    "id": str(member.id),
+                    "email": member.email,
+                    "name": member.name,
+                    "role": member.role.value,
+                    "is_guest": member.is_guest,
+                    "active": member.active,
+                    "created_at": member.created_at.isoformat()
+                }
+                for member in members
+            ]
+        }
+    }
+
+
+@router.post("/{team_id}/members", response_model=dict)
+def add_team_member(team_id: str, payload: dict, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+    """Add a user to a team.
+
+    Expected body: {"user_id": str}
+    """
+    # Only admins can manage team members
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can manage team members")
+
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not associated with a workspace")
+
+    from uuid import UUID
+    team = db.query(Team).filter(
+        Team.id == UUID(team_id),
+        Team.workspace_id == UUID(workspace_id)
+    ).first()
+
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
+
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user_id is required")
+
+    user = db.query(User).filter(
+        User.id == UUID(user_id),
+        User.workspace_id == UUID(workspace_id)
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found in this workspace")
+
+    # Check if user is already in another team
+    if user.team_id and str(user.team_id) != team_id:
+        old_team = db.query(Team).filter(Team.id == user.team_id).first()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User is already a member of team '{old_team.name if old_team else 'Unknown'}'. Remove them from that team first."
+        )
+
+    # Add user to team
+    user.team_id = UUID(team_id)
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"User {user.email} added to team {team.name}"
+    }
+
+
+@router.delete("/{team_id}/members/{user_id}", response_model=dict)
+def remove_team_member(team_id: str, user_id: str, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+    """Remove a user from a team."""
+    # Only admins can manage team members
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can manage team members")
+
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not associated with a workspace")
+
+    from uuid import UUID
+    team = db.query(Team).filter(
+        Team.id == UUID(team_id),
+        Team.workspace_id == UUID(workspace_id)
+    ).first()
+
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
+
+    user = db.query(User).filter(
+        User.id == UUID(user_id),
+        User.team_id == UUID(team_id)
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found in this team")
+
+    # Remove user from team
+    user.team_id = None
+    db.commit()
+
+    return {
+        "success": True,
+        "message": f"User {user.email} removed from team {team.name}"
+    }
+
+
 @router.delete("/{team_id}", response_model=dict)
 def delete_team(team_id: str, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     """Delete a team."""
@@ -253,6 +451,14 @@ def delete_team(team_id: str, current_user: dict = Depends(get_current_user), db
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot delete team with {len(team.policies)} associated policies. Please reassign or delete the policies first."
+        )
+
+    # Check if team has members
+    member_count = db.query(User).filter(User.team_id == UUID(team_id)).count()
+    if member_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot delete team with {member_count} members. Please remove all members first."
         )
 
     db.delete(team)

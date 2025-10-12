@@ -55,12 +55,28 @@ export const authAPI = {
 
 // Teams/Workspace API
 export const teamsAPI = {
-  register: (teamName, email, plan = 'small', ssoEnabled = false) => apiClient.post('/api/teams/register', { team_name: teamName, email, plan, sso_enabled: ssoEnabled }),
+  register: (teamName, email, plan = 'small', ssoEnabled = false, firstName = '', lastName = '', phone = '', country = '', password = '', staffCount = 1, billingInterval = 'month') =>
+    apiClient.post('/api/teams/register', {
+      team_name: teamName,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      phone,
+      country,
+      password,
+      plan,
+      sso_enabled: ssoEnabled,
+      staff_count: staffCount,
+      billing_interval: billingInterval
+    }),
   checkWorkspace: (workspaceName) => apiClient.post('/api/teams/check-workspace', { workspace_name: workspaceName }),
   list: () => apiClient.get('/api/teams/list'),
+  get: (id) => apiClient.get(`/api/teams/${id}`),
   create: (name) => apiClient.post('/api/teams/create', { name }),
   update: (id, name) => apiClient.patch(`/api/teams/${id}`, { name }),
   delete: (id) => apiClient.delete(`/api/teams/${id}`),
+  addMember: (teamId, userId) => apiClient.post(`/api/teams/${teamId}/members`, { user_id: userId }),
+  removeMember: (teamId, userId) => apiClient.delete(`/api/teams/${teamId}/members/${userId}`),
 };
 
 // Policies API
@@ -113,13 +129,44 @@ export const usersAPI = {
   list: (params) => apiClient.get('/api/users/', { params }),
   invite: (data) => apiClient.post('/api/users/invite', data),
   update: (id, data) => apiClient.patch(`/api/users/${id}`, data),
+  updateProfile: (data) => apiClient.patch('/api/users/me', data),
   getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
+  contactSupport: (data) => apiClient.post('/api/support/contact', {
+    message: data.message,
+    from_email: data.from,
+  }),
 };
 
 // Platform API (for platform admins)
 export const platformAPI = {
   stats: () => apiClient.get('/api/platform/stats'),
   workspaces: (params) => apiClient.get('/api/platform/workspaces', { params }),
+};
+
+// Notifications API
+export const notificationsAPI = {
+  list: (params) => apiClient.get('/api/notifications', { params }),
+  getUnreadCount: () => apiClient.get('/api/notifications/unread-count'),
+  markAsRead: (id) => apiClient.put(`/api/notifications/${id}/read`),
+  markAllAsRead: () => apiClient.put('/api/notifications/mark-all-read'),
+  delete: (id) => apiClient.delete(`/api/notifications/${id}`),
+};
+
+// Payments API
+export const paymentsAPI = {
+  createCheckoutSession: (plan, staffCount, interval = 'month', ssoEnabled = false) =>
+    apiClient.post('/api/payments/create-checkout-session', {
+      plan,
+      staff_count: staffCount,
+      interval,
+      sso_enabled: ssoEnabled
+    }),
+  getSubscription: () => apiClient.get('/api/payments/subscription'),
+  updateSubscription: (data) => apiClient.post('/api/payments/subscription/update', data),
+  cancelSubscription: () => apiClient.post('/api/payments/subscription/cancel'),
+  createCustomerPortal: () => apiClient.post('/api/payments/customer-portal'),
+  listInvoices: (limit = 10) => apiClient.get('/api/payments/invoices', { params: { limit } }),
+  getUpcomingInvoice: () => apiClient.get('/api/payments/upcoming-invoice'),
 };
 
 export default apiClient;
