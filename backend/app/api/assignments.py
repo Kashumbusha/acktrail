@@ -12,7 +12,7 @@ from ..schemas.assignments import (
 )
 from ..models.database import get_db
 from ..models.models import (
-    Policy, User, Assignment, AssignmentStatus, EmailEvent, EmailEventType, Acknowledgment
+    Policy, User, Assignment, AssignmentStatus, EmailEvent, EmailEventType, Acknowledgment, Team
 )
 from ..core.security import get_current_user, require_admin_role, create_magic_link_token
 from ..core.email import send_policy_assignment_email, send_reminder_email
@@ -52,43 +52,112 @@ def add_policy_recipients(
     logger.info(f"Recipients list: {recipients.recipients}")
     logger.info(f"Number of recipients: {len(recipients.recipients)}")
 
-    for email in recipients.recipients:
-        # Check if user exists, create if not
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            # Create new user
-            user = User(
-                email=email,
-                name=email.split('@')[0],  # Use email prefix as name
-                role='employee',
-                is_guest=True,
-                can_login=False
+    for recipient in recipients.recipients:
+        # Check if this is a team-based recipient
+        if recipient.startswith('team:'):
+            # Extract team ID
+            team_id_str = recipient.replace('team:', '')
+            try:
+                team_id = UUID(team_id_str)
+            except ValueError:
+                logger.error(f"Invalid team ID format: {team_id_str}")
+                existing_assignments.append(f"Invalid team ID: {team_id_str}")
+                continue
+
+            # Verify team exists
+            team = db.query(Team).filter(Team.id == team_id).first()
+            if not team:
+                logger.error(f"Team not found: {team_id}")
+                existing_assignments.append(f"Team not found: {team_id}")
+                continue
+
+            # Get all users who are members of this team
+            team_members_query = db.query(User).filter(
+                User.team_id == team_id,
+                User.active == True
             )
-            db.add(user)
-            db.flush()  # Get the user ID
-            created_users += 1
-            logger.info(f"Created new user: {email}")
 
-        # Check if assignment already exists
-        existing_assignment = db.query(Assignment).filter(
-            Assignment.policy_id == policy_id,
-            Assignment.user_id == user.id
-        ).first()
+            # By default, exclude admin users from team-based policy assignments
+            # unless explicitly requested to include them
+            if not recipients.include_admins:
+                from ..models.models import UserRole
+                team_members_query = team_members_query.filter(User.role != UserRole.ADMIN)
 
-        if existing_assignment:
-            existing_assignments.append(email)
-            continue
+            team_members = team_members_query.all()
 
-        # Create new assignment
-        assignment = Assignment(
-            policy_id=policy_id,
-            user_id=user.id,
-            status=AssignmentStatus.PENDING,
-            workspace_id=policy.workspace_id
-        )
-        db.add(assignment)
-        created_assignments += 1
-    
+            logger.info(f"Creating assignments for team '{team.name}' with {len(team_members)} members (include_admins={recipients.include_admins})")
+
+            if len(team_members) == 0:
+                logger.warning(f"Team '{team.name}' has no members. No assignments created.")
+                existing_assignments.append(f"Team '{team.name}' has no members")
+                continue
+
+            for user in team_members:
+                # Check if assignment already exists
+                existing_assignment = db.query(Assignment).filter(
+                    Assignment.policy_id == policy_id,
+                    Assignment.user_id == user.id
+                ).first()
+
+                if existing_assignment:
+                    existing_assignments.append(user.email)
+                    continue
+
+                # Create new assignment with team_id
+                assignment = Assignment(
+                    policy_id=policy_id,
+                    user_id=user.id,
+                    status=AssignmentStatus.PENDING,
+                    workspace_id=policy.workspace_id,
+                    team_id=team_id  # Link assignment to team
+                )
+                db.add(assignment)
+                created_assignments += 1
+        else:
+            # Handle as email address
+            email = recipient
+
+            # Check if user exists, create if not
+            user = db.query(User).filter(
+                User.email == email,
+                User.workspace_id == policy.workspace_id
+            ).first()
+
+            if not user:
+                # Create new user
+                user = User(
+                    email=email,
+                    name=email.split('@')[0],  # Use email prefix as name
+                    role='employee',
+                    is_guest=True,
+                    can_login=False,
+                    workspace_id=policy.workspace_id
+                )
+                db.add(user)
+                db.flush()  # Get the user ID
+                created_users += 1
+                logger.info(f"Created new user: {email}")
+
+            # Check if assignment already exists
+            existing_assignment = db.query(Assignment).filter(
+                Assignment.policy_id == policy_id,
+                Assignment.user_id == user.id
+            ).first()
+
+            if existing_assignment:
+                existing_assignments.append(email)
+                continue
+
+            # Create new assignment
+            assignment = Assignment(
+                policy_id=policy_id,
+                user_id=user.id,
+                status=AssignmentStatus.PENDING,
+                workspace_id=policy.workspace_id
+            )
+            db.add(assignment)
+            created_assignments += 1
+
     db.commit()
 
     logger.info(f"Created {created_users} users and {created_assignments} assignments for policy {policy_id}")

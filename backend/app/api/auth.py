@@ -182,6 +182,10 @@ def verify_code(
     auth_code.used = True
     db.commit()
     
+    workspace = getattr(user, "workspace", None)
+
+    workspace = getattr(user, "workspace", None)
+
     # Create JWT token
     token = create_jwt_token(
         user_id=str(user.id),
@@ -202,7 +206,13 @@ def verify_code(
             "id": str(user.id),
             "email": user.email,
             "name": user.name,
+            "first_name": getattr(user, 'first_name', None),
+            "last_name": getattr(user, 'last_name', None),
+            "phone": getattr(user, 'phone', None),
+            "country": getattr(user, 'country', None),
             "role": user.role.value,
+            "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
+            "workspace_name": workspace.name if workspace else None,
             "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
             "department": user.department,
             "created_at": user.created_at.isoformat()
@@ -219,7 +229,13 @@ def get_current_user_info(
         id=current_user["id"],
         email=current_user["email"],
         name=current_user["name"],
+        first_name=current_user.get("first_name"),
+        last_name=current_user.get("last_name"),
+        phone=current_user.get("phone"),
+        country=current_user.get("country"),
         role=current_user["role"],
+        workspace_id=current_user.get("workspace_id"),
+        workspace_name=current_user.get("workspace_name"),
         department=current_user["department"],
         created_at=datetime.fromisoformat(current_user.get("created_at", datetime.utcnow().isoformat()))
     )
@@ -290,6 +306,8 @@ def login_with_password(
 
     expires_in = settings.jwt_expire_days * 24 * 3600
 
+    workspace = getattr(user, "workspace", None)
+
     logger.info(f"User authenticated with password: {email}")
 
     return TokenResponse(
@@ -300,7 +318,13 @@ def login_with_password(
             "id": str(user.id),
             "email": user.email,
             "name": user.name,
+            "first_name": getattr(user, 'first_name', None),
+            "last_name": getattr(user, 'last_name', None),
+            "phone": getattr(user, 'phone', None),
+            "country": getattr(user, 'country', None),
             "role": user.role.value,
+            "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
+            "workspace_name": workspace.name if workspace else None,
             "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
             "department": user.department,
             "created_at": user.created_at.isoformat()
@@ -361,6 +385,8 @@ def verify_magic_link(
             detail="Login access disabled. Contact your administrator."
         )
 
+    workspace = getattr(user, "workspace", None)
+
     # Mark code as used
     auth_code.used = True
     db.commit()
@@ -385,7 +411,14 @@ def verify_magic_link(
             "id": str(user.id),
             "email": user.email,
             "name": user.name,
+            "first_name": getattr(user, 'first_name', None),
+            "last_name": getattr(user, 'last_name', None),
+            "phone": getattr(user, 'phone', None),
+            "country": getattr(user, 'country', None),
             "role": user.role.value,
+            "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
+            "workspace_name": workspace.name if workspace else None,
+            "stripe_customer_id": workspace.stripe_customer_id if workspace else None,
             "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
             "department": user.department,
             "created_at": user.created_at.isoformat()

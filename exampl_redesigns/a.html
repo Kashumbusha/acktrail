@@ -1,480 +1,913 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ComplianceTrack Pro - Policy Management SaaS</title>
-    <!-- Tailwind CSS CDN for utility-first styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom CSS for enhanced modern look and feel */
-        :root {
-            --primary-color: #1e3a8a; /* Dark Blue */
-            --secondary-color: #3b82f6; /* Bright Blue */
-            --background-color: #f9fafb; /* Light Gray Background */
-            --card-bg: #ffffff;
-            --text-color: #1f2937;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SaaS Settings - Subscriptions & Profile</title>
+  <style>
+    :root{
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #6d5cff;
+      --primary-2: #8a7aff;
+      --ring: 0 0 0 3px rgba(109,92,255,.25);
+      --shadow: 0 6px 20px rgba(22,28,45,.08);
+      --accent: #22c55e;
+      --surface: #ffffff;
+    }
+    [data-theme="dark"]{
+      --bg: #0b1020;
+      --card: #14182a;
+      --text: #e8eaf2;
+      --muted: #a3aecb;
+      --primary: #7c87ff;
+      --primary-2: #9a9fff;
+      --ring: 0 0 0 3px rgba(124,135,255,.25);
+      --shadow: 0 6px 20px rgba(0,0,0,.45);
+      --accent: #4ade80;
+      --surface: #1b2030;
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: background-color 0.3s;
-        }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
+      background: linear-gradient(135deg, rgba(109,92,255,.08), rgba(0,0,0,0) 40%), var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-        /* Custom Gradient Button Style */
-        .btn-primary {
-            background-image: linear-gradient(to right, #1e40af, #3b82f6, #1d4ed8);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-image: linear-gradient(to right, #1d4ed8, #2563eb, #1e40af);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
-            transform: translateY(-2px);
-        }
+    .container {
+      max-width: 1200px;
+      padding: 20px;
+      margin: 0 auto;
+    }
 
-        /* Card Styles */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid #e5e7eb;
-        }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-        }
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(109,92,255,.15), rgba(109,92,255,.05) 60%), var(--card);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 8px;
+      z-index: 40;
+      backdrop-filter: saturate(1.2);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .brand .logo {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--primary), #7dd3fc);
+      color: white; font-weight: 700;
+    }
+    .brand h1 {
+      font-size: 16px; margin: 0; letter-spacing: .4px;
+    }
+    .search {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .search input {
+      width: 280px; max-width: 60vw;
+      padding: 10px 12px; border-radius: 999px;
+      border: 1px solid #e5e7eb; outline: none;
+      background: #fff;
+      transition: box-shadow .2s ease;
+    }
+    [data-theme="dark"] .search input { background: #0f1230; border-color: #2a2f55; color: #eae8ff; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 14px; border-radius: 999px; border: none; cursor: pointer;
+      font-weight: 600; transition: transform .1s ease, background .2s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff; box-shadow: 0 6px 14px rgba(109,92,255,.4);
+    }
+    .btn.secondary {
+      background: #f3f4f6; color: #111827;
+      border: 1px solid #e5e7eb;
+    }
+    [data-theme="dark"] .btn.primary {
+      background: linear-gradient(135deg, #7c87ff, #a4a6ff);
+    }
+    [data-theme="dark"] .btn.secondary {
+      background: #1e1f2a; color: #eaeaf2; border-color: #2a2f55;
+    }
 
-        /* Accent for active states/headers */
-        .accent-header {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--secondary-color);
-        }
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+      align-items: start;
+      margin-top: 18px;
+    }
 
-        /* Utility for responsiveness */
-        .max-w-screen-xl {
-            max-width: 1280px;
-        }
+    /* Sidebar */
+    .sidebar {
+      position: sticky; top: 90px; height: calc(100vh - 110px);
+      overflow-y: auto; padding: 14px;
+      border-radius: 14px; background: var(--card);
+      box-shadow: var(--shadow);
+      border: 1px solid #eee;
+    }
+    [data-theme="dark"] .sidebar { border-color: #2a2f55; background: #14182a; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 12px; border-radius: 10px; cursor: pointer;
+      color: var(--text);
+      transition: background .2s ease;
+    }
+    .nav-item:hover { background: rgba(0,0,0,.04); }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(109,92,255,.15), rgba(109,92,255,.05));
+      border-left: 3px solid var(--primary);
+      padding-left: 9px;
+    }
+    .nav-item svg { width: 18px; height: 18px; opacity: .9; }
+    .nav-item span { font-weight: 600; font-size: 14px; }
 
-        /* For the dynamic chart area */
-        #complianceChartPlaceholder {
-            height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f9ff;
-            border: 1px dashed #93c5fd;
-            border-radius: 8px;
-        }
+    /* Main content */
+    .main {
+      min-width: 0;
+    }
+    .section {
+      display: none;
+      animation: fadeIn .25s ease;
+    }
+    .section.active { display: block; }
 
-        /* Specific mobile adjustments */
-        @media (max-width: 768px) {
-            .py-24 {
-                padding-top: 4rem;
-                padding-bottom: 4rem;
-            }
-        }
-    </style>
-    <!-- Import Inter Font (as a standard modern font) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px; padding: 18px; box-shadow: var(--shadow);
+      border: 1px solid #e5e7eb;
+    }
+    [data-theme="dark"] .card { border-color: #2a2f55; }
+
+    .card + .card { margin-top: 14px; }
+
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 12px; border-bottom: 1px solid #eef0f3;
+      margin-bottom: 12px;
+    }
+    [data-theme="dark"] .card-header { border-bottom-color: #2a2f55; }
+
+    .card-title { font-size: 16px; font-weight: 700; }
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 1024px){
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="number"] {
+      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #dbe0ea;
+      background: #fff; outline: none;
+    }
+    input:focus { border-color: var(--primary); box-shadow: var(--ring); }
+
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    .switch {
+      position: relative; width: 52px; height: 30px; border-radius: 999px;
+      background: #e5e7eb; cursor: pointer; transition: all .2s;
+      border: 1px solid #d1d5db;
+    }
+    .switch input { display: none; }
+    .knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: white; transition: transform .2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    input:checked + .knob { transform: translateX(22px); background: #fff; }
+
+    .hint-row { font-size: 12px; color: var(--muted); }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+
+    .currency { font-family: ui-monospace,SFMono-Regular,Monaco; }
+
+    .tooltip { position: relative; display: inline-block; }
+    .tooltip .tip {
+      visibility: hidden; width: 180px; background: #111; color: #fff; text-align: left;
+      border-radius: 6px; padding: 8px; position: absolute; z-index: 1; bottom: 125%; left: 50%; transform: translateX(-50%);
+      opacity: 0; transition: opacity .2s;
+    }
+    .tooltip:hover .tip { visibility: visible; opacity: 1; }
+
+    /* modal */
+    .modal {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.45); z-index: 100;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      width: min(860px, 92vw); max-height: 90vh; overflow: auto;
+      background: var(--card); border-radius: 16px; padding: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.35);
+      border: 1px solid #e6e6e6;
+    }
+    .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 900px){ .plans { grid-template-columns: 1fr; } }
+
+    .plan {
+      border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px;
+      background: #fff;
+    }
+    .plan.selected { border-color: var(--primary); box-shadow: 0 4px 14px rgba(109,92,255,.25); }
+    .plan-header { display: flex; align-items: baseline; justify-content: space-between; }
+    .plan-name { font-weight: 700; font-size: 16px; }
+    .plan-price { font-size: 20px; font-weight: 700; }
+    .plan-desc { color: var(--muted); font-size: 13px; }
+
+    .cta-row { display: flex; gap: 8px; justify-content: flex-end; padding-top: 6px; }
+
+    /* toast */
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #111; color: #fff; padding: 12px 14px; border-radius: 999px;
+      opacity: 0; pointer-events: none; transition: opacity .25s ease;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; pointer-events: auto; }
+
+    /* small UI touches */
+    .section-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .muted { color: var(--muted); font-size: 13px; }
+  </style>
 </head>
-<body class="antialiased">
+<body>
+  <div class="container" id="app">
+    <!-- Top bar -->
+    <div class="topbar" role="navigation" aria-label="Top navigation">
+      <div class="brand" aria-label="Brand">
+        <div class="logo" aria-label="Logo">S</div>
+        <div>
+          <h1>Skyline Analytics - Settings</h1>
+          <div class="muted" style="font-size:11px; margin-top:2px;">Manage profile, billing and subscriptions</div>
+        </div>
+      </div>
+      <div class="search" aria-label="Search settings">
+        <input type="text" placeholder="Search settings..." id="searchBox" />
+        <button class="btn secondary" id="btnSearchClear" title="Clear">Clear</button>
+        <button class="btn primary" id="btnThemeToggle" title="Toggle theme">Theme</button>
+      </div>
+    </div>
 
-    <!-- Navigation Bar -->
-    <header class="sticky top-0 z-50 bg-white shadow-lg/50 backdrop-blur-md bg-opacity-90">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex-shrink-0">
-                    <span class="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center">
-                        <svg class="w-7 h-7 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.012a9.003 9.003 0 01.006 12.027v.005a9.003 9.003 0 01-12.027-.006v-.005a9.003 9.003 0 01-.006-12.027v-.005a9.003 9.003 0 0112.027.006z"></path></svg>
-                        Compliance<span class="text-blue-600">Track</span>
-                    </span>
-                </div>
-                <!-- Desktop Menu (Hidden on small screens for simplicity) -->
-                <nav class="hidden md:flex space-x-8">
-                    <a href="#dashboard" class="text-gray-600 hover:text-blue-600 font-medium transition duration-150">Dashboard</a>
-                    <a href="#policies" class="text-gray-600 hover:text-blue-600 font-medium transition duration-150">Policies</a>
-                    <a href="#reports" class="text-gray-600 hover:text-blue-600 font-medium transition duration-150">Reports</a>
-                    <a href="#settings" class="text-gray-600 hover:text-blue-600 font-medium transition duration-150">Admin</a>
-                </nav>
-                <!-- CTA -->
-                <div class="hidden md:block">
-                    <button class="btn-primary text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-                        Login
-                    </button>
-                </div>
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-blue-600 p-2 rounded-md transition duration-150">
-                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
-            </div>
+    <div class="layout container" style="padding:0; margin-top:14px;">
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Settings navigation">
+        <div class="section-title" style="margin:6px 6px 12px; font-size:13px; text-transform:uppercase; letter-spacing:.6px; color:#6b7280;">
+          Settings
         </div>
 
-        <!-- Mobile Menu (Initially Hidden) -->
-        <div id="mobile-menu" class="md:hidden hidden border-t border-gray-100">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="#dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">Dashboard</a>
-                <a href="#policies" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">Policies</a>
-                <a href="#reports" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">Reports</a>
-                <a href="#settings" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">Admin</a>
-                <a href="#" class="block w-full text-center btn-primary text-white font-semibold py-2 mt-2 rounded-lg">Login</a>
-            </div>
+        <div class="nav-item active" data-section="profile" role="button" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" aria-hidden="true">
+            <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20.24 21a8 8 0 0 0-16.48 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Profile</span>
         </div>
-    </header>
+        <div class="nav-item" data-section="billing" role="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M4 7h16v10H4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Billing</span>
+        </div>
+        <div class="nav-item" data-section="subscriptions" role="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M4 7h16v4H4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11l6-4 6 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Subscriptions</span>
+        </div>
+        <div class="nav-item" data-section="security" role="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M12 3l7 4v4c0 5-3.5 9-7 9s-7-4-7-9V7l7-4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 11l3 3 3-3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Security</span>
+        </div>
+        <div class="nav-item" data-section="notifications" role="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Notifications</span>
+        </div>
+        <div class="nav-item" data-section="appearance" role="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M12 3l2.5 4.5L19 9l-4 2.5L12 16l-3-4L5 9l4.5-.5L12 3z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="20" r="2" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+          <span>Appearance</span>
+        </div>
 
-    <main>
-        <!-- Hero Section - Product Pitch -->
-        <section class="pt-16 pb-20 bg-gradient-to-br from-white via-blue-50 to-indigo-100">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <span class="inline-block bg-blue-100 text-blue-700 text-sm font-medium px-3 py-1 rounded-full mb-4 shadow-md">
-                    Version 3.0 Released
-                </span>
-                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
-                    Ensure <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-700">100% Compliance</span>, Effortlessly.
-                </h1>
-                <p class="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-                    The leading cloud platform for digital policy distribution, employee acknowledgment tracking, automated reminders, and instant audit readiness.
-                </p>
-                <div class="flex justify-center space-x-4">
-                    <a href="#get-started" class="btn-primary text-white font-bold py-3 px-8 text-lg rounded-xl shadow-2xl transform hover:scale-[1.02] transition duration-300">
-                        Start Free Trial Today
-                    </a>
-                    <a href="#features" class="bg-white text-blue-600 border-2 border-blue-500 font-bold py-3 px-8 text-lg rounded-xl shadow-lg hover:bg-blue-50 transition duration-300 transform hover:scale-[1.02]">
-                        View Demo
-                    </a>
-                </div>
+        <div style="height:6px;"></div>
+        <button class="btn secondary" id="btnExport" style="width:100%;">Export Data</button>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main" role="main" aria-label="Settings content">
+        <!-- Profile Section -->
+        <section id="section-profile" class="section active" aria-labelledby="profile-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="profile-title">Profile</div>
+                <div class="hint">Update your account information</div>
+              </div>
+              <span class="badge" aria-label="status" style="font-size:12px; padding:6px 10px; border-radius:999px; background:#eef2ff; color:#3730a3;">
+                Auto-saves
+              </span>
             </div>
-        </section>
-
-        <!-- Dashboard Overview Section -->
-        <section id="dashboard" class="py-20 bg-white">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-4xl font-bold text-center mb-12 accent-header inline-block mx-auto pb-2">
-                    Real-Time Compliance Overview
-                </h2>
-                
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                    
-                    <!-- Stat Card 1 -->
-                    <div class="card p-6 text-center bg-gradient-to-r from-green-50 to-green-100 border-none">
-                        <p class="text-5xl font-extrabold text-green-600 mb-1" id="totalAcknowledged">92%</p>
-                        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Acknowledgment Rate</p>
-                    </div>
-                    
-                    <!-- Stat Card 2 -->
-                    <div class="card p-6 text-center bg-gradient-to-r from-yellow-50 to-yellow-100 border-none">
-                        <p class="text-5xl font-extrabold text-yellow-600 mb-1" id="pendingSignatures">45</p>
-                        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pending Signatures</p>
-                    </div>
-
-                    <!-- Stat Card 3 -->
-                    <div class="card p-6 text-center bg-gradient-to-r from-red-50 to-red-100 border-none">
-                        <p class="text-5xl font-extrabold text-red-600 mb-1" id="overduePolicies">3</p>
-                        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Overdue Policies</p>
-                    </div>
-                    
-                    <!-- Stat Card 4 -->
-                    <div class="card p-6 text-center bg-gradient-to-r from-blue-50 to-blue-100 border-none">
-                        <p class="text-5xl font-extrabold text-blue-600 mb-1" id="activePolicies">12</p>
-                        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Active Policy Cycles</p>
-                    </div>
-                </div>
-
-                <!-- Main Content: Chart and Recent Activity -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
-                    
-                    <!-- Chart Area (2/3 width) -->
-                    <div class="lg:col-span-2 card p-6">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                            Acknowledgment Trend (Last 30 Days)
-                        </h3>
-                        <!-- Placeholder for a Chart Library (e.g., D3/Recharts - simulated here) -->
-                        <div id="complianceChartPlaceholder">
-                            <p class="text-gray-400 italic">Chart visualization powered by a modern data library...</p>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity (1/3 width) -->
-                    <div class="lg:col-span-1 card p-6">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                             <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Recent Activity
-                        </h3>
-                        <ul class="space-y-4">
-                            <li class="border-b pb-2 border-gray-100 last:border-b-0">
-                                <p class="text-sm font-medium text-gray-700">New "Data Privacy Policy v3.1" distributed.</p>
-                                <span class="text-xs text-gray-400">5 minutes ago</span>
-                            </li>
-                            <li class="border-b pb-2 border-gray-100 last:border-b-0">
-                                <p class="text-sm font-medium text-gray-700">Reminder email sent to Engineering (3 pending).</p>
-                                <span class="text-xs text-gray-400">1 hour ago</span>
-                            </li>
-                            <li class="border-b pb-2 border-gray-100 last:border-b-0">
-                                <p class="text-sm font-medium text-gray-700">HR Dept reached 100% acknowledgment.</p>
-                                <span class="text-xs text-gray-400">Yesterday</span>
-                            </li>
-                        </ul>
-                        <button class="mt-4 w-full text-center text-blue-600 hover:text-blue-700 font-medium text-sm transition duration-150">
-                            View Full Audit Log →
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Policy Management Feature Section -->
-        <section id="policies" class="py-24 bg-gray-50">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Streamlined Policy Lifecycle Management</h2>
-                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">From drafting to digital signature, we automate the compliance workflow so your legal team stays focused.</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                    
-                    <!-- Feature Card 1 -->
-                    <div class="card p-8 text-center group">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-600 mb-6 mx-auto transition duration-300 group-hover:bg-blue-600 group-hover:text-white shadow-lg">
-                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                        </div>
-                        <h4 class="text-xl font-bold mb-3 text-gray-900">Version Control & Distribution</h4>
-                        <p class="text-gray-600">Maintain historical versions of all documents. Target policies instantly to specific departments, roles, or geographies.</p>
-                    </div>
-
-                    <!-- Feature Card 2 -->
-                    <div class="card p-8 text-center group">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 text-indigo-600 mb-6 mx-auto transition duration-300 group-hover:bg-indigo-600 group-hover:text-white shadow-lg">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 11-8 0 4 4 0 018 0zm-4 8a4 4 0 110-8 4 4 0 010 8z"></path></svg>
-                        </div>
-                        <h4 class="text-xl font-bold mb-3 text-gray-900">Automated Reminders</h4>
-                        <p class="text-gray-600">Set custom reminder schedules (e.g., 3 days before deadline). Systematically chases non-compliant users via integrated email.</p>
-                    </div>
-                    
-                    <!-- Feature Card 3 -->
-                    <div class="card p-8 text-center group">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 text-purple-600 mb-6 mx-auto transition duration-300 group-hover:bg-purple-600 group-hover:text-white shadow-lg">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        </div>
-                        <h4 class="text-xl font-bold mb-3 text-gray-900">Ironclad Audit Trails</h4>
-                        <p class="text-gray-600">Every view, acknowledgment, email sent, and signature is time-stamped and cryptographically secured for regulatory peace of mind.</p>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- Interactive Element: Policy Simulation/Configuration Example -->
-        <section id="configuration" class="py-24">
-            <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-                 <div class="text-center mb-12">
-                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Configure Your Compliance Cycle</h2>
-                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">Define required acknowledgment groups and automation rules instantly.</p>
-                </div>
-
-                <div class="card p-8 lg:p-12 shadow-xl">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        
-                        <!-- Configuration Panel -->
-                        <div class="lg:col-span-1">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Policy Setup</h3>
-                            
-                            <div class="mb-4">
-                                <label for="policyName" class="block text-sm font-medium text-gray-700 mb-1">Policy Title</label>
-                                <input type="text" id="policyName" value="Q3 Security Update Policy 2024" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm">
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="targetGroup" class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
-                                <select id="targetGroup" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm">
-                                    <option>All Employees (2,500)</option>
-                                    <option>Engineering & Product (450)</option>
-                                    <option selected>Sales & Marketing (800)</option>
-                                </select>
-                            </div>
-                             <div class="mb-4">
-                                <label for="deadline" class="block text-sm font-medium text-gray-700 mb-1">Acknowledgment Deadline</label>
-                                <input type="date" id="deadline" value="2024-10-31" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm">
-                            </div>
-
-                             <button id="distributeBtn" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-lg mt-2 transition duration-300">
-                                Distribute Policy & Start Tracking
-                            </button>
-                        </div>
-
-                        <!-- Status Viewer -->
-                        <div class="lg:col-span-2 border-l lg:pl-8 border-gray-200">
-                            <h3 class="text-2xl font-semibold mb-4 text-primary">Real-Time Status</h3>
-                            
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg shadow-sm">
-                                    <span class="font-medium text-gray-800">Total Recipients:</span>
-                                    <span class="font-bold text-blue-700" id="statusRecipients">800</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg shadow-sm">
-                                    <span class="font-medium text-gray-800">Acknowledged:</span>
-                                    <span class="font-bold text-green-700" id="statusAcknowledged">240 (30%)</span>
-                                </div>
-                                <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg shadow-sm">
-                                    <span class="font-medium text-gray-800">Awaiting Follow-up:</span>
-                                    <span class="font-bold text-yellow-700" id="statusPending">560 (70%)</span>
-                                </div>
-                                <div class="p-4 border border-dashed border-gray-300 rounded-lg mt-4">
-                                     <p class="text-sm text-gray-600 mb-2 flex items-center">
-                                        <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Next Automated Reminder scheduled for: <span id="nextReminder" class="font-semibold ml-1 text-red-600">10 Days</span>
-                                     </p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-12">
-        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-gray-700 pb-8">
+            <form id="profileForm" autocomplete="on" novalidate>
+              <div class="grid-2">
                 <div>
-                    <h5 class="font-bold text-lg mb-4 text-blue-400">Product</h5>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><a href="#" class="hover:text-blue-300 transition">Features</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Pricing</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Integrations</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Security</a></li>
-                    </ul>
+                  <label for="fullName">Full name</label>
+                  <input type="text" id="fullName" name="fullName" placeholder="Your full name" required value="Alex Johnson">
                 </div>
                 <div>
-                    <h5 class="font-bold text-lg mb-4 text-blue-400">Company</h5>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><a href="#" class="hover:text-blue-300 transition">About Us</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Careers</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Contact Sales</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">News</a></li>
-                    </ul>
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" placeholder="you@example.com" required value="alex@example.com" aria-describedby="emailHelp">
+                  <div id="emailHelp" class="hint" style="margin-top:6px;">We'll send receipts and notices to this address.</div>
                 </div>
-                <div class="col-span-2 md:col-span-1">
-                    <h5 class="font-bold text-lg mb-4 text-blue-400">Resources</h5>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><a href="#" class="hover:text-blue-300 transition">Documentation</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Support Center</a></li>
-                        <li><a href="#" class="hover:text-blue-300 transition">Compliance Guides</a></li>
-                    </ul>
+              </div>
+              <div class="grid-2" style="margin-top:12px;">
+                <div>
+                  <label for="company">Company</label>
+                  <input type="text" id="company" name="company" placeholder="Company name" value="Acme Labs">
                 </div>
-                <div class="md:col-span-2 col-span-full">
-                    <h5 class="font-bold text-lg mb-4 text-blue-400">Stay Updated</h5>
-                    <p class="text-gray-300 mb-3 text-sm">Subscribe for product updates and compliance news.</p>
-                    <form onsubmit="handleSubscription(event)">
-                        <input type="email" placeholder="Your work email" class="p-3 rounded-l-lg w-full md:w-2/3 text-gray-900 border-none focus:outline-none" required>
-                        <button type="submit" class="btn-primary text-white font-bold p-3 rounded-r-lg -ml-1 md:ml-0 transition duration-300">
-                            Subscribe
-                        </button>
-                    </form>
+                <div>
+                  <label for="phone">Phone</label>
+                  <input type="tel" id="phone" name="phone" placeholder="+1 (555) 012-3456" value="+1 555 012 3456">
                 </div>
+              </div>
+              <div class="grid-2" style="margin-top:12px;">
+                <div>
+                  <label for="timezone">Time zone</label>
+                  <input type="text" id="timezone" name="timezone" placeholder="Timezone" value="America/New_York">
+                </div>
+                <div>
+                  <label for="role">Role</label>
+                  <input type="text" id="role" name="role" placeholder="Administrator" value="Administrator" disabled>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:14px;">
+                <button type="button" class="btn secondary" id="btnProfileReset">Reset</button>
+                <button type="submit" class="btn primary" id="btnProfileSave">Save changes</button>
+              </div>
+              <div class="hint" id="profileStatus" style="margin-top:8px;">Changes will save automatically where available.</div>
+            </form>
+          </div>
+        </section>
+
+        <!-- Billing Section -->
+        <section id="section-billing" class="section" aria-labelledby="billing-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="billing-title">Billing</div>
+                <div class="hint">Manage payment methods and invoices</div>
+              </div>
+              <button class="btn" id="btnBillingHelp" aria-label="Billing help" style="padding:8px 12px;">Help</button>
             </div>
-            <div class="mt-8 flex flex-col md:flex-row justify-between items-center pt-4">
-                <p class="text-sm text-gray-500">&copy; 2024 ComplianceTrack Pro. All rights reserved.</p>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-500 hover:text-blue-400 text-sm">Privacy</a>
-                    <a href="#" class="text-gray-500 hover:text-blue-400 text-sm">Terms</a>
+            <div class="grid-2" style="align-items: start;">
+              <div>
+                <label>Payment method</label>
+                <div class="card" style="padding:14px; display:flex; gap:12px; align-items:center;">
+                  <div style="width:46px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1a2a6c,#fcb045); color:white; font-weight:700;">
+                    Visa
+                  </div>
+                  <div>
+                    <div style="font-weight:700;">Ending 4242</div>
+                    <div class="hint" style="font-size:12px;">Updated: 2024-11-01</div>
+                  </div>
+                  <div style="margin-left:auto;">
+                    <button class="btn secondary" id="btnChangeCard" title="Change card">Change</button>
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <label>Billing address</label>
+                <input type="text" id="billingAddress" placeholder="Billing address" value="123 Market Street, New York" />
+              </div>
             </div>
+
+            <div class="grid-2" style="margin-top:12px;">
+              <div>
+                <label for="taxId">Tax ID (optional)</label>
+                <input type="text" id="taxId" placeholder="Tax ID (e.g., EIN)" value="12-3456789" />
+              </div>
+              <div>
+                <label for="invoiceEmail">Invoice email</label>
+                <input type="email" id="invoiceEmail" placeholder="billing@example.com" value="billing@example.com" />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="btn secondary" id="btnBillingReset" type="button">Reset</button>
+              <button class="btn primary" id="btnBillingSave" type="button">Save changes</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Subscriptions Section -->
+        <section id="section-subscriptions" class="section" aria-labelledby="subscriptions-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="subscriptions-title">Subscriptions</div>
+                <div class="hint">Current plan and upgrade options</div>
+              </div>
+              <button class="btn secondary" id="btnChangePlanModal" aria-label="Change plan">Change plan</button>
+            </div>
+
+            <div class="grid-3" style="gap:20px;">
+              <div class="card" aria-label="Current plan">
+                <div class="card-header" style="border-bottom:1px solid #eef0f3;">
+                  <strong>Current plan</strong>
+                  <span class="tooltip" aria-label="Billing cycle">
+                    <span class="muted" style="font-size:12px;">Monthly</span>
+                    <span class="tip" role="tooltip">Billing cycle is monthly</span>
+                  </span>
+                </div>
+                <div style="padding:12px; display:flex; align-items:center; gap:12px;">
+                  <div style="width:54px; height:54px; border-radius:12px; background:linear-gradient(135deg, #4f46e5, #06b6d4); display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">
+                    Pro
+                  </div>
+                  <div>
+                    <div style="font-weight:700;">Pro Plan</div>
+                    <div class="hint" style="font-size:12px;">Includes analytics, unlimited users</div>
+                  </div>
+                  <div style="margin-left:auto; text-align:right;">
+                    <div style="font-weight:700;">$39/mo</div>
+                    <div class="hint" style="font-size:12px;">Next bill: 2025-01-12</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" aria-label="Billing usage">
+                <div class="card-header" style="border-bottom:1px solid #eef0f3;">
+                  <strong>Usage</strong>
+                  <span class="hint" style="font-size:12px;">Last 30 days</span>
+                </div>
+                <div style="padding:12px;">
+                  <div style="height: 120px; background: linear-gradient(135deg, rgba(109,92,255,.25), rgba(99,102,241,.05)); border-radius: 8px; display:flex; align-items:flex-end;">
+                    <div style="width:100%; height: 60%; background: linear-gradient(180deg, #6d5cff, transparent); border-radius: 8px 8px 0 0;"></div>
+                  </div>
+                  <div class="hint" style="margin-top:8px;">Active users, API calls, seat usage</div>
+                </div>
+              </div>
+
+              <div class="card" aria-label="Invoices">
+                <div class="card-header" style="border-bottom:1px solid #eef0f3;">
+                  <strong>Invoices</strong>
+                  <span class="hint" style="font-size:12px;">Latest 3</span>
+                </div>
+                <div style="padding:12px;">
+                  <ul style="margin:0; padding-left:18px;">
+                    <li>Invoice #INV-1001 — $39.00 — 2025-01-01</li>
+                    <li>Invoice #INV-1000 — $39.00 — 2024-12-01</li>
+                    <li>Invoice #INV-0999 — $39.00 — 2024-11-01</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Security Section -->
+        <section id="section-security" class="section" aria-labelledby="security-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="security-title">Security</div>
+                <div class="hint">Protect your account</div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="align-items: start;">
+              <div>
+                <label>Two-factor authentication</label>
+                <div class="row" style="align-items:center; gap:12px;">
+                  <div class="switch" aria-label="Enable 2FA">
+                    <input type="checkbox" id="toggle2fa" />
+                    <span class="knob"></span>
+                  </div>
+                  <span class="hint" id="twoFAStatus" style="font-weight:600;">Disabled</span>
+                </div>
+                <div class="hint" style="margin-top:8px;">Increase security with authenticator apps or SMS codes.</div>
+              </div>
+
+              <div>
+                <label for="password">Change password</label>
+                <input type="password" id="password" placeholder="New password" />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="btn secondary" id="btnSecurityReset" type="button">Reset</button>
+              <button class="btn primary" id="btnSecuritySave" type="button">Update security</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <div class="card-header" style="border-bottom:1px solid #eef0f3;">
+              <strong>Recovery codes</strong>
+              <span class="hint" style="font-size:12px;">Back up securely</span>
+            </div>
+            <div style="padding:12px;">
+              <div class="hint" style="margin-bottom:6px;">Store these codes in a safe place. Each code can be used once.</div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <span class="tag" style="padding:8px 12px; border-radius:999px; background:#f3f4f6;">ABCD-1234</span>
+                <span class="tag" style="padding:8px 12px; border-radius:999px; background:#f3f4f6;">EFGH-5678</span>
+                <span class="tag" style="padding:8px 12px; border-radius:999px; background:#f3f4f6;">IJKL-9012</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="section-notifications" class="section" aria-labelledby="notifications-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="notifications-title">Notifications</div>
+                <div class="hint">Choose how you receive alerts</div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label>Email alerts</label>
+                <div class="row" style="gap:6px; margin-top:6px;">
+                  <div class="switch" aria-label="Email alerts toggle">
+                    <input type="checkbox" id="emailAlerts" checked />
+                    <span class="knob"></span>
+                  </div>
+                  <span>Email notifications enabled</span>
+                </div>
+              </div>
+              <div>
+                <label>Push alerts</label>
+                <div class="row" style="gap:6px; margin-top:6px;">
+                  <div class="switch" aria-label="Push alerts toggle">
+                    <input type="checkbox" id="pushAlerts" checked />
+                    <span class="knob"></span>
+                  </div>
+                  <span>Push notifications enabled</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:12px;">
+              <div>
+                <label>SMS alerts</label>
+                <div class="row" style="gap:6px; margin-top:6px;">
+                  <div class="switch" aria-label="SMS alerts toggle">
+                    <input type="checkbox" id="smsAlerts" />
+                    <span class="knob"></span>
+                  </div>
+                  <span>SMS notifications disabled</span>
+                </div>
+              </div>
+              <div>
+                <label>Newsletter</label>
+                <select aria-label="Newsletter frequency" id="newsletterFreq" style="width:100%; padding:10px; border-radius:8px; border:1px solid #dbe0ea;">
+                  <option>Weekly</option>
+                  <option>Bi-weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="btn secondary" id="btnNotificationsReset" type="button">Reset</button>
+              <button class="btn primary" id="btnNotificationsSave" type="button">Save changes</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Appearance Section -->
+        <section id="section-appearance" class="section" aria-labelledby="appearance-title">
+          <div class="card">
+            <div class="card-header section-header">
+              <div>
+                <div class="card-title" id="appearance-title">Appearance</div>
+                <div class="hint">Theme and color preferences</div>
+              </div>
+            </div>
+
+            <div class="grid-2" style="align-items:flex-start;">
+              <div>
+                <label>Theme</label>
+                <div class="row" style="gap:6px;">
+                  <button class="btn secondary" id="btnThemeSystem" type="button" aria-label="System theme">System</button>
+                  <button class="btn secondary" id="btnThemeLight" type="button" aria-label="Light theme">Light</button>
+                  <button class="btn secondary" id="btnThemeDark" type="button" aria-label="Dark theme">Dark</button>
+                </div>
+              </div>
+
+              <div>
+                <label>Accent color</label>
+                <div class="row" style="gap:6px;">
+                  <button class="btn secondary" style="background:#7c3aed; color:white;" type="button" aria-label="Purple" data-accent="#7c3aed"></button>
+                  <button class="btn secondary" style="background:#06b6d4; color:white;" type="button" aria-label="Cyan" data-accent="#06b6d4"></button>
+                  <button class="btn secondary" style="background:#10b981; color:white;" type="button" aria-label="Green" data-accent="#10b981"></button>
+                  <button class="btn secondary" style="background:#f59e0b; color:white;" type="button" aria-label="Orange" data-accent="#f59e0b"></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="btn secondary" id="btnAppearanceReset" type="button">Reset</button>
+              <button class="btn primary" id="btnAppearanceSave" type="button">Save changes</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Change Plan Modal -->
+    <div class="modal" id="planModal" aria-modal="true" role="dialog" aria-label="Change plan dialog">
+      <div class="modal-content">
+        <div class="section-header" style="margin-bottom:6px;">
+          <strong>Change plan</strong>
+          <button class="btn secondary" id="btnPlanModalClose" type="button" style="padding:6px 10px;">Close</button>
         </div>
-    </footer>
+        <div class="hint" style="margin-bottom:8px;">Choose a plan that fits your needs. Billing will occur at the next cycle.</div>
 
+        <div class="plans" role="listbox" aria-label="Plan options" id="planOptions">
+          <div class="plan" role="option" aria-selected="false" data-plan="Basic">
+            <div class="plan-header">
+              <span class="plan-name">Basic</span>
+              <span class="plan-price">$19/mo</span>
+            </div>
+            <div class="plan-desc">Starter features for small teams</div>
+          </div>
+          <div class="plan selected" role="option" aria-selected="true" data-plan="Pro">
+            <div class="plan-header">
+              <span class="plan-name">Pro</span>
+              <span class="plan-price">$39/mo</span>
+            </div>
+            <div class="plan-desc">Most popular plan with analytics</div>
+          </div>
+          <div class="plan" role="option" aria-selected="false" data-plan="Enterprise">
+            <div class="plan-header">
+              <span class="plan-name">Enterprise</span>
+              <span class="plan-price">Contact</span>
+            </div>
+            <div class="plan-desc">Custom solutions with SLA</div>
+          </div>
+        </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- 1. Mobile Menu Toggle ---
-            const menuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
+        <div class="cta-row">
+          <span class="hint" id="planSelected" style="margin-right:auto;">Selected: Pro</span>
+          <button class="btn secondary" id="btnPlanCancel" type="button">Cancel</button>
+          <button class="btn primary" id="btnPlanApply" type="button">Apply plan</button>
+        </div>
+      </div>
+    </div>
 
-            menuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite">Saved</div>
 
-            // Close mobile menu when a link is clicked
-            mobileMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                });
-            });
+  </div>
 
-            // --- 2. Interactive Simulation Script ---
-            const distributeBtn = document.getElementById('distributeBtn');
-            const statusRecipients = document.getElementById('statusRecipients');
-            const statusAcknowledged = document.getElementById('statusAcknowledged');
-            const statusPending = document.getElementById('statusPending');
-            const nextReminder = document.getElementById('nextReminder');
-            
-            let acknowledgmentProgress = 30; // Starting at 30% for the demo
+  <!-- Inline script for interactivity -->
+  <script>
+    // Theme handling
+    const root = document.documentElement;
+    const appTheme = document.body;
 
-            distributeBtn.addEventListener('click', () => {
-                // Simulate distribution trigger and initial state
-                alert('Policy "Q3 Security Update Policy 2024" successfully distributed to Sales & Marketing!');
-                
-                // Reset progress for simulation restart
-                acknowledgmentProgress = 30; 
-                updateSimulationDisplay();
-                
-                // Start automated progress update simulation (runs once every 2 seconds for demonstration)
-                const interval = setInterval(() => {
-                    if (acknowledgmentProgress < 100) {
-                        acknowledgmentProgress += Math.floor(Math.random() * 10) + 5; // Increase by 5% to 15%
-                        if (acknowledgmentProgress > 100) acknowledgmentProgress = 100;
-                        updateSimulationDisplay();
-                        
-                        if (acknowledgmentProgress === 100) {
-                            clearInterval(interval);
-                            alert("Distribution Cycle Complete! 100% Acknowledged.");
-                            nextReminder.textContent = 'N/A';
-                        }
-                    }
-                }, 2000);
-            });
+    function applyTheme(theme) {
+      if (theme === 'system') {
+        // Simple system: prefer light by default, but can be enhanced with media query
+        document.documentElement.removeAttribute('data-theme');
+      } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
 
-            function updateSimulationDisplay() {
-                const total = 800;
-                const acknowledgedCount = Math.round(total * (acknowledgmentProgress / 100));
-                const pendingCount = total - acknowledgedCount;
-                
-                statusAcknowledged.textContent = `${acknowledgedCount} (${acknowledgmentProgress}%)`;
-                statusPending.textContent = `${pendingCount} (${100 - acknowledgmentProgress}%)`;
+    // Accent default
+    let currentAccent = '#6d5cff';
+    function applyAccent(hex) {
+      currentAccent = hex;
+      document.documentElement.style.setProperty('--primary', hex);
+      // optional gradient adjust
+      document.documentElement.style.setProperty('--primary-2', hex);
+    }
 
-                if (acknowledgmentProgress < 100) {
-                    // Simulate remaining time based on remaining percentage
-                    const remainingTimeDays = Math.ceil((100 - acknowledgmentProgress) * 0.5); // Rough calculation based on 2s interval
-                    nextReminder.textContent = `${remainingTimeDays} Days`;
-                }
-            }
+    // Initial theme
+    applyTheme('system');
+    // Accent buttons
+    document.querySelectorAll('[data-accent]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const hex = btn.getAttribute('data-accent');
+        applyAccent(hex);
+      });
+    });
 
-            // Initialize dashboard stats (dummy data)
-            document.getElementById('totalAcknowledged').textContent = '92%';
-            document.getElementById('pendingSignatures').textContent = '45';
-            document.getElementById('overduePolicies').textContent = '3';
-            document.getElementById('activePolicies').textContent = '12';
-            
-            // Initial call for the simulation panel state
-            updateSimulationDisplay(); 
-        });
+    // Theme buttons
+    document.getElementById('btnThemeSystem').addEventListener('click', () => applyTheme('system'));
+    document.getElementById('btnThemeLight').addEventListener('click', () => applyTheme('light'));
+    document.getElementById('btnThemeDark').addEventListener('click', () => applyTheme('dark'));
 
-        // --- 3. Subscription Handler ---
-        function handleSubscription(event) {
-            event.preventDefault();
-            // In a real app, this would post to a backend API
-            alert("Thank you for subscribing! You will receive important compliance updates.");
-            event.target.reset(); // Clear the form
+    // Sidebar navigation
+    const sections = {
+      profile: document.getElementById('section-profile'),
+      billing: document.getElementById('section-billing'),
+      subscriptions: document.getElementById('section-subscriptions'),
+      security: document.getElementById('section-security'),
+      notifications: document.getElementById('section-notifications'),
+      appearance: document.getElementById('section-appearance')
+    };
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+        const key = item.getAttribute('data-section');
+        Object.values(sections).forEach(sec => sec.classList.remove('active'));
+        sections[key].classList.add('active');
+      });
+    });
+
+    // Profile form save
+    const profileForm = document.getElementById('profileForm');
+    profileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveToast('Profile updated');
+    });
+    document.getElementById('btnProfileSave').addEventListener('click', () => {
+      // naive validation
+      const email = document.getElementById('email');
+      if (!email.value.includes('@')) {
+        alert('Please enter a valid email.');
+        email.focus();
+        return;
+      }
+      saveToast('Profile updated');
+    });
+    document.getElementById('btnProfileReset').addEventListener('click', () => {
+      profileForm.reset();
+      saveToast('Profile reset');
+    });
+
+    // Billing
+    document.getElementById('btnBillingSave').addEventListener('click', () => {
+      saveToast('Billing details saved');
+    });
+    document.getElementById('btnChangeCard').addEventListener('click', () => {
+      alert('Card change modal placeholder.');
+    });
+    document.getElementById('btnBillingReset').addEventListener('click', () => {
+      document.getElementById('billingAddress').value = '123 Market Street, New York';
+      document.getElementById('taxId').value = '';
+      document.getElementById('invoiceEmail').value = 'billing@example.com';
+      saveToast('Billing form reset');
+    });
+
+    // Subscriptions modal
+    const planModal = document.getElementById('planModal');
+    document.getElementById('btnChangePlanModal').addEventListener('click', () => {
+      planModal.classList.add('active');
+      // preselect Pro
+      selectPlanByName('Pro');
+      document.getElementById('planSelected').textContent = 'Selected: Pro';
+    });
+    document.getElementById('btnPlanModalClose').addEventListener('click', () => planModal.classList.remove('active'));
+    document.getElementById('btnPlanCancel').addEventListener('click', () => planModal.classList.remove('active'));
+
+    function selectPlanByName(name) {
+      const plans = document.querySelectorAll('.plans .plan');
+      plans.forEach(p => {
+        if (p.getAttribute('data-plan') === name) {
+          p.classList.add('selected');
+          p.setAttribute('aria-selected','true');
+        } else {
+          p.classList.remove('selected');
+          p.setAttribute('aria-selected','false');
         }
-    </script>
+      });
+      document.querySelector('#planSelected').textContent = 'Selected: ' + name;
+    }
+
+    document.querySelectorAll('.plans .plan').forEach(p => {
+      p.addEventListener('click', () => {
+        document.querySelectorAll('.plans .plan').forEach(x => x.classList.remove('selected'));
+        p.classList.add('selected');
+        p.setAttribute('aria-selected','true');
+        document.querySelector('#planSelected').textContent = 'Selected: ' + p.getAttribute('data-plan');
+      });
+    });
+
+    document.getElementById('btnPlanApply').addEventListener('click', () => {
+      const selected = document.querySelector('.plans .plan.selected');
+      const planName = selected ? selected.getAttribute('data-plan') : 'Pro';
+      document.getElementById('subscriptions-title').textContent = planName;
+      planModal.classList.remove('active');
+      saveToast('Plan updated to ' + planName);
+    });
+
+    // Security
+    const toggle2fa = document.getElementById('toggle2fa');
+    const twoFAStatus = document.getElementById('twoFAStatus');
+    toggle2fa.addEventListener('change', () => {
+      twoFAStatus.textContent = toggle2fa.checked ? 'Enabled' : 'Disabled';
+    });
+    document.getElementById('btnSecuritySave').addEventListener('click', () => {
+      saveToast('Security settings saved');
+    });
+    document.getElementById('btnSecurityReset').addEventListener('click', () => {
+      toggle2fa.checked = false;
+      twoFAStatus.textContent = 'Disabled';
+      document.getElementById('password').value = '';
+      saveToast('Security settings reset');
+    });
+
+    // Notifications
+    document.getElementById('btnNotificationsSave').addEventListener('click', () => {
+      saveToast('Notification preferences saved');
+    });
+    document.getElementById('btnNotificationsReset').addEventListener('click', () => {
+      document.getElementById('emailAlerts').checked = true;
+      document.getElementById('pushAlerts').checked = true;
+      document.getElementById('smsAlerts').checked = false;
+      document.getElementById('newsletterFreq').value = 'Weekly';
+      saveToast('Notifications reset');
+    });
+
+    // Appearance
+    document.getElementById('btnAppearanceSave').addEventListener('click', () => {
+      saveToast('Appearance saved');
+    });
+    document.getElementById('btnAppearanceReset').addEventListener('click', () => {
+      applyTheme('system'); applyAccent('#6d5cff');
+      saveToast('Appearance reset');
+    });
+
+    // Keyboard accessibility for search & theme
+    document.getElementById('btnSearchClear').addEventListener('click', () => {
+      document.getElementById('searchBox').value = '';
+      document.getElementById('searchBox').focus();
+    });
+    document.getElementById('searchBox').addEventListener('input', (e) => {
+      // simple filter: show only sections whose title includes query
+      const q = e.target.value.toLowerCase();
+      const allTitles = {
+        profile: 'Profile', billing: 'Billing', subscriptions: 'Subscriptions', security: 'Security', notifications: 'Notifications', appearance: 'Appearance'
+      };
+      // naive: highlight first matching section in sidebar
+      if (!q) return;
+      Object.keys(sections).forEach(key => {
+        // simple heuristic: if section name includes q, morph active to that tab
+        if (key.includes(q)) {
+          document.querySelector(`.nav-item[data-section="${key}"]`).classList.add('active');
+        }
+      });
+    });
+
+    function saveToast(message) {
+      const t = document.getElementById('toast');
+      t.textContent = message;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // Initially save a quick "ready"
+    window.addEventListener('load', () => {
+      // Animate in
+      document.querySelectorAll('.section').forEach(sec => {
+        sec.style.opacity = 1;
+      });
+    });
+  </script>
 </body>
 </html>

@@ -37,6 +37,15 @@ class AckMethod(str, enum.Enum):
     ONECLICK = "oneclick"
 
 
+class NotificationType(str, enum.Enum):
+    POLICY_ASSIGNED = "policy_assigned"
+    POLICY_ACKNOWLEDGED = "policy_acknowledged"
+    POLICY_OVERDUE = "policy_overdue"
+    POLICY_REMINDER = "policy_reminder"
+    USER_ADDED = "user_added"
+    WORKSPACE_CREATED = "workspace_created"
+
+
 class Workspace(Base):
     __tablename__ = "workspaces"
 
@@ -45,7 +54,23 @@ class Workspace(Base):
     slug = Column(String(255), nullable=True, unique=True)
     plan = Column(SQLEnum(PlanTier), default=PlanTier.SMALL, nullable=False)
     trial_ends_at = Column(DateTime, nullable=True)  # 7-day free trial for all plans
-    sso_enabled = Column(Boolean, default=False, nullable=False)  # SSO addon ($199/month)
+    sso_enabled = Column(Boolean, default=False, nullable=False)  # SSO addon ($50/month)
+
+    # Stripe subscription fields
+    stripe_customer_id = Column(String(255), nullable=True, index=True)  # Stripe customer ID
+    stripe_subscription_id = Column(String(255), nullable=True, index=True)  # Active subscription ID
+    subscription_status = Column(String(50), nullable=True)  # trialing, active, past_due, canceled, etc.
+    subscription_current_period_end = Column(DateTime, nullable=True)  # When current billing period ends
+
+    # Staff count and billing
+    staff_count = Column(Integer, default=1, nullable=False)  # Licensed seats purchased (minimum per plan)
+    active_staff_count = Column(Integer, default=0, nullable=False)  # Track billable staff users (excludes guests)
+    billing_interval = Column(String(20), default="monthly", nullable=False)  # monthly or annual
+
+    # SSO add-on (one-time purchase)
+    sso_purchased = Column(Boolean, default=False, nullable=False)  # Has SSO been purchased
+    sso_purchased_at = Column(DateTime, nullable=True)  # When SSO was purchased
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="workspace")
@@ -65,6 +90,7 @@ class Team(Base):
     workspace = relationship("Workspace")
     policies = relationship("Policy", back_populates="team")
     assignments = relationship("Assignment", back_populates="team")
+    members = relationship("User", back_populates="team", foreign_keys="User.team_id")
 
 
 class User(Base):
@@ -78,10 +104,15 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), nullable=False, index=True)  # Removed unique=True
     name = Column(String(255), nullable=False)
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
+    phone = Column(String(50), nullable=True)
+    country = Column(String(100), nullable=True)
     password_hash = Column(String(255), nullable=True)  # Optional password for quick login
     role = Column(SQLEnum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     department = Column(String(255), nullable=True)
     workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
+    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     can_login = Column(Boolean, default=True, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
     is_guest = Column(Boolean, default=False, nullable=False)
@@ -91,6 +122,7 @@ class User(Base):
     created_policies = relationship("Policy", back_populates="creator", foreign_keys="Policy.created_by")
     assignments = relationship("Assignment", back_populates="user")
     workspace = relationship("Workspace", back_populates="users")
+    team = relationship("Team", back_populates="members", foreign_keys=[team_id])
 
 
 class Policy(Base):
@@ -179,3 +211,20 @@ class AuthCode(Base):
     used = Column(Boolean, default=False, nullable=False)
     attempts = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False)
+    type = Column(SQLEnum(NotificationType), nullable=False)
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    link = Column(String(500), nullable=True)  # Optional link to related resource
+    read = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User")
+    workspace = relationship("Workspace")

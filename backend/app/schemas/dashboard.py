@@ -13,6 +13,10 @@ class DashboardStats(BaseModel):
     acknowledged_assignments: int = 0
     overdue_assignments: int = 0
     acknowledgment_rate: float = 0.0  # Percentage
+    seat_capacity: Optional[int] = None
+    seat_usage: Optional[int] = None
+    seat_available: Optional[int] = None
+    sso_enabled: Optional[bool] = None
 
 
 class RecentActivity(BaseModel):

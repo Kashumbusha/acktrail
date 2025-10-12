@@ -58,7 +58,11 @@ export default function Dashboard() {
     acknowledged_assignments = 0,
     pending_assignments = 0,
     overdue_assignments = 0,
-    acknowledgment_rate = 0
+    acknowledgment_rate = 0,
+    seat_capacity,
+    seat_usage,
+    seat_available,
+    sso_enabled
   } = dashboardStats;
 
   // Get recent policies from backend (convert recent_activity to a list of unique policies)
@@ -118,6 +122,34 @@ export default function Dashboard() {
           loading={isLoading}
         />
       </div>
+
+      {seat_capacity && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+            <div className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">Seat Usage</h3>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{seat_usage} / {seat_capacity}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{seat_available} seats available</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+            <div className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">SSO Status</h3>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{sso_enabled ? 'Enabled' : 'Not Enabled'}</p>
+                </div>
+                <Link to="/settings" className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">Manage</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Additional Stats Row */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -219,7 +251,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 dark:bg-slate-900 dark:border-slate-800">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4">
           Quick Actions
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -229,8 +261,8 @@ export default function Dashboard() {
           >
             <PlusIcon className="h-6 w-6 text-indigo-600 mr-3" />
             <div>
-              <p className="text-sm font-medium text-gray-900">Create New Policy</p>
-              <p className="text-xs text-gray-500">Add a new policy document</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Create New Policy</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Add a new policy document</p>
             </div>
           </Link>
 
@@ -240,8 +272,8 @@ export default function Dashboard() {
           >
             <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
             <div>
-              <p className="text-sm font-medium text-gray-900">Manage Policies</p>
-              <p className="text-xs text-gray-500">View and edit existing policies</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100">Manage Policies</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">View and edit existing policies</p>
             </div>
           </Link>
 

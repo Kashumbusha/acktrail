@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import ThemeToggle from '../components/ThemeToggle';
+import { CheckIcon } from '@heroicons/react/24/outline';
 
 export default function Pricing() {
   const tiers = [
@@ -31,30 +30,11 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
-      <nav className="sticky top-0 z-40 backdrop-blur bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800">
-        <div className="container-page">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <div className="bg-indigo-600 rounded-xl p-2 shadow">
-                <DocumentTextIcon className="h-6 w-6 text-white" />
-              </div>
-              <span className="ml-3 text-lg font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">Policy Acknowledgment Tracker</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <ThemeToggle />
-              <Link to="/login" className="btn btn-secondary">Sign in</Link>
-              <Link to="/signup" className="btn btn-primary">Sign up</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <section className="container-page py-16">
+    <section className="container-page py-16">
         <div className="text-center max-w-2xl mx-auto">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Simple, transparent pricing</h1>
           <p className="mt-3 text-slate-600 dark:text-slate-300">Guests are always free. Annual billing saves 15%.</p>
-          <p className="mt-1 text-slate-600 dark:text-slate-300">Add-on: SSO $199 one-time.</p>
+          <p className="mt-1 text-slate-600 dark:text-slate-300">Add-on: SSO $50/month.</p>
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -94,7 +74,6 @@ export default function Pricing() {
           </div>
         </div>
       </section>
-    </div>
   );
 }
 

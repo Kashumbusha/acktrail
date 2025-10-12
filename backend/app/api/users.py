@@ -64,6 +64,7 @@ def invite_user(
     role = payload.get("role") or "employee"
     is_guest = bool(payload.get("is_guest", False))
     can_login = bool(payload.get("can_login", not is_guest))
+    team_id = payload.get("team_id")  # Optional team assignment
 
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email required")
@@ -98,6 +99,8 @@ def invite_user(
     user.can_login = can_login
     if current_user.get("workspace_id"):
         user.workspace_id = UUID(current_user["workspace_id"])  # type: ignore
+    if team_id:
+        user.team_id = UUID(team_id)  # type: ignore
     db.commit()
 
     # Send invitation email
@@ -166,6 +169,49 @@ def update_user(
         user.active = bool(payload["active"])
     db.commit()
     return {"success": True}
+
+
+@router.patch("/me")
+def update_current_user_profile(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Update current user's profile information."""
+    user = db.query(User).filter(User.id == UUID(current_user["id"])).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Update allowed fields
+    if "first_name" in payload:
+        user.first_name = payload["first_name"].strip()
+    if "last_name" in payload:
+        user.last_name = payload["last_name"].strip()
+    if "phone" in payload:
+        user.phone = payload["phone"].strip()
+    if "country" in payload:
+        user.country = payload["country"].strip()
+
+    # Update full name if first or last name changed
+    if "first_name" in payload or "last_name" in payload:
+        first = user.first_name or ""
+        last = user.last_name or ""
+        user.name = f"{first} {last}".strip()
+
+    db.commit()
+
+    return {
+        "success": True,
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": user.phone,
+            "country": user.country,
+        }
+    }
 
 
 @router.get("/{user_id}/assignments")

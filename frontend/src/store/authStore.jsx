@@ -60,7 +60,12 @@ export const AuthProvider = ({ children }) => {
           // Verify token is still valid
           try {
             const response = await authAPI.getMe();
-            dispatch({ type: 'SET_USER', payload: response.data });
+            const mergedUser = {
+              ...JSON.parse(userData),
+              ...response.data,
+            };
+            dispatch({ type: 'SET_USER', payload: mergedUser });
+            localStorage.setItem('user', JSON.stringify(mergedUser));
           } catch (error) {
             // Token invalid, clear auth state
             localStorage.removeItem('token');

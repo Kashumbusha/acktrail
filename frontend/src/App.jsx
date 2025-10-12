@@ -13,12 +13,18 @@ import PolicyList from './pages/PolicyList';
 import AdminUsers from './pages/AdminUsers';
 import PlatformDashboard from './pages/PlatformDashboard';
 import Teams from './pages/Teams';
+import TeamDetail from './pages/TeamDetail';
 import PolicyCreate from './pages/PolicyCreate';
 import PolicyEdit from './pages/PolicyEdit';
 import PolicyDetail from './pages/PolicyDetail';
 import AcknowledgePage from './pages/AcknowledgePage';
 import SuccessPage from './pages/SuccessPage';
 import MagicLinkVerify from './pages/MagicLinkVerify';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import CheckoutCancelled from './pages/CheckoutCancelled';
+import Billing from './pages/Billing';
+import Settings from './pages/Settings';
+import PublicLayout from './components/PublicLayout';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -36,20 +42,26 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="App">
+          <div className="App font-sans bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen bg-grid-pattern dark:bg-grid-pattern-dark">
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/verify" element={<MagicLinkVerify />} />
-              <Route path="/ack/:token" element={<AcknowledgePage />} />
-              <Route path="/admin/users" element={<PrivateRoute><Layout><AdminUsers /></Layout></PrivateRoute>} />
-              <Route path="/platform" element={<PrivateRoute><Layout><PlatformDashboard /></Layout></PrivateRoute>} />
-              <Route path="/success" element={<SuccessPage />} />
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/signup/success" element={<CheckoutSuccess />} />
+                <Route path="/signup/cancelled" element={<CheckoutCancelled />} />
+                <Route path="/verify" element={<MagicLinkVerify />} />
+                <Route path="/ack/:token" element={<AcknowledgePage />} />
+                <Route path="/success" element={<SuccessPage />} />
+              </Route>
 
               {/* Private routes */}
+              <Route path="/admin/users" element={<PrivateRoute><Layout><AdminUsers /></Layout></PrivateRoute>} />
+              <Route path="/platform" element={<PrivateRoute><Layout><PlatformDashboard /></Layout></PrivateRoute>} />
+              <Route path="/billing" element={<PrivateRoute><Layout><Billing /></Layout></PrivateRoute>} />
+              <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
               <Route
                 path="/dashboard"
                 element={
@@ -106,6 +118,16 @@ function App() {
                   <PrivateRoute>
                     <Layout>
                       <Teams />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/teams/:id"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <TeamDetail />
                     </Layout>
                   </PrivateRoute>
                 }

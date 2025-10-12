@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import ThemeToggle from './ThemeToggle';
+import NotificationDropdown from './NotificationDropdown';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -36,8 +37,11 @@ export default function Layout({ children }) {
               <div className="flex h-16 justify-between">
                 <div className="flex">
                   <div className="flex flex-shrink-0 items-center">
-                    <Link to="/dashboard" className="text-xl font-bold text-indigo-600">
-                      Policy Tracker
+                    <Link to="/dashboard" className="text-xl font-bold text-primary flex items-center">
+                      <svg className="h-7 w-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                      </svg>
+                      PolicyTrack
                     </Link>
                   </div>
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -47,9 +51,9 @@ export default function Layout({ children }) {
                         to={item.href}
                         className={classNames(
                           location.pathname === item.href
-                            ? 'border-indigo-500 text-gray-900'
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                          'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium'
+                            ? 'border-primary-500 text-primary-600 dark:text-primary-300'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100',
+                          'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-colors duration-200'
                         )}
                       >
                         {item.name}
@@ -59,16 +63,16 @@ export default function Layout({ children }) {
                 </div>
                 <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-2">
                   <ThemeToggle />
+                  {/* Notification Bell */}
+                  <NotificationDropdown />
                   <Menu as="div" className="relative ml-3">
                     <div>
-                  <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button className="flex items-center space-x-2 rounded-full bg-white dark:bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span className="sr-only">Open user menu</span>
-                        <div className="flex items-center space-x-2">
-                          <UserCircleIcon className="h-8 w-8 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {user?.email}
-                          </span>
-                        </div>
+                        <UserCircleIcon className="h-8 w-8 text-gray-400 dark:text-gray-300" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {user?.email}
+                        </span>
                       </Menu.Button>
                     </div>
                     <Transition
@@ -80,15 +84,28 @@ export default function Layout({ children }) {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white dark:bg-slate-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              to="/settings"
+                              className={classNames(
+                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200'
+                              )}
+                            >
+                              Settings
+                            </Link>
+                          )}
+                        </Menu.Item>
                         {user?.is_platform_admin && (
                           <Menu.Item>
                             {({ active }) => (
                               <Link
                                 to="/platform"
                                 className={classNames(
-                                  active ? 'bg-gray-100' : '',
-                                  'block px-4 py-2 text-sm text-gray-700'
+                                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                  'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200'
                                 )}
                               >
                                 Platform view
@@ -101,8 +118,8 @@ export default function Layout({ children }) {
                             <button
                               onClick={handleLogout}
                               className={classNames(
-                                active ? 'bg-gray-100' : '',
-                                'block w-full px-4 py-2 text-left text-sm text-gray-700'
+                                active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                                'block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200'
                               )}
                             >
                               Sign out
@@ -114,7 +131,7 @@ export default function Layout({ children }) {
                   </Menu>
                 </div>
                 <div className="-mr-2 flex items-center sm:hidden">
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-white dark:bg-slate-800 p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
                       <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -135,16 +152,16 @@ export default function Layout({ children }) {
                     to={item.href}
                     className={classNames(
                       location.pathname === item.href
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800',
-                      'block border-l-4 py-2 pl-3 pr-4 text-base font-medium'
+                        ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-blue-900 dark:bg-opacity-30 dark:text-primary-300'
+                        : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100',
+                      'block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition-colors duration-200'
                     )}
                   >
                     {item.name}
                   </Disclosure.Button>
                 ))}
               </div>
-              <div className="border-t border-gray-200 pb-3 pt-4">
+              <div className="border-t border-gray-200 dark:border-slate-700 pb-3 pt-4">
                 <div className="flex items-center px-4">
                   <div className="flex-shrink-0">
                     <UserCircleIcon className="h-10 w-10 text-gray-400" />
@@ -155,9 +172,16 @@ export default function Layout({ children }) {
                 </div>
                 <div className="mt-3 space-y-1">
                   <Disclosure.Button
+                    as={Link}
+                    to="/settings"
+                    className="block w-full px-4 py-2 text-left text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
+                  >
+                    Settings
+                  </Disclosure.Button>
+                  <Disclosure.Button
                     as="button"
                     onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-left text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                    className="block w-full px-4 py-2 text-left text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                   >
                     Sign out
                   </Disclosure.Button>

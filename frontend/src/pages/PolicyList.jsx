@@ -102,24 +102,22 @@ export default function PolicyList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Policies</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-            Manage your policy documents and assignments
-          </p>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">Policies</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">Manage your policy documents and assignments</p>
         </div>
         <Link
           to="/policies/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="btn btn-primary mt-4 sm:mt-0"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-          Create Policy
+          Create New Policy
         </Link>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 dark:bg-slate-900 dark:border-slate-800">
+      <div className="card p-6">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -129,22 +127,22 @@ export default function PolicyList() {
             placeholder="Search policies..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:placeholder-slate-400"
+            className="input pl-10"
           />
         </div>
       </div>
 
       {/* Policies List */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+      <div className="card overflow-hidden">
         {filteredPolicies.length === 0 ? (
-            <div className="text-center py-12">
+          <div className="text-center py-12">
             <div className="text-gray-500 dark:text-slate-400 mb-4">
-              {policies?.length === 0 ? 'No policies created yet' : 'No policies match your search'}
+              {policies?.length === 0 ? 'No policies created yet.' : 'No policies match your search.'}
             </div>
             {policies?.length === 0 && (
               <Link
                 to="/policies/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="btn btn-secondary"
               >
                 <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                 Create your first policy
@@ -153,107 +151,121 @@ export default function PolicyList() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-              <thead className="bg-slate-50 dark:bg-slate-800/60">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                     Policy
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden md:table-cell">
                     Assignments
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden md:table-cell">
+                    Progress
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden lg:table-cell">
                     Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden lg:table-cell">
                     Due Date
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-slate-400">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-slate-200 dark:bg-slate-900 dark:divide-slate-800">
+              <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                 {filteredPolicies.map((policy) => (
-                  <tr key={policy.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                  <tr key={policy.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {policy.title}
                         </div>
                         {policy.description && (
-                          <div className="text-sm text-slate-600 mt-1 dark:text-slate-400">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {policy.description}
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={getStatusBadgeClass(policy.status)}>
+                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(policy.status)}`}>
                         {getStatusText(policy.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-slate-100">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 hidden md:table-cell">
                       <div>
                         <div>{policy.assignments_count || 0} total</div>
-                        <div className="text-xs text-gray-500 dark:text-slate-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {policy.acknowledged_count || 0} acknowledged
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
+                          style={{ width: `${policy.acknowledgment_rate || 0}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {policy.acknowledgment_rate || 0}% Acknowledged
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 hidden lg:table-cell">
                       <div>
                         <div>{formatDate(policy.created_at)}</div>
-                        <div className="text-xs text-gray-400 dark:text-slate-500">
+                        <div className="text-xs text-gray-400 dark:text-gray-500">
                           {formatRelativeTime(policy.created_at)}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 hidden lg:table-cell">
                       {policy.due_date ? (
                         <div>
                           <div>{formatDate(policy.due_date)}</div>
-                          <div className="text-xs text-gray-400 dark:text-slate-500">
+                          <div className="text-xs text-gray-400 dark:text-gray-500">
                             {formatRelativeTime(policy.due_date)}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-400 dark:text-slate-500">No due date</span>
+                        <span className="text-gray-400 dark:text-gray-500">No due date</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <Link
                           to={`/policies/${policy.id}`}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                           title="View details"
                         >
-                          <EyeIcon className="h-4 w-4" />
+                          <EyeIcon className="h-5 w-5" />
                         </Link>
                         <Link
                           to={`/policies/${policy.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                           title="Edit policy"
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-5 w-5" />
                         </Link>
                         <button
                           onClick={() => handleExport(policy.id)}
-                          className="text-green-600 hover:text-green-900"
+                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                           title="Export CSV"
                           disabled={exportMutation.isPending}
                         >
-                          <DocumentArrowDownIcon className="h-4 w-4" />
+                          <DocumentArrowDownIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(policy.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                           title="Delete policy"
                         >
-                          <TrashIcon className="h-4 w-4" />
+                          <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
@@ -267,31 +279,31 @@ export default function PolicyList() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-slate-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-slate-900 dark:border-slate-700">
-            <div className="mt-3 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
-                <TrashIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
+          <div className="relative p-8 border w-full max-w-md shadow-lg rounded-xl bg-white dark:bg-gray-900 dark:border-gray-700 transform transition-all sm:my-8 sm:align-middle">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30">
+                <TrashIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mt-4">
+              <h3 className="text-xl font-extrabold text-gray-900 dark:text-gray-100 mt-4">
                 Delete Policy
               </h3>
               <div className="mt-2 px-7 py-3">
-                <p className="text-sm text-gray-500 dark:text-slate-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Are you sure you want to delete this policy? This action cannot be undone and will also delete all associated assignments.
                 </p>
               </div>
-              <div className="flex items-center justify-center space-x-4 mt-4">
+              <div className="flex items-center justify-center space-x-4 mt-6">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="btn btn-secondary"
                   disabled={deleteMutation.isPending}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  className="btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:opacity-50"
                   disabled={deleteMutation.isPending}
                 >
                   {deleteMutation.isPending ? (

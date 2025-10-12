@@ -19,6 +19,10 @@ from .api.dashboard import router as dashboard_router
 from .api.teams import router as teams_router
 from .api.users import router as users_router
 from .api.platform import router as platform_router
+from .api.notifications import router as notifications_router
+from .api.payments import router as payments_router
+from .api.webhooks import router as webhooks_router
+from .api.support import router as support_router
 
 # Configure logging
 logging.basicConfig(
@@ -141,6 +145,10 @@ def create_app() -> FastAPI:
     app.include_router(teams_router, prefix="/api")
     app.include_router(users_router, prefix="/api")
     app.include_router(platform_router, prefix="/api")
+    app.include_router(notifications_router, prefix="/api")
+    app.include_router(payments_router, prefix="/api/payments", tags=["payments"])
+    app.include_router(webhooks_router, prefix="/api/webhooks", tags=["webhooks"])
+    app.include_router(support_router, prefix="/api", tags=["support"])
 
     # Health check endpoint
     @app.get("/health", tags=["health"])

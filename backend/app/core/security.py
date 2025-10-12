@@ -178,35 +178,48 @@ def get_current_user(
     
     # Import here to avoid circular imports
     from app.models.database import get_db
-    from app.models.models import User
+    from app.models.models import User, Workspace
     from uuid import UUID
-    
+    from sqlalchemy.orm import joinedload
+
     # Get a database session
     db_gen = get_db()
     db = next(db_gen)
     try:
         # Convert string UUID to UUID object
         user_id = UUID(payload["sub"])
-        user = db.query(User).filter(User.id == user_id).first()
+        # Eagerly load workspace relationship to avoid DetachedInstanceError
+        user = db.query(User).options(joinedload(User.workspace)).filter(User.id == user_id).first()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+
+        # Access workspace while session is still active
+        workspace = user.workspace if hasattr(user, 'workspace') else None
+        workspace_name = workspace.name if workspace else None
     finally:
         db_gen.close()
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-    
-    return {
+
+    current_user = {
         "id": str(user.id),
         "email": user.email,
         "name": user.name,
+        "first_name": getattr(user, 'first_name', None),
+        "last_name": getattr(user, 'last_name', None),
+        "phone": getattr(user, 'phone', None),
+        "country": getattr(user, 'country', None),
         "role": user.role.value,
         "workspace_id": str(user.workspace_id) if getattr(user, 'workspace_id', None) else None,
+        "workspace_name": workspace_name,
         "is_platform_admin": bool(getattr(user, 'is_platform_admin', False)),
         "department": user.department,
         "created_at": user.created_at.isoformat()
     }
+
+    return current_user
 
 
 def require_admin_role(current_user: dict = Depends(get_current_user)) -> dict:

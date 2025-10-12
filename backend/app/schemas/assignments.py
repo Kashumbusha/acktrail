@@ -51,7 +51,8 @@ class AssignmentListResponse(BaseModel):
 
 
 class RecipientCreate(BaseModel):
-    recipients: List[EmailStr] = Field(..., min_items=1)
+    recipients: List[str] = Field(..., min_items=1)  # Can be emails or team:uuid format
+    include_admins: bool = False  # Whether to include admin users when assigning to teams
 
 
 class SendPolicyRequest(BaseModel):

@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
+    "@stripe/stripe-js": "^8.0.0",
     "@tanstack/react-query": "^5.90.2",
     "axios": "^1.12.2",
     "date-fns": "^4.1.0",

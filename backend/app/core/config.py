@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     b2_applicationkey: str = ""
     b2_bucket_name: str = "policy-ack-files"
 
+    # Stripe
+    stripe_secret_key: str = ""
+    stripe_publishable_key: str = ""
+    stripe_webhook_secret: str = ""
+
     # CORS - can be set from environment variable or use default
     cors_allow_origins: Union[List[str], str] = ""
 

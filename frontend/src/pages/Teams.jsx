@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { teamsAPI } from '../api/client';
 import toast from 'react-hot-toast';
@@ -159,8 +160,11 @@ export default function Teams() {
                   className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow dark:bg-slate-900 dark:border-slate-800"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-medium text-gray-900 truncate dark:text-slate-100">
+                    <Link
+                      to={`/teams/${team.id}`}
+                      className="flex-1 min-w-0 cursor-pointer"
+                    >
+                      <h3 className="text-lg font-medium text-gray-900 truncate hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400 transition-colors">
                         {team.name}
                       </h3>
                       <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
@@ -169,17 +173,23 @@ export default function Teams() {
                       <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
                         Created {new Date(team.created_at).toLocaleDateString()}
                       </p>
-                    </div>
+                    </Link>
                     <div className="flex space-x-2 ml-4">
                       <button
-                        onClick={() => openEditModal(team)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(team);
+                        }}
                         className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
                         title="Edit team"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => openDeleteModal(team)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteModal(team);
+                        }}
                         className="text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                         title="Delete team"
                       >

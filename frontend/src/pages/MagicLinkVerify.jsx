@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { authAPI } from '../api/client';
+import { authAPI, paymentsAPI } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { DocumentTextIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 export default function MagicLinkVerify() {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,7 @@ export default function MagicLinkVerify() {
 
     // Verify the magic link token
     authAPI.verifyMagicLink(token, workspaceId)
-      .then((response) => {
+      .then(async (response) => {
         const { access_token, user } = response.data;
 
         // Store token and user data
@@ -38,7 +39,42 @@ export default function MagicLinkVerify() {
         setStatus('success');
         setMessage('Successfully authenticated! Redirecting...');
 
-        // Force a full page reload to dashboard to ensure auth context updates
+        // Check if user needs to complete checkout
+        const hasStripeCustomer = user.stripe_customer_id;
+        const pendingCheckoutStr = localStorage.getItem('pendingCheckout');
+
+        if (!hasStripeCustomer && pendingCheckoutStr) {
+          // New signup - redirect to checkout
+          try {
+            const pendingCheckout = JSON.parse(pendingCheckoutStr);
+
+            // Verify this is for the same workspace
+            if (pendingCheckout.workspaceId === workspaceId) {
+              // Create checkout session
+              const checkoutResponse = await paymentsAPI.createCheckoutSession(
+                pendingCheckout.plan,
+                pendingCheckout.staffCount,
+                pendingCheckout.billingInterval,
+                pendingCheckout.ssoEnabled
+              );
+
+              if (checkoutResponse.data?.url) {
+                // Clear pending checkout
+                localStorage.removeItem('pendingCheckout');
+                // Redirect to Stripe Checkout
+                setTimeout(() => {
+                  window.location.href = checkoutResponse.data.url;
+                }, 1000);
+                return;
+              }
+            }
+          } catch (error) {
+            console.error('Failed to create checkout session:', error);
+            toast.error('Failed to create checkout session');
+          }
+        }
+
+        // Normal login flow - redirect to dashboard
         setTimeout(() => {
           window.location.href = '/dashboard';
         }, 1500);

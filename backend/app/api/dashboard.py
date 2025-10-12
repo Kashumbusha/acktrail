@@ -12,7 +12,7 @@ from io import StringIO
 from ..schemas.dashboard import DashboardStats, RecentActivity, DashboardResponse, PolicyExportRow, RecentPolicyItem
 from ..models.database import get_db
 from ..models.models import (
-    Policy, User, Assignment, Acknowledgment, AssignmentStatus, AckMethod
+    Policy, User, Assignment, Acknowledgment, AssignmentStatus, AckMethod, Workspace
 )
 from ..core.security import get_current_user, require_admin_role
 
@@ -72,6 +72,20 @@ def get_dashboard_stats(
         Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED])
     ).distinct().count()
     
+    workspace = None
+    licensed_seats = None
+    used_seats = None
+    available_seats = None
+    sso_enabled = None
+
+    if workspace_id:
+        workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+        if workspace:
+            licensed_seats = workspace.staff_count
+            used_seats = workspace.active_staff_count
+            available_seats = max((workspace.staff_count or 0) - (workspace.active_staff_count or 0), 0)
+            sso_enabled = workspace.sso_enabled or workspace.sso_purchased
+
     stats = DashboardStats(
         total_policies=total_policies,
         active_policies=active_policies,
@@ -80,7 +94,11 @@ def get_dashboard_stats(
         pending_assignments=pending_assignments,
         acknowledged_assignments=acknowledged_assignments,
         overdue_assignments=overdue_assignments,
-        acknowledgment_rate=round(acknowledgment_rate, 1)
+        acknowledgment_rate=round(acknowledgment_rate, 1),
+        seat_capacity=licensed_seats,
+        seat_usage=used_seats,
+        seat_available=available_seats,
+        sso_enabled=sso_enabled
     )
     
     # Get recent activity (last 10 items) - filtered by workspace

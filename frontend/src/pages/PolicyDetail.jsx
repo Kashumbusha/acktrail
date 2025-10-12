@@ -23,7 +23,7 @@ export default function PolicyDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showAddRecipients, setShowAddRecipients] = useState(false);
-  const [recipients, setRecipients] = useState([]);
+  const [recipients, setRecipients] = useState({ recipients: [], includeAdmins: false });
 
   const { 
     data: policy, 
@@ -53,7 +53,7 @@ export default function PolicyDetail() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POLICY(id) });
       toast.success('Recipients added successfully');
       setShowAddRecipients(false);
-      setRecipients([]);
+      setRecipients({ recipients: [], includeAdmins: false });
     },
     onError: () => {
       toast.error('Failed to add recipients');
@@ -128,11 +128,11 @@ export default function PolicyDetail() {
   });
 
   const handleAddRecipients = () => {
-    if (recipients.length === 0) {
+    if (recipients.recipients.length === 0) {
       toast.error('Please add at least one recipient');
       return;
     }
-    
+
     addRecipientsMutation.mutate({ policyId: id, recipients });
   };
 
@@ -364,7 +364,7 @@ export default function PolicyDetail() {
               <button
                 onClick={() => {
                   setShowAddRecipients(false);
-                  setRecipients([]);
+                  setRecipients({ recipients: [], includeAdmins: false });
                 }}
                 className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 disabled={addRecipientsMutation.isPending}
@@ -373,7 +373,7 @@ export default function PolicyDetail() {
               </button>
               <button
                 onClick={handleAddRecipients}
-                disabled={addRecipientsMutation.isPending || recipients.length === 0}
+                disabled={addRecipientsMutation.isPending || recipients.recipients.length === 0}
                 className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {addRecipientsMutation.isPending ? (
@@ -382,7 +382,7 @@ export default function PolicyDetail() {
                     Adding...
                   </div>
                 ) : (
-                  `Add ${recipients.length} Recipient${recipients.length !== 1 ? 's' : ''}`
+                  `Add ${recipients.recipients.length} Recipient${recipients.recipients.length !== 1 ? 's' : ''}`
                 )}
               </button>
             </div>

@@ -1,14 +1,26 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { XMarkIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from './LoadingSpinner';
+import { teamsAPI } from '../api/client';
 
 export default function InviteUserModal({ isOpen, onClose, onInvite, loading = false }) {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
     user_type: 'staff_employee', // staff_employee, staff_admin, guest
+    team_id: '', // Optional team assignment
   });
   const [errors, setErrors] = useState({});
+
+  // Fetch teams for selection
+  const { data: teamsData } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => teamsAPI.list().then(res => res.data),
+    enabled: isOpen, // Only fetch when modal is open
+  });
+
+  const teams = teamsData?.teams || [];
 
   const validateForm = () => {
     const newErrors = {};
@@ -38,6 +50,12 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
         is_guest: formData.user_type === 'guest',
         can_login: formData.user_type !== 'guest',
       };
+
+      // Add team_id if a team is selected
+      if (formData.team_id) {
+        submissionData.team_id = formData.team_id;
+      }
+
       onInvite(submissionData);
     }
   };
@@ -56,6 +74,7 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
         email: '',
         name: '',
         user_type: 'staff_employee',
+        team_id: '',
       });
       setErrors({});
       onClose();
@@ -201,6 +220,30 @@ export default function InviteUserModal({ isOpen, onClose, onInvite, loading = f
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Team Selection */}
+          <div>
+            <label htmlFor="team" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+              Assign to Team (Optional)
+            </label>
+            <select
+              id="team"
+              value={formData.team_id}
+              onChange={(e) => handleInputChange('team_id', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600"
+              disabled={loading}
+            >
+              <option value="">No team (unassigned)</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              You can assign the user to a team now or add them to a team later
+            </p>
           </div>
 
           {/* Action Buttons */}
