@@ -41,12 +41,15 @@ async def contact_support(payload: SupportMessageRequest, current_user=Depends(o
 
     subject = f"Support request from {requester_name}"
 
+    # Precompute line breaks to avoid backslashes inside f-string expressions
+    sanitized_message = message.replace("\n", "<br>")
+
     body = (
         "<h2>New Support Request</h2>"
         f"<p><strong>Name:</strong> {requester_name}</p>"
         f"<p><strong>Email:</strong> {sender or 'n/a'}</p>"
         f"<p><strong>Workspace:</strong> {workspace_name}</p>"
-        f"<p><strong>Message:</strong></p><p>{message.replace('\n', '<br>')}</p>"
+        f"<p><strong>Message:</strong></p><p>{sanitized_message}</p>"
     )
 
     try:
