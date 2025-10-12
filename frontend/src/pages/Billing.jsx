@@ -16,6 +16,9 @@ export default function Billing() {
   const [updating, setUpdating] = useState(false);
   const [newStaffCount, setNewStaffCount] = useState('');
   const [showUpdateStaff, setShowUpdateStaff] = useState(false);
+  const [showChangePlan, setShowChangePlan] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [selectedPlanStaffCount, setSelectedPlanStaffCount] = useState('');
 
   useEffect(() => {
     loadSubscription();
@@ -81,6 +84,40 @@ export default function Billing() {
       window.location.href = response.data.url;
     } catch (error) {
       toast.error('Failed to open customer portal');
+      setUpdating(false);
+    }
+  };
+
+  const handleChangePlan = async () => {
+    if (!selectedPlan || !selectedPlanStaffCount) {
+      toast.error('Please select a plan and staff count');
+      return;
+    }
+
+    if (selectedPlan === subscription.plan) {
+      toast.error('Please select a different plan');
+      return;
+    }
+
+    const newPlan = PLANS[selectedPlan];
+    const monthlyTotal = newPlan.basePrice + (newPlan.perStaffPrice * parseInt(selectedPlanStaffCount));
+
+    if (!window.confirm(`Change to ${newPlan.name} plan with ${selectedPlanStaffCount} staff for $${monthlyTotal}/month?`)) {
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await paymentsAPI.updateSubscription({
+        new_plan: selectedPlan,
+        new_staff_count: parseInt(selectedPlanStaffCount)
+      });
+      toast.success('Plan changed successfully! Your billing will be prorated.');
+      await loadSubscription();
+      setShowChangePlan(false);
+    } catch (error) {
+      toast.error('Failed to change plan');
+    } finally {
       setUpdating(false);
     }
   };
@@ -168,13 +205,30 @@ export default function Billing() {
       <div className="bg-white dark:bg-slate-900 shadow-sm border border-gray-200 dark:border-slate-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Plan</h2>
-          <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-            isTrialing ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-            subscription.status === 'active' ? 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300' :
-            'bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-gray-300'
-          }`}>
-            {subscription.status}
-          </span>
+          <div className="flex items-center gap-3">
+            {subscription.stripe_customer_id && !isCancelled && (
+              <button
+                onClick={() => {
+                  setShowChangePlan(!showChangePlan);
+                  if (!showChangePlan) {
+                    setSelectedPlan(subscription.plan);
+                    setSelectedPlanStaffCount(subscription.staff_count);
+                  }
+                }}
+                className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+                disabled={updating}
+              >
+                {showChangePlan ? 'Cancel' : 'Change Plan'}
+              </button>
+            )}
+            <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+              isTrialing ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+              subscription.status === 'active' ? 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300' :
+              'bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-gray-300'
+            }`}>
+              {subscription.status}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -202,6 +256,77 @@ export default function Billing() {
             </p>
           </div>
         </div>
+
+        {/* Plan Change Form */}
+        {showChangePlan && (
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Select New Plan</h3>
+            <div className="space-y-4">
+              {/* Plan Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Plan Tier
+                </label>
+                <select
+                  value={selectedPlan}
+                  onChange={(e) => {
+                    setSelectedPlan(e.target.value);
+                    const newPlan = PLANS[e.target.value];
+                    // Auto-adjust staff count if current exceeds max
+                    if (parseInt(selectedPlanStaffCount) > newPlan.maxStaff) {
+                      setSelectedPlanStaffCount(newPlan.maxStaff.toString());
+                    }
+                  }}
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="small">Small Business - ${PLANS.small.basePrice} + ${PLANS.small.perStaffPrice}/staff (up to {PLANS.small.maxStaff})</option>
+                  <option value="medium">Medium Team - ${PLANS.medium.basePrice} + ${PLANS.medium.perStaffPrice}/staff (up to {PLANS.medium.maxStaff})</option>
+                  <option value="large">Large - ${PLANS.large.basePrice} + ${PLANS.large.perStaffPrice}/staff (up to {PLANS.large.maxStaff})</option>
+                </select>
+              </div>
+
+              {/* Staff Count */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Number of Staff
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max={PLANS[selectedPlan]?.maxStaff || 10}
+                  value={selectedPlanStaffCount}
+                  onChange={(e) => setSelectedPlanStaffCount(e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              {/* Preview */}
+              {selectedPlan && selectedPlanStaffCount && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">New Monthly Total</span>
+                    <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                      ${PLANS[selectedPlan].basePrice + (PLANS[selectedPlan].perStaffPrice * parseInt(selectedPlanStaffCount))}
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-800 dark:text-blue-200 mt-2">
+                    Your billing will be prorated for the remaining period.
+                  </p>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <button
+                onClick={handleChangePlan}
+                disabled={updating || !selectedPlan || !selectedPlanStaffCount || selectedPlan === subscription.plan}
+                className="w-full flex justify-center items-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {updating && <LoadingSpinner size="sm" className="mr-2" />}
+                Confirm Plan Change
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
           <div className="flex justify-between items-center">
