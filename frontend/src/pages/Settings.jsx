@@ -17,9 +17,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const PLANS = {
-  small: { name: 'Small Business', basePrice: 49, perStaffPrice: 5, maxStaff: 10 },
-  medium: { name: 'Medium Team', basePrice: 149, perStaffPrice: 1, maxStaff: 49 },
-  large: { name: 'Large', basePrice: 299, perStaffPrice: 2, maxStaff: 100 }
+  small: { name: 'Small Business', basePrice: 49, perStaffPrice: 5, minStaff: 1, maxStaff: 10 },
+  medium: { name: 'Medium Team', basePrice: 149, perStaffPrice: 1, minStaff: 11, maxStaff: 49 },
+  large: { name: 'Large', basePrice: 299, perStaffPrice: 2, minStaff: 50, maxStaff: 100 }
 };
 
 const tabs = [
@@ -578,16 +578,22 @@ export default function Settings() {
                     onChange={(e) => {
                       setSelectedPlan(e.target.value);
                       const newPlan = PLANS[e.target.value];
-                      // Auto-adjust staff count if current exceeds max
-                      if (parseInt(selectedPlanStaffCount) > newPlan.maxStaff) {
+                      const currentStaff = parseInt(selectedPlanStaffCount);
+
+                      // Auto-adjust staff count to meet new plan requirements
+                      if (newPlan.minStaff && currentStaff < newPlan.minStaff) {
+                        // If below minimum, set to minimum
+                        setSelectedPlanStaffCount(newPlan.minStaff.toString());
+                      } else if (currentStaff > newPlan.maxStaff) {
+                        // If above maximum, set to maximum
                         setSelectedPlanStaffCount(newPlan.maxStaff.toString());
                       }
                     }}
                     className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
-                    <option value="small">Small Business - ${PLANS.small.basePrice} + ${PLANS.small.perStaffPrice}/staff (up to {PLANS.small.maxStaff})</option>
-                    <option value="medium">Medium Team - ${PLANS.medium.basePrice} + ${PLANS.medium.perStaffPrice}/staff (up to {PLANS.medium.maxStaff})</option>
-                    <option value="large">Large - ${PLANS.large.basePrice} + ${PLANS.large.perStaffPrice}/staff (up to {PLANS.large.maxStaff})</option>
+                    <option value="small">Small Business - ${PLANS.small.basePrice} + ${PLANS.small.perStaffPrice}/staff (1-{PLANS.small.maxStaff} staff)</option>
+                    <option value="medium">Medium Team - ${PLANS.medium.basePrice} + ${PLANS.medium.perStaffPrice}/staff ({PLANS.medium.minStaff}-{PLANS.medium.maxStaff} staff)</option>
+                    <option value="large">Large - ${PLANS.large.basePrice} + ${PLANS.large.perStaffPrice}/staff ({PLANS.large.minStaff}-{PLANS.large.maxStaff} staff)</option>
                   </select>
                 </div>
 
