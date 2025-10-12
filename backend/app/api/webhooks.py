@@ -111,11 +111,13 @@ def handle_checkout_completed(session, db: Session):
         workspace.stripe_subscription_id = session.subscription
 
         # Extract billing information from metadata
+        plan = session.metadata.get("plan", "small")
         staff_count = session.metadata.get("staff_count", "1")
         billing_interval = session.metadata.get("billing_interval", "month")
         sso_enabled = session.metadata.get("sso_enabled", "false").lower() == "true"
 
         # Update workspace billing fields
+        workspace.plan = PlanTier(plan)  # Update plan from checkout metadata
         workspace.staff_count = int(staff_count)  # Licensed seats purchased
         workspace.billing_interval = "annual" if billing_interval == "year" else "monthly"
 
@@ -136,7 +138,7 @@ def handle_checkout_completed(session, db: Session):
             workspace.sso_enabled = True
 
         db.commit()
-        logger.info(f"Updated workspace {workspace_id} with Stripe subscription (staff_count={staff_count}, interval={billing_interval})")
+        logger.info(f"Updated workspace {workspace_id} with Stripe subscription (plan={plan}, staff_count={staff_count}, interval={billing_interval})")
 
     except Exception as e:
         logger.error(f"Error handling checkout completed: {str(e)}")

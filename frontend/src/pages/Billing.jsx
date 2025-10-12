@@ -312,15 +312,21 @@ export default function Billing() {
               SSO is enabled for your workspace.
             </p>
           </div>
-        ) : (
+        ) : subscription.stripe_customer_id ? (
           <button
             onClick={handleAddSSO}
             disabled={updating || !subscription.stripe_subscription_id}
             className="w-full flex justify-center items-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {updating && <LoadingSpinner size="sm" className="mr-2" />}
-            {subscription.stripe_subscription_id ? 'Enable SSO Add-on' : 'Add a payment method to enable SSO'}
+            {subscription.stripe_subscription_id ? 'Enable SSO Add-on' : 'Complete checkout to enable SSO'}
           </button>
+        ) : (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              Complete your trial setup through the checkout link sent to your email to enable SSO.
+            </p>
+          </div>
         )}
       </div>
 
@@ -341,9 +347,15 @@ export default function Billing() {
             </button>
           ) : (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                Complete your trial setup by adding a payment method through the checkout link sent to your email.
-              </p>
+              <div className="flex items-start">
+                <CheckCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">Complete Your Checkout</p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    A checkout link was sent to your email. Click it and complete the payment form to activate your subscription and manage billing.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
