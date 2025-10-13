@@ -13,11 +13,11 @@ export default function PolicyForm({
   const [formData, setFormData] = useState({
     title: policy?.title || '',
     description: policy?.description || '',
-    content: policy?.content || '',
-    due_date: policy?.due_date ? policy.due_date.split('T')[0] : '',
+    content: policy?.body_markdown || '',
+    due_date: policy?.due_at ? policy.due_at.split('T')[0] : '',
     file: null,
     fileHash: null,
-    content_type: policy?.content_type || 'text',
+    content_type: policy?.file_url ? 'pdf' : 'text',
   });
   const [errors, setErrors] = useState({});
   const [dragOver, setDragOver] = useState(false);
@@ -144,9 +144,9 @@ export default function PolicyForm({
       submitData.append('description', formData.description);
     }
     submitData.append('content_type', formData.content_type);
-    
+
     if (formData.due_date) {
-      submitData.append('due_date', formData.due_date);
+      submitData.append('due_at', formData.due_date);
     }
     
     if (formData.file) {

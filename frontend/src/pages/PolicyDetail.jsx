@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -44,6 +44,67 @@ export default function PolicyDetail() {
     queryFn: () => policiesAPI.getAssignments(id).then(res => res.data),
     enabled: !!id,
   });
+
+  const assignmentsList = assignments?.assignments || [];
+
+  const assignmentStats = useMemo(() => {
+    const total = assignmentsList.length;
+    let acknowledged = 0;
+    let pending = 0;
+    let viewed = 0;
+    let declined = 0;
+
+    assignmentsList.forEach((assignment) => {
+      switch (assignment.status) {
+        case 'acknowledged':
+          acknowledged += 1;
+          break;
+        case 'pending':
+          pending += 1;
+          break;
+        case 'viewed':
+          viewed += 1;
+          break;
+        case 'declined':
+          declined += 1;
+          break;
+        default:
+          break;
+      }
+    });
+
+    const acknowledgmentRate =
+      total === 0 ? 0 : Math.round((acknowledged / total) * 100);
+
+    const dueAt = policy?.due_at ? new Date(policy.due_at) : null;
+    const now = new Date();
+    const hasOverdue =
+      Boolean(dueAt) &&
+      dueAt < now &&
+      (pending > 0 || viewed > 0);
+
+    let derivedStatus = 'draft';
+    if (total > 0) {
+      if (acknowledged === total) {
+        derivedStatus = 'completed';
+      } else if (hasOverdue) {
+        derivedStatus = 'overdue';
+      } else {
+        derivedStatus = 'in_progress';
+      }
+    }
+
+    return {
+      total,
+      acknowledged,
+      pending,
+      viewed,
+      declined,
+      acknowledgmentRate,
+      overdueAssignments: hasOverdue ? pending + viewed : 0,
+      status: derivedStatus,
+    };
+  }, [assignmentsList, policy?.due_at]);
 
   const addRecipientsMutation = useMutation({
     mutationFn: ({ policyId, recipients }) => 
@@ -191,7 +252,7 @@ export default function PolicyDetail() {
   };
 
   const handleBulkRemind = () => {
-    const eligibleAssignments = assignments?.assignments?.filter(
+    const eligibleAssignments = assignmentsList.filter(
       assignment => (assignment.status === 'pending' || assignment.status === 'viewed') && 
                    (assignment.reminder_count || 0) < 3
     ) || [];
@@ -288,26 +349,32 @@ export default function PolicyDetail() {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{policy.title}</h1>
-            {policy.description && (
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{policy.description}</p>
-            )}
-            <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mt-2 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Version {policy.version}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
               <div>
                 <span className="font-medium">Status:</span>
-                <span className={`ml-2 ${getStatusBadgeClass(policy.status)}`}>
-                  {getStatusText(policy.status)}
+                <span className={`ml-2 ${getStatusBadgeClass(assignmentStats.status)}`}>
+                  {getStatusText(assignmentStats.status)}
                 </span>
               </div>
               <div>
                 <span className="font-medium">Created:</span>
                 <span className="ml-2">{formatDate(policy.created_at)}</span>
               </div>
-              {policy.due_date && (
+              {policy.due_at && (
                 <div>
                   <span className="font-medium">Due:</span>
-                  <span className="ml-2">{formatDate(policy.due_date)}</span>
+                  <span className="ml-2">{formatDate(policy.due_at)}</span>
                 </div>
               )}
+              <div>
+                <span className="font-medium">Acknowledged:</span>
+                <span className="ml-2">
+                  {assignmentStats.acknowledged}/{assignmentStats.total} ({assignmentStats.acknowledgmentRate}%)
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -327,6 +394,30 @@ export default function PolicyDetail() {
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Manage who needs to acknowledge this policy
                 </p>
+                <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  <span>
+                    <strong>{assignmentStats.total}</strong> assignment{assignmentStats.total === 1 ? '' : 's'}
+                  </span>
+                  <span>
+                    <strong>{assignmentStats.acknowledged}</strong> acknowledged
+                  </span>
+                  <span>
+                    <strong>{assignmentStats.pending}</strong> pending
+                  </span>
+                  <span>
+                    <strong>{assignmentStats.viewed}</strong> viewed
+                  </span>
+                  {assignmentStats.declined > 0 && (
+                    <span>
+                      <strong>{assignmentStats.declined}</strong> declined
+                    </span>
+                  )}
+                  {assignmentStats.overdueAssignments > 0 && (
+                    <span className="text-red-600 dark:text-red-400">
+                      <strong>{assignmentStats.overdueAssignments}</strong> overdue
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex space-x-3">
                 <button
@@ -336,7 +427,7 @@ export default function PolicyDetail() {
                   <UserPlusIcon className="-ml-1 mr-2 h-5 w-5" />
                   Add Recipients
                 </button>
-                {assignments && assignments.assignments && assignments.assignments.length > 0 && (
+                {assignmentsList.length > 0 && (
                   <button
                     onClick={handleSendAssignments}
                     disabled={sendAssignmentsMutation.isPending}
@@ -397,7 +488,7 @@ export default function PolicyDetail() {
 
         {/* Assignments Table */}
         <AssignmentTable
-          assignments={assignments?.assignments || []}
+          assignments={assignmentsList}
           loading={assignmentsLoading}
           onRemind={handleRemind}
           onDelete={handleDelete}

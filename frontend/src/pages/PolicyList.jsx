@@ -70,11 +70,48 @@ export default function PolicyList() {
     },
   });
 
-  const filteredPolicies = policies?.filter(policy =>
-    !search ||
-    policy.title?.toLowerCase().includes(search.toLowerCase()) ||
-    policy.description?.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  const processedPolicies = (policies || []).map((policy) => {
+    const totalAssignments = policy.total_assignments ?? 0;
+    const acknowledgedAssignments = policy.acknowledged_assignments ?? 0;
+    const overdueAssignments = policy.overdue_assignments ?? 0;
+    let derivedStatus = 'draft';
+    if (totalAssignments > 0) {
+      if (acknowledgedAssignments === totalAssignments) {
+        derivedStatus = 'completed';
+      } else if (overdueAssignments > 0) {
+        derivedStatus = 'overdue';
+      } else {
+        derivedStatus = 'in_progress';
+      }
+    }
+
+    const acknowledgmentRate =
+      totalAssignments === 0 ? 0 : Math.round((acknowledgedAssignments / totalAssignments) * 100);
+
+    const summary = policy.body_markdown
+      ? policy.body_markdown.replace(/\s+/g, ' ').trim().slice(0, 120) +
+        (policy.body_markdown.length > 120 ? '…' : '')
+      : '';
+
+    return {
+      ...policy,
+      _status: derivedStatus,
+      _acknowledgmentRate: acknowledgmentRate,
+      _totalAssignments: totalAssignments,
+      _acknowledgedAssignments: acknowledgedAssignments,
+      _summary: summary,
+    };
+  });
+
+  const filteredPolicies = processedPolicies.filter(policy => {
+    if (!search) return true;
+    const term = search.toLowerCase();
+    return (
+      policy.title?.toLowerCase().includes(term) ||
+      policy._summary?.toLowerCase().includes(term) ||
+      policy.creator_name?.toLowerCase().includes(term)
+    );
+  });
 
   const handleDelete = (policyId) => {
     deleteMutation.mutate(policyId);
@@ -192,23 +229,23 @@ export default function PolicyList() {
                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {policy.title}
                         </div>
-                        {policy.description && (
+                        {policy._summary && (
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {policy.description}
+                            {policy._summary}
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(policy.status)}`}>
-                        {getStatusText(policy.status)}
+                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(policy._status)}`}>
+                        {getStatusText(policy._status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 hidden md:table-cell">
                       <div>
-                        <div>{policy.assignments_count || 0} total</div>
+                        <div>{policy._totalAssignments} total</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {policy.acknowledged_count || 0} acknowledged
+                          {policy._acknowledgedAssignments} acknowledged
                         </div>
                       </div>
                     </td>
@@ -216,11 +253,11 @@ export default function PolicyList() {
                       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                         <div
                           className="bg-blue-600 h-2.5 rounded-full"
-                          style={{ width: `${policy.acknowledgment_rate || 0}%` }}
+                          style={{ width: `${policy._acknowledgmentRate}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {policy.acknowledgment_rate || 0}% Acknowledged
+                        {policy._acknowledgmentRate}% acknowledged
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 hidden lg:table-cell">
@@ -232,11 +269,11 @@ export default function PolicyList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 hidden lg:table-cell">
-                      {policy.due_date ? (
+                      {policy.due_at ? (
                         <div>
-                          <div>{formatDate(policy.due_date)}</div>
+                          <div>{formatDate(policy.due_at)}</div>
                           <div className="text-xs text-gray-400 dark:text-gray-500">
-                            {formatRelativeTime(policy.due_date)}
+                            {formatRelativeTime(policy.due_at)}
                           </div>
                         </div>
                       ) : (

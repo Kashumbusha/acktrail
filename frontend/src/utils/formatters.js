@@ -34,6 +34,9 @@ export const getStatusBadgeClass = (status) => {
       return `${baseClasses} bg-red-100 text-red-800`;
     case 'sent':
       return `${baseClasses} bg-blue-100 text-blue-800`;
+    case 'in progress':
+    case 'in_progress':
+      return `${baseClasses} bg-blue-100 text-blue-800`;
     case 'draft':
       return `${baseClasses} bg-gray-100 text-gray-800`;
     default:
@@ -57,6 +60,9 @@ export const getStatusText = (status) => {
       return 'Sent';
     case 'draft':
       return 'Draft';
+    case 'in_progress':
+    case 'in progress':
+      return 'In Progress';
     default:
       return status || 'Unknown';
   }
