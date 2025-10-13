@@ -52,16 +52,23 @@ export default function DemoRequestModal({ open, onClose }) {
         'New demo request:',
         `Name: ${form.name}`,
         `Email: ${form.email}`,
-        `Company: ${form.company}`,
-        `Role: ${form.role}`,
-        `Team size: ${form.teamSize}`,
-        `Country: ${form.country}`,
+        `Company: ${form.company || 'n/a'}`,
+        `Role: ${form.role || 'n/a'}`,
+        `Team size: ${form.teamSize || 'n/a'}`,
+        `Country: ${form.country || 'n/a'}`,
         `Goals: ${form.goal}`
       ];
 
       await usersAPI.contactSupport({
         message: messageLines.join('\n'),
-        from: form.email
+        from_email: form.email,
+        name: form.name,
+        company: form.company,
+        role: form.role,
+        team_size: form.teamSize,
+        country: form.country,
+        goal: form.goal,
+        source: 'demo_modal'
       });
 
       toast.success('Thanks! We\'ll reach out shortly.');

@@ -228,3 +228,24 @@ class Notification(Base):
 
     user = relationship("User")
     workspace = relationship("Workspace")
+
+
+class DemoRequest(Base):
+    __tablename__ = "demo_requests"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False, index=True)
+    company = Column(String(255), nullable=True)
+    role = Column(String(255), nullable=True)
+    team_size = Column(String(50), nullable=True)
+    country = Column(String(100), nullable=True)
+    goal = Column(Text, nullable=False)
+    message = Column(Text, nullable=True)
+    source = Column(String(100), nullable=True)
+    created_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    created_by_user = relationship("User", foreign_keys=[created_by_user_id])
+    workspace = relationship("Workspace", foreign_keys=[workspace_id])

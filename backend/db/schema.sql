@@ -68,6 +68,24 @@ create index if not exists idx_assignments_policy on public.assignments(policy_i
 create index if not exists idx_assignments_user on public.assignments(user_id);
 create index if not exists idx_email_events_assignment on public.email_events(assignment_id);
 
+-- demo requests
+create table if not exists public.demo_requests (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  email text not null,
+  company text,
+  role text,
+  team_size text,
+  country text,
+  goal text not null,
+  message text,
+  source text,
+  created_by_user_id uuid references public.users(id) on delete set null,
+  workspace_id uuid references public.workspaces(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_demo_requests_email on public.demo_requests(email);
 
 
 

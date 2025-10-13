@@ -138,7 +138,14 @@ export const usersAPI = {
   changePassword: (data) => apiClient.post('/api/auth/change-password', data),
   contactSupport: (data) => apiClient.post('/api/support/contact', {
     message: data.message,
-    from_email: data.from,
+    from_email: data.from_email || data.from,
+    name: data.name,
+    company: data.company,
+    role: data.role,
+    team_size: data.team_size,
+    country: data.country,
+    goal: data.goal,
+    source: data.source,
   }),
 };
 

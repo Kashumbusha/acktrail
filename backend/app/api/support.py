@@ -2,10 +2,14 @@ from ..core.config import settings
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
 import logging
 
 from ..core.security import get_current_user
 from ..core.email import send_brevo_email
+from ..models.database import get_db
+from ..models.models import DemoRequest
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +22,13 @@ _optional_bearer = HTTPBearer(auto_error=False)
 class SupportMessageRequest(BaseModel):
     message: str
     from_email: EmailStr | None = None
+    name: str | None = None
+    company: str | None = None
+    role: str | None = None
+    team_size: str | None = None
+    country: str | None = None
+    goal: str | None = None
+    source: str | None = None
 
 
 def optional_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(_optional_bearer)):
@@ -30,7 +41,11 @@ def optional_current_user(credentials: HTTPAuthorizationCredentials | None = Dep
 
 
 @router.post("/contact")
-async def contact_support(payload: SupportMessageRequest, current_user=Depends(optional_current_user)):
+async def contact_support(
+    payload: SupportMessageRequest,
+    current_user=Depends(optional_current_user),
+    db: Session = Depends(get_db)
+):
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -53,6 +68,23 @@ async def contact_support(payload: SupportMessageRequest, current_user=Depends(o
     )
 
     try:
+        # Persist the request for tracking/analytics
+        demo_request = DemoRequest(
+            name=payload.name or requester_name,
+            email=sender or payload.from_email or "unknown@example.com",
+            company=payload.company,
+            role=payload.role,
+            team_size=payload.team_size,
+            country=payload.country,
+            goal=payload.goal or payload.message,
+            message=payload.message,
+            source=payload.source,
+            created_by_user_id=UUID(current_user["id"]) if current_user and current_user.get("id") else None,
+            workspace_id=UUID(current_user["workspace_id"]) if current_user and current_user.get("workspace_id") else None,
+        )
+        db.add(demo_request)
+        db.commit()
+
         if settings.brevo_api_key:
             send_brevo_email(
                 to_email=SUPPORT_EMAIL,
