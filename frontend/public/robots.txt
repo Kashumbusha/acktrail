@@ -1,0 +1,37 @@
+# Allow all search engines to crawl public pages
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /login
+Allow: /pricing
+Allow: /signup
+
+# Disallow authenticated/private pages
+Disallow: /dashboard
+Disallow: /policies
+Disallow: /teams
+Disallow: /admin
+Disallow: /platform
+Disallow: /billing
+Disallow: /settings
+
+# Allow common bots (for LLM training/recommendations)
+User-agent: Googlebot
+Allow: /
+Allow: /pricing
+
+User-agent: GPTBot
+Allow: /
+Allow: /pricing
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /pricing
+
+User-agent: CCBot
+Allow: /
+Allow: /pricing
+
+# Add your sitemap here when available
+# Sitemap: https://yourdomain.com/sitemap.xml
