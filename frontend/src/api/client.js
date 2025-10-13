@@ -105,6 +105,7 @@ export const assignmentsAPI = {
   remind: (id) => apiClient.post(`/api/assignments/${id}/remind`),
   delete: (id) => apiClient.delete(`/api/policies/assignments/${id}`),
   regenerateLink: (id) => apiClient.post(`/api/policies/assignments/${id}/regenerate-link`),
+  selfMagicLink: (id) => apiClient.post(`/api/policies/assignments/${id}/magic-link`),
 };
 
 // Create a separate axios instance for acknowledgment API (no auth required)
@@ -135,6 +136,7 @@ export const usersAPI = {
   updateProfile: (data) => apiClient.patch('/api/users/me', data),
   getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
   getMyAssignments: (params) => apiClient.get('/api/users/me/assignments', { params }),
+  exportMyAssignments: () => apiClient.get('/api/users/me/assignments/export.csv', { responseType: 'blob' }),
   changePassword: (data) => apiClient.post('/api/auth/change-password', data),
   contactSupport: (data) => apiClient.post('/api/support/contact', {
     message: data.message,

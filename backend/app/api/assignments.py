@@ -695,3 +695,43 @@ def send_bulk_reminders(
         "failed_reminders": failed_reminders,
         "max_reached_count": max_reached_count
     }
+
+
+@router.post("/assignments/{assignment_id}/magic-link", response_model=dict, tags=["assignments"])
+def get_self_magic_link(
+    assignment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+) -> dict:
+    """Generate or retrieve a magic link token for the current user's assignment."""
+    assignment = db.query(Assignment).filter(Assignment.id == assignment_id).first()
+
+    if not assignment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Assignment not found"
+        )
+
+    if str(assignment.user_id) != current_user["id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this assignment"
+        )
+
+    acknowledged = assignment.status == AssignmentStatus.ACKNOWLEDGED
+
+    if not assignment.magic_link_token or acknowledged:
+        magic_token = create_magic_link_token(
+            assignment_id=str(assignment.id),
+            user_email=current_user["email"]
+        )
+        assignment.magic_link_token = magic_token
+        db.commit()
+    else:
+        magic_token = assignment.magic_link_token
+
+    return {
+        "token": magic_token,
+        "url": f"{settings.frontend_url}/ack/{magic_token}",
+        "acknowledged": acknowledged
+    }

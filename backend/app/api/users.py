@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
+from io import StringIO
+import csv
 import logging
 
 from ..models.database import get_db
-from ..models.models import User, Assignment, Policy, UserRole, Workspace, Team
+from ..models.models import User, Assignment, Policy, UserRole, Workspace, Team, AssignmentStatus
 from ..core.security import get_current_user, require_admin_role
 from ..core.email import send_invitation_email
 
@@ -359,24 +364,55 @@ def get_my_assignments(
     """Get current user's policy assignments (employee-accessible)."""
     user_id = UUID(current_user["id"])
 
-    # Query assignments for current user only
+    per_page = min(max(per_page, 1), 100)
+
+    # Base query
     query = db.query(Assignment).filter(Assignment.user_id == user_id)
     total = query.count()
+
+    # Status counts
+    status_counts = {
+        status.value: count
+        for status, count in db.query(
+            Assignment.status,
+            func.count(Assignment.id)
+        ).filter(Assignment.user_id == user_id).group_by(Assignment.status).all()
+    }
+
+    acknowledged_count = status_counts.get(AssignmentStatus.ACKNOWLEDGED.value, 0)
+    pending_count = status_counts.get(AssignmentStatus.PENDING.value, 0)
+    viewed_count = status_counts.get(AssignmentStatus.VIEWED.value, 0)
+    declined_count = status_counts.get(AssignmentStatus.DECLINED.value, 0)
+
+    now = datetime.utcnow()
+    overdue_count = db.query(func.count(Assignment.id)).join(Policy).filter(
+        Assignment.user_id == user_id,
+        Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]),
+        Policy.due_at.isnot(None),
+        Policy.due_at < now
+    ).scalar() or 0
 
     assignments = query.order_by(Assignment.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
     result = []
     for a in assignments:
         policy = db.query(Policy).filter(Policy.id == a.policy_id).first()
+        policy_due_at = policy.due_at if policy else None
+        is_overdue = bool(
+            policy_due_at and
+            policy_due_at < now and
+            a.status in (AssignmentStatus.PENDING, AssignmentStatus.VIEWED)
+        )
         result.append({
             "id": str(a.id),
             "policy_id": str(a.policy_id) if policy else None,
             "policy_title": policy.title if policy else "",
-            "policy_due_at": policy.due_at.isoformat() if policy and policy.due_at else None,
+            "policy_due_at": policy_due_at.isoformat() if policy_due_at else None,
             "status": a.status.value,
             "created_at": a.created_at.isoformat(),
             "viewed_at": a.viewed_at.isoformat() if a.viewed_at else None,
             "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None,
+            "is_overdue": is_overdue
         })
 
     return {
@@ -384,8 +420,70 @@ def get_my_assignments(
         "total": total,
         "page": page,
         "per_page": per_page,
-        "total_pages": (total + per_page - 1) // per_page
+        "total_pages": (total + per_page - 1) // per_page,
+        "acknowledged_count": acknowledged_count,
+        "pending_count": pending_count,
+        "viewed_count": viewed_count,
+        "declined_count": declined_count,
+        "overdue_count": overdue_count
     }
+
+
+@router.get("/me/assignments/export.csv")
+def export_my_assignments(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Export current user's assignments to CSV."""
+    user_id = UUID(current_user["id"])
+
+    assignments = db.query(Assignment).filter(
+        Assignment.user_id == user_id
+    ).order_by(Assignment.created_at.desc()).all()
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Policy Title",
+        "Status",
+        "Assigned At",
+        "Viewed At",
+        "Acknowledged At",
+        "Due At",
+        "Is Overdue"
+    ])
+
+    now = datetime.utcnow()
+
+    for assignment in assignments:
+        policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
+        due_at = policy.due_at if policy else None
+        is_overdue = bool(
+            due_at and
+            due_at < now and
+            assignment.status in (AssignmentStatus.PENDING, AssignmentStatus.VIEWED)
+        )
+
+        writer.writerow([
+            policy.title if policy else "",
+            assignment.status.value,
+            assignment.created_at.isoformat(),
+            assignment.viewed_at.isoformat() if assignment.viewed_at else "",
+            assignment.acknowledged_at.isoformat() if assignment.acknowledged_at else "",
+            due_at.isoformat() if due_at else "",
+            "Yes" if is_overdue else "No"
+        ])
+
+    csv_content = output.getvalue()
+    output.close()
+
+    filename = f"acktrail_assignments_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 @router.get("/{user_id}/assignments")

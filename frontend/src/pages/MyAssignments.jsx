@@ -1,25 +1,34 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   DocumentTextIcon,
   CheckCircleIcon,
   ClockIcon,
-  EyeIcon
+  ExclamationTriangleIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
-import { usersAPI } from '../api/client';
+import { assignmentsAPI, usersAPI, ackAPI } from '../api/client';
 import { formatDate, formatRelativeTime, getStatusBadgeClass, getStatusText } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 export default function MyAssignments() {
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const perPage = 20;
+
   const {
     data,
     isLoading,
     error,
     refetch
   } = useQuery({
-    queryKey: ['myAssignments'],
-    queryFn: () => usersAPI.getMyAssignments().then(res => res.data),
+    queryKey: ['myAssignments', page, perPage],
+    queryFn: () => usersAPI.getMyAssignments({ page, per_page: perPage }).then(res => res.data),
     refetchOnWindowFocus: false,
+    keepPreviousData: true,
   });
 
   if (isLoading) {
@@ -46,11 +55,60 @@ export default function MyAssignments() {
 
   const assignments = data?.assignments || [];
 
-  // Calculate stats
-  const totalAssignments = assignments.length;
-  const acknowledgedCount = assignments.filter(a => a.status === 'acknowledged').length;
-  const pendingCount = assignments.filter(a => a.status === 'pending').length;
-  const viewedCount = assignments.filter(a => a.status === 'viewed').length;
+  const totalAssignments = data?.total ?? assignments.length;
+  const acknowledgedCount = data?.acknowledged_count ?? assignments.filter(a => a.status === 'acknowledged').length;
+  const pendingCount = data?.pending_count ?? assignments.filter(a => a.status === 'pending').length;
+  const overdueCount = data?.overdue_count ?? 0;
+  const viewedCount = data?.viewed_count ?? assignments.filter(a => a.status === 'viewed').length;
+  const totalPages = data?.total_pages ?? 1;
+
+  const handleReview = async (assignmentId) => {
+    try {
+      const response = await assignmentsAPI.selfMagicLink(assignmentId);
+      const token = response.data?.token;
+      if (!token) {
+        throw new Error('Missing token');
+      }
+      navigate(`/ack/${token}`);
+    } catch (err) {
+      const message = err.response?.data?.detail || 'Failed to open acknowledgment';
+      toast.error(message);
+    }
+  };
+
+  const handleDownloadReceipt = async (assignmentId) => {
+    try {
+      const response = await ackAPI.downloadReceipt(assignmentId);
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `acknowledgment-receipt-${assignmentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      const message = err.response?.data?.detail || 'Failed to download receipt';
+      toast.error(message);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await usersAPI.exportMyAssignments();
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `acktrail-assignments-${new Date().toISOString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      const message = err.response?.data?.detail || 'Failed to export assignments';
+      toast.error(message);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -62,6 +120,19 @@ export default function MyAssignments() {
         <p className="text-lg text-gray-600 dark:text-gray-400">
           Review and acknowledge policies assigned to you
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" /> Export CSV
+          </button>
+          {viewedCount > 0 && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {viewedCount} assignment{viewedCount === 1 ? '' : 's'} viewed but not acknowledged yet.
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -123,15 +194,15 @@ export default function MyAssignments() {
         <div className="card p-5">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <EyeIcon className="h-6 w-6 text-blue-600" />
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                  Viewed
+                  Overdue
                 </dt>
                 <dd className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  {viewedCount}
+                  {overdueCount}
                 </dd>
               </dl>
             </div>
@@ -203,9 +274,11 @@ export default function MyAssignments() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 hidden lg:table-cell">
                       {assignment.policy_due_at ? (
                         <div>
-                          <div>{formatDate(assignment.policy_due_at)}</div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">
-                            {formatRelativeTime(assignment.policy_due_at)}
+                          <div className={assignment.is_overdue ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                            {formatDate(assignment.policy_due_at)}
+                          </div>
+                          <div className={`text-xs ${assignment.is_overdue ? 'text-red-500 dark:text-red-300' : 'text-gray-400 dark:text-gray-500'}`}>
+                            {assignment.is_overdue ? `Overdue ${formatRelativeTime(assignment.policy_due_at)}` : formatRelativeTime(assignment.policy_due_at)}
                           </div>
                         </div>
                       ) : (
@@ -225,15 +298,23 @@ export default function MyAssignments() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {assignment.policy_id && (
-                        <Link
-                          to={`/policies/${assignment.policy_id}`}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors inline-flex items-center"
-                          title="View policy"
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleReview(assignment.id)}
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                          <EyeIcon className="h-5 w-5" />
-                        </Link>
-                      )}
+                          <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
+                          Review
+                        </button>
+                        {assignment.acknowledged_at && (
+                          <button
+                            onClick={() => handleDownloadReceipt(assignment.id)}
+                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4 mr-1" /> Receipt
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -242,6 +323,31 @@ export default function MyAssignments() {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
