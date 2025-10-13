@@ -69,10 +69,13 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
         )
 
     # Check if this email has already used a trial as a staff member (admin or employee)
-    # Note: Guest users should be allowed to create their own workspace
+    # Note: Guest users should be allowed to create their own workspace with trial
+    has_used_trial = False
+    previous_workspace_name = None
+
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user and existing_user.workspace_id:
-        # Only block if user is/was staff (admin or employee, not guest) in another workspace
+        # Only check if user is/was staff (admin or employee, not guest) in another workspace
         if not existing_user.is_guest:
             # Check if their workspace has a Stripe customer (meaning they completed checkout/trial before)
             previous_workspace = db.query(Workspace).filter(
@@ -80,17 +83,21 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
             ).first()
 
             if previous_workspace and previous_workspace.stripe_customer_id:
-                # User is already a staff member in another workspace that has used trial
-                workspace_name = previous_workspace.name
-                user_role = existing_user.role.value if existing_user.role else "member"
+                # User already used trial in another workspace - can signup but no trial
+                has_used_trial = True
+                previous_workspace_name = previous_workspace.name
 
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"This email is already registered as a {user_role} in workspace '{workspace_name}'. Each email can only be used for one workspace trial. Please use a different email or contact support for assistance."
-                )
-
-    # Create workspace with 7-day free trial
-    trial_ends_at = datetime.utcnow() + timedelta(days=7)
+    # Create workspace - with or without trial based on history
+    if has_used_trial:
+        # No trial for users who already used one
+        trial_ends_at = None
+        from ..core.config import settings
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"User {email} registering without trial (already used in workspace '{previous_workspace_name}')")
+    else:
+        # 7-day free trial for new users
+        trial_ends_at = datetime.utcnow() + timedelta(days=7)
     # Normalize billing interval (month -> monthly, year -> annual)
     normalized_interval = "annual" if billing_interval == "year" else "monthly"
     workspace = Workspace(
@@ -146,13 +153,20 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     # Note: No email sent here - frontend will call /auth/send-code to send verification email
     # This prevents duplicate emails during signup flow
 
-    return {
+    response = {
         "success": True,
         "workspace_id": str(workspace.id),
         "plan": workspace.plan.value,
         "trial_ends_at": workspace.trial_ends_at.isoformat() if workspace.trial_ends_at else None,
+        "has_trial": workspace.trial_ends_at is not None,
         "sso_enabled": workspace.sso_enabled
     }
+
+    # Add informative message if user didn't get trial
+    if has_used_trial:
+        response["message"] = f"Workspace created successfully. Note: You've already used a trial with workspace '{previous_workspace_name}', so this workspace requires immediate payment."
+
+    return response
 
 
 @router.post("/check-workspace", response_model=dict)
