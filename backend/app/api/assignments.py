@@ -283,7 +283,16 @@ def get_policy_assignments(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Policy not found"
         )
-    
+
+    # Permission check: Only admins can view all assignments for a policy
+    # Employees should not see other employees' assignments
+    user_role = current_user.get("role")
+    if user_role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can view policy assignments"
+        )
+
     # Build query
     query = db.query(Assignment).filter(Assignment.policy_id == policy_id)
     
@@ -311,12 +320,26 @@ def get_policy_assignments(
         user = db.query(User).filter(User.id == assignment.user_id).first()
         if not user:
             continue
-        
-        # Check if acknowledgment exists
-        has_acknowledgment = db.query(Acknowledgment).filter(
+
+        # Get acknowledgment details if exists
+        acknowledgment = db.query(Acknowledgment).filter(
             Acknowledgment.assignment_id == assignment.id
-        ).first() is not None
-        
+        ).first()
+
+        has_acknowledgment = acknowledgment is not None
+
+        # Prepare acknowledgment audit trail data
+        ack_audit_data = {}
+        if acknowledgment:
+            ack_audit_data = {
+                'ack_method': acknowledgment.ack_method.value if acknowledgment.ack_method else None,
+                'ack_ip_address': acknowledgment.ip_address,
+                'ack_typed_signature': acknowledgment.typed_signature,
+                'ack_policy_version': acknowledgment.policy_version,
+                'ack_policy_hash': acknowledgment.policy_hash_at_ack,
+                'ack_created_at': acknowledgment.created_at
+            }
+
         assignment_with_details = AssignmentWithDetails(
             **assignment.__dict__,
             user_name=user.name,
@@ -324,7 +347,8 @@ def get_policy_assignments(
             user_department=user.department,
             policy_title=policy.title,
             policy_due_at=policy.due_at,
-            has_acknowledgment=has_acknowledgment
+            has_acknowledgment=has_acknowledgment,
+            **ack_audit_data
         )
         assignments_with_details.append(assignment_with_details)
     

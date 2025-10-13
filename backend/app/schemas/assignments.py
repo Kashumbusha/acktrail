@@ -37,6 +37,13 @@ class AssignmentWithDetails(AssignmentResponse):
     policy_title: str
     policy_due_at: Optional[datetime]
     has_acknowledgment: bool = False
+    # Acknowledgment audit trail
+    ack_method: Optional[str] = None
+    ack_ip_address: Optional[str] = None
+    ack_typed_signature: Optional[str] = None
+    ack_policy_version: Optional[int] = None
+    ack_policy_hash: Optional[str] = None
+    ack_created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

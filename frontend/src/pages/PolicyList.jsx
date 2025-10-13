@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   PlusIcon,
   EyeIcon,
@@ -14,11 +14,18 @@ import { QUERY_KEYS } from '../utils/constants';
 import { formatDate, formatRelativeTime, getStatusBadgeClass, getStatusText } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { useAuth } from '../hooks/useAuth';
 
 export default function PolicyList() {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const queryClient = useQueryClient();
+
+  // Redirect employees to their assignments page
+  if (user && user.role !== 'admin') {
+    return <Navigate to="/my-assignments" replace />;
+  }
 
   const {
     data: policies,

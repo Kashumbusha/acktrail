@@ -90,7 +90,10 @@ export const policiesAPI = {
   get: (id) => apiClient.get(`/api/policies/${id}`),
   update: (id, data) => apiClient.put(`/api/policies/${id}`, data),
   delete: (id) => apiClient.delete(`/api/policies/${id}`),
-  addRecipients: (id, recipients) => apiClient.post(`/api/policies/${id}/recipients`, { recipients }),
+  addRecipients: (id, recipientsData) => apiClient.post(`/api/policies/${id}/recipients`, {
+    recipients: recipientsData.recipients,
+    include_admins: recipientsData.includeAdmins
+  }),
   send: (id) => apiClient.post(`/api/policies/${id}/send`, { assignment_ids: null }),
   getAssignments: (id) => apiClient.get(`/api/policies/${id}/assignments`),
   exportCSV: (id) => apiClient.get(`/api/dashboard/policies/${id}/export.csv`, { responseType: 'blob' }),
@@ -131,6 +134,7 @@ export const usersAPI = {
   update: (id, data) => apiClient.patch(`/api/users/${id}`, data),
   updateProfile: (data) => apiClient.patch('/api/users/me', data),
   getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
+  getMyAssignments: (params) => apiClient.get('/api/users/me/assignments', { params }),
   contactSupport: (data) => apiClient.post('/api/support/contact', {
     message: data.message,
     from_email: data.from,

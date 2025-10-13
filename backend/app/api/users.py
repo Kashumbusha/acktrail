@@ -214,6 +214,45 @@ def update_current_user_profile(
     }
 
 
+@router.get("/me/assignments")
+def get_my_assignments(
+    page: int = 1,
+    per_page: int = 20,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get current user's policy assignments (employee-accessible)."""
+    user_id = UUID(current_user["id"])
+
+    # Query assignments for current user only
+    query = db.query(Assignment).filter(Assignment.user_id == user_id)
+    total = query.count()
+
+    assignments = query.order_by(Assignment.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+
+    result = []
+    for a in assignments:
+        policy = db.query(Policy).filter(Policy.id == a.policy_id).first()
+        result.append({
+            "id": str(a.id),
+            "policy_id": str(a.policy_id) if policy else None,
+            "policy_title": policy.title if policy else "",
+            "policy_due_at": policy.due_at.isoformat() if policy and policy.due_at else None,
+            "status": a.status.value,
+            "created_at": a.created_at.isoformat(),
+            "viewed_at": a.viewed_at.isoformat() if a.viewed_at else None,
+            "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None,
+        })
+
+    return {
+        "assignments": result,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": (total + per_page - 1) // per_page
+    }
+
+
 @router.get("/{user_id}/assignments")
 def user_assignments(
     user_id: UUID,

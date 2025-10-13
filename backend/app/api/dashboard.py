@@ -23,9 +23,9 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 @router.get("/stats", response_model=DashboardResponse)
 def get_dashboard_stats(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_admin_role)
 ) -> DashboardResponse:
-    """Get dashboard statistics and recent activity."""
+    """Get dashboard statistics and recent activity. (Admin only)"""
 
     # Get workspace_id from current user
     workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None

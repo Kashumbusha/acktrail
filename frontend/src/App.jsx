@@ -26,6 +26,7 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import PublicLayout from './components/PublicLayout';
 import Legal from './pages/Legal';
+import MyAssignments from './pages/MyAssignments';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -64,6 +65,7 @@ function App() {
               <Route path="/platform" element={<PrivateRoute><Layout><PlatformDashboard /></Layout></PrivateRoute>} />
               <Route path="/billing" element={<PrivateRoute><Layout><Billing /></Layout></PrivateRoute>} />
               <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
+              <Route path="/my-assignments" element={<PrivateRoute><Layout><MyAssignments /></Layout></PrivateRoute>} />
               <Route
                 path="/dashboard"
                 element={

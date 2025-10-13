@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   DocumentTextIcon,
   UsersIcon,
@@ -13,8 +13,15 @@ import { QUERY_KEYS } from '../utils/constants';
 import { formatNumber, formatPercentage } from '../utils/formatters';
 import StatsCard from '../components/StatsCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Dashboard() {
+  const { user } = useAuth();
+
+  // Redirect employees to their assignments page
+  if (user && user.role !== 'admin') {
+    return <Navigate to="/my-assignments" replace />;
+  }
   const {
     data: stats,
     isLoading,

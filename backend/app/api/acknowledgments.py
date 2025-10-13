@@ -25,6 +25,7 @@ from ..models.models import (
 from ..core.security import decode_magic_link_token
 from ..core.hashing import compute_policy_hash
 from ..core.storage import download_policy_file
+from ..core.email import send_acknowledgment_confirmation_email, send_acknowledgment_notification_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ack", tags=["acknowledgments"])
@@ -239,9 +240,45 @@ def create_acknowledgment(
     
     db.commit()
     db.refresh(ack_record)
-    
+
+    # Send email notifications (don't fail if email sending fails)
+    try:
+        # Send confirmation email to staff member
+        send_acknowledgment_confirmation_email(
+            user_email=user.email,
+            user_name=user.name,
+            policy_title=policy.title,
+            policy_version=policy.version,
+            acknowledged_at=ack_record.created_at,
+            ack_method=ack_record.ack_method.value,
+            ip_address=ack_record.ip_address,
+            assignment_id=str(assignment.id)
+        )
+        logger.info(f"Sent acknowledgment confirmation email to {user.email}")
+
+        # Get policy creator/admin to notify
+        policy_creator = db.query(User).filter(User.id == policy.created_by_id).first()
+        if policy_creator:
+            send_acknowledgment_notification_email(
+                admin_email=policy_creator.email,
+                admin_name=policy_creator.name,
+                staff_name=user.name,
+                staff_email=user.email,
+                policy_title=policy.title,
+                policy_version=policy.version,
+                acknowledged_at=ack_record.created_at,
+                ack_method=ack_record.ack_method.value,
+                ip_address=ack_record.ip_address,
+                typed_signature=ack_record.typed_signature,
+                assignment_id=str(assignment.id)
+            )
+            logger.info(f"Sent acknowledgment notification email to {policy_creator.email}")
+    except Exception as e:
+        # Log error but don't fail the acknowledgment
+        logger.error(f"Failed to send acknowledgment emails: {e}")
+
     logger.info(f"Policy acknowledged: {policy.title} by {user.email} via {acknowledgment.ack_method.value}")
-    
+
     return AcknowledgmentResponse(**ack_record.__dict__)
 
 

@@ -381,9 +381,15 @@ export default function PolicyDetail() {
                     <LoadingSpinner size="sm" className="mr-2" />
                     Adding...
                   </div>
-                ) : (
-                  `Add ${recipients.recipients.length} Recipient${recipients.recipients.length !== 1 ? 's' : ''}`
-                )}
+                ) : (() => {
+                  // Check if we're dealing with teams (team:uuid format)
+                  const isTeamSelection = recipients.recipients.some(r => r.startsWith('team:'));
+                  if (isTeamSelection) {
+                    const teamCount = recipients.recipients.length;
+                    return `Add ${teamCount} Team${teamCount !== 1 ? 's' : ''} ${recipients.includeAdmins ? '(All Members)' : '(Staff Only)'}`;
+                  }
+                  return `Add ${recipients.recipients.length} Recipient${recipients.recipients.length !== 1 ? 's' : ''}`;
+                })()}
               </button>
             </div>
           </div>

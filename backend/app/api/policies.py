@@ -39,6 +39,13 @@ def list_policies(
             query = query.filter(Policy.workspace_id == _UUID(workspace_id))
         except Exception:
             pass
+
+    # Role-based filtering: employees only see policies assigned to them
+    user_role = current_user.get("role")
+    if user_role != "admin":
+        # Filter to only show policies the employee is assigned to
+        user_id = _UUID(current_user["id"])
+        query = query.join(Assignment).filter(Assignment.user_id == user_id)
     
     # Apply search filter
     if search:
@@ -191,7 +198,23 @@ def get_policy(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Policy not found"
         )
-    
+
+    # Permission check: employees can only view policies assigned to them
+    user_role = current_user.get("role")
+    if user_role != "admin":
+        # Check if user has an assignment for this policy
+        user_id = UUID(current_user["id"])
+        assignment = db.query(Assignment).filter(
+            Assignment.policy_id == policy_id,
+            Assignment.user_id == user_id
+        ).first()
+
+        if not assignment:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to view this policy"
+            )
+
     return PolicyResponse(**policy.__dict__)
 
 

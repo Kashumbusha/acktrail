@@ -7,8 +7,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Policies', href: '/policies' },
+  { name: 'Dashboard', href: '/dashboard', adminOnly: true },
+  { name: 'Policies', href: '/policies', adminOnly: true },
+  { name: 'My Assignments', href: '/my-assignments', employeeOnly: true },
   { name: 'Teams', href: '/teams', adminOnly: true },
   { name: 'Users', href: '/admin/users', adminOnly: true },
   { name: 'Platform', href: '/platform', platformOnly: true },
@@ -45,7 +46,11 @@ export default function Layout({ children }) {
                     </Link>
                   </div>
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    {navigation.filter(n => (!n.adminOnly || user?.role === 'admin') && (!n.platformOnly || user?.is_platform_admin)).map((item) => (
+                    {navigation.filter(n =>
+                      (!n.adminOnly || user?.role === 'admin') &&
+                      (!n.platformOnly || user?.is_platform_admin) &&
+                      (!n.employeeOnly || user?.role !== 'admin')
+                    ).map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
@@ -145,7 +150,11 @@ export default function Layout({ children }) {
 
             <Disclosure.Panel className="sm:hidden">
               <div className="space-y-1 pb-3 pt-2">
-                {navigation.filter(n => (!n.adminOnly || user?.role === 'admin') && (!n.platformOnly || user?.is_platform_admin)).map((item) => (
+                {navigation.filter(n =>
+                  (!n.adminOnly || user?.role === 'admin') &&
+                  (!n.platformOnly || user?.is_platform_admin) &&
+                  (!n.employeeOnly || user?.role !== 'admin')
+                ).map((item) => (
                   <Disclosure.Button
                     key={item.name}
                     as={Link}
