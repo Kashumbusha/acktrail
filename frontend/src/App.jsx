@@ -25,6 +25,7 @@ import CheckoutCancelled from './pages/CheckoutCancelled';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import PublicLayout from './components/PublicLayout';
+import Legal from './pages/Legal';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -49,6 +50,7 @@ function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/legal" element={<Legal />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/signup/success" element={<CheckoutSuccess />} />
                 <Route path="/signup/cancelled" element={<CheckoutCancelled />} />

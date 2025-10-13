@@ -75,7 +75,12 @@ export default function PublicLayout({ children }) {
                 Policy Acknowledgment Tracker
               </span>
             </div>
-            <p className="text-slate-400 text-xs">© 2025 Policy Tracker. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link to="/legal" className="text-slate-300 hover:text-white text-xs underline underline-offset-2">
+                Legal
+              </Link>
+              <p className="text-slate-400 text-xs">© 2025 Policy Tracker. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </footer>

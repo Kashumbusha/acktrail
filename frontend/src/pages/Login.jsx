@@ -509,13 +509,13 @@ export default function Login() {
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-slate-400">
             By continuing, you agree to our{' '}
-            <a href="#" className="text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-300">
+            <Link to="/legal#terms" className="text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-300">
               Terms of Service
-            </a>{' '}
+            </Link>{' '}
             and{' '}
-            <a href="#" className="text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-300">
+            <Link to="/legal#privacy" className="text-primary-600 hover:text-primary-700 font-medium dark:text-primary-400 dark:hover:text-primary-300">
               Privacy Policy
-            </a>
+            </Link>
           </p>
         </div>
     </div>
