@@ -300,7 +300,7 @@ export default function Landing() {
             <span className="block text-slate-800 dark:text-gray-100">Start managing policies today.</span>
           </h2>
           <p className="mt-4 text-lg text-slate-600 dark:text-gray-400">
-            No credit card required. Launch in minutes, export audit evidence on day one, and add Slack alerts when they ship.
+            Start your 7-day trial today: launch in minutes, export audit evidence on day one, and add Slack alerts when they ship.
           </p>
           <Link to="/signup" className="btn bg-white text-primary-600 hover:bg-primary-50 mt-8 shadow-lg hover:shadow-xl">
             Sign up
