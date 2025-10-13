@@ -457,3 +457,42 @@ def sync_workspace_staff_count(
         "message": "Active staff count synced successfully",
         "active_staff_count": active_count
     }
+
+
+@router.post("/sync-all-workspaces")
+def sync_all_workspaces_staff_count(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+):
+    """
+    Admin endpoint to sync active_staff_count for ALL workspaces.
+    This is useful for fixing data inconsistencies across the platform.
+    """
+    try:
+        workspaces = db.query(Workspace).all()
+        synced_count = 0
+        results = []
+
+        for workspace in workspaces:
+            active_count = update_workspace_active_staff_count(db, workspace.id)
+            synced_count += 1
+            results.append({
+                "workspace_id": str(workspace.id),
+                "workspace_name": workspace.name,
+                "licensed_seats": workspace.staff_count,
+                "active_staff_count": active_count
+            })
+            logger.info(f"Synced workspace {workspace.name}: {active_count} active staff")
+
+        return {
+            "success": True,
+            "message": f"Synced {synced_count} workspaces successfully",
+            "results": results
+        }
+
+    except Exception as e:
+        logger.error(f"Error syncing all workspaces: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to sync workspaces: {str(e)}"
+        )

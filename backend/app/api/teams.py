@@ -150,6 +150,10 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     user.workspace_id = workspace.id
     db.commit()
 
+    # Initialize workspace active_staff_count (admin doesn't count, so it will be 0 initially)
+    from .users import update_workspace_active_staff_count
+    update_workspace_active_staff_count(db, workspace.id)
+
     # Note: No email sent here - frontend will call /auth/send-code to send verification email
     # This prevents duplicate emails during signup flow
 
