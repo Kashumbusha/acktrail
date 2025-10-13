@@ -68,6 +68,20 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
             detail=f"Workspace '{team_name}' already exists. Please choose a different name."
         )
 
+    # Check if this email has already used a trial (has a stripe customer ID from another workspace)
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user and existing_user.workspace_id:
+        # Check if their workspace has a Stripe customer (meaning they completed checkout/trial before)
+        previous_workspace = db.query(Workspace).filter(
+            Workspace.id == existing_user.workspace_id
+        ).first()
+
+        if previous_workspace and previous_workspace.stripe_customer_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This email has already been used for a trial. Trials are limited to one per email address. Please contact support if you need assistance."
+            )
+
     # Create workspace with 7-day free trial
     trial_ends_at = datetime.utcnow() + timedelta(days=7)
     # Normalize billing interval (month -> monthly, year -> annual)

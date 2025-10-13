@@ -458,6 +458,65 @@ def set_password(
     return {"success": True, "message": "Password set successfully"}
 
 
+@router.post("/change-password")
+def change_password(
+    payload: dict,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Change password for current user (requires current password verification)."""
+    current_password = payload.get("current_password", "")
+    new_password = payload.get("new_password", "")
+
+    if not current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is required"
+        )
+
+    if not new_password or len(new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 8 characters"
+        )
+
+    if current_password == new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password"
+        )
+
+    # Get user
+    user = db.query(User).filter(User.id == UUID(current_user["id"])).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Check if user has a password set
+    if not user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No password set. Please use the set-password endpoint first."
+        )
+
+    # Verify current password
+    if not verify_password(current_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect"
+        )
+
+    # Hash and store new password
+    user.password_hash = hash_password(new_password)
+    db.commit()
+
+    logger.info(f"Password changed for user: {user.email}")
+
+    return {"success": True, "message": "Password changed successfully"}
+
+
 
 
 

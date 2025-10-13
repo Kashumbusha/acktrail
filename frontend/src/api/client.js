@@ -135,6 +135,7 @@ export const usersAPI = {
   updateProfile: (data) => apiClient.patch('/api/users/me', data),
   getAssignments: (id) => apiClient.get(`/api/users/${id}/assignments`),
   getMyAssignments: (params) => apiClient.get('/api/users/me/assignments', { params }),
+  changePassword: (data) => apiClient.post('/api/auth/change-password', data),
   contactSupport: (data) => apiClient.post('/api/support/contact', {
     message: data.message,
     from_email: data.from,

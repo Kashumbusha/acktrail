@@ -45,6 +45,13 @@ export default function Settings() {
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSending, setSupportSending] = useState(false);
 
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   // Notification preferences state
   const [notifications, setNotifications] = useState({
     email: true,
@@ -253,7 +260,7 @@ export default function Settings() {
         message: supportMessage,
         from: user?.email,
       });
-      toast.success('Message sent! We’ll get back to you soon.');
+      toast.success('Message sent! We'll get back to you soon.');
       setSupportMessage('');
       setShowSupportModal(false);
     } catch (error) {
@@ -261,6 +268,48 @@ export default function Settings() {
       toast.error(detail);
     } finally {
       setSupportSending(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    // Validation
+    if (!passwordData.currentPassword) {
+      toast.error('Please enter your current password');
+      return;
+    }
+
+    if (!passwordData.newPassword || passwordData.newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      toast.error('New password must be different from current password');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await usersAPI.changePassword({
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword
+      });
+      toast.success('Password updated successfully');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error) {
+      const detail = error.response?.data?.detail || 'Failed to update password';
+      toast.error(detail);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -881,6 +930,8 @@ export default function Settings() {
             </label>
             <input
               type="password"
+              value={passwordData.currentPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="••••••••"
             />
@@ -891,6 +942,8 @@ export default function Settings() {
             </label>
             <input
               type="password"
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="••••••••"
             />
@@ -901,15 +954,19 @@ export default function Settings() {
             </label>
             <input
               type="password"
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
         </div>
         <button
-          onClick={() => toast.success('Password updated successfully')}
-          className="mt-4 px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-all"
+          onClick={handlePasswordChange}
+          disabled={updating}
+          className="mt-4 px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
         >
+          {updating && <LoadingSpinner size="sm" className="mr-2" />}
           Update Password
         </button>
       </div>
