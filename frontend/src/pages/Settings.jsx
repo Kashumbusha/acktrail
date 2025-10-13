@@ -260,7 +260,7 @@ export default function Settings() {
         message: supportMessage,
         from: user?.email,
       });
-      toast.success('Message sent! We'll get back to you soon.');
+      toast.success('Message sent! We\'ll get back to you soon.');
       setSupportMessage('');
       setShowSupportModal(false);
     } catch (error) {
