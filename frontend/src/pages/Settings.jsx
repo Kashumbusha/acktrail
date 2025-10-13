@@ -520,7 +520,8 @@ export default function Settings() {
     }
 
     const plan = PLANS[subscription.plan] || {};
-    const monthlyTotal = plan.basePrice + (plan.perStaffPrice * subscription.active_staff_count);
+    // Use staff_count (licensed seats) for billing, not active_staff_count (current usage)
+    const monthlyTotal = plan.basePrice + (plan.perStaffPrice * (subscription.staff_count || 0));
     const isTrialing = subscription.status === 'trialing';
     const isCancelled = subscription.status === 'canceled';
 
@@ -611,9 +612,9 @@ export default function Settings() {
             </div>
 
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Staff Members</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Staff Members (Licensed)</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {subscription.active_staff_count} × ${plan.perStaffPrice}/month
+                {subscription.staff_count || 0} × ${plan.perStaffPrice}/month
               </p>
             </div>
           </div>
@@ -755,10 +756,10 @@ export default function Settings() {
           ) : (
             <div>
               <p className="text-gray-600 dark:text-gray-400">
-                {subscription.active_staff_count > 0 ? (
+                {subscription.staff_count ? (
                   <>
-                    You have <strong>{subscription.active_staff_count}</strong> billable employees.
-                    {' '}Admins and guest users don't count toward this limit.
+                    You are licensed for <strong>{subscription.staff_count}</strong> employee seats and currently using <strong>{subscription.active_staff_count}</strong>.
+                    {' '}Billing is based on licensed seats, not usage. Admins are not counted.
                   </>
                 ) : (
                   <>
@@ -767,10 +768,10 @@ export default function Settings() {
                   </>
                 )}
               </p>
-              {subscription.active_staff_count > 0 && (
-                <div className="mt-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Plan capacity: <strong>{subscription.active_staff_count} of {plan.maxStaff}</strong> employees
+              {subscription.staff_count > 0 && (
+                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
+                    💡 You pay for <strong>{subscription.staff_count} licensed seats</strong> regardless of usage. Currently {subscription.active_staff_count} in use, {subscription.staff_count - subscription.active_staff_count} available.
                   </p>
                 </div>
               )}
