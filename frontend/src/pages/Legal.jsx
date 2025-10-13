@@ -42,7 +42,7 @@ export default function Legal() {
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Legal</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Effective date: {today}
+            Last updated: {today}
           </p>
           <nav className="mt-4 flex flex-wrap gap-4 text-sm">
             <a href="#terms" className="text-primary-600 dark:text-primary-400">Terms of Service</a>
@@ -173,7 +173,7 @@ export default function Legal() {
             </ul>
             <p className="font-semibold">Changes</p>
             <ul className="list-disc ml-6 space-y-1">
-              <li>We may update this Policy and will revise the effective date above; material changes will be communicated via the Service.</li>
+              <li>We may update this Policy and will revise the last updated date above; material changes will be communicated via the Service.</li>
             </ul>
           </div>
         </section>
