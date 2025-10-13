@@ -12,7 +12,7 @@ from io import StringIO
 from ..schemas.dashboard import DashboardStats, RecentActivity, DashboardResponse, PolicyExportRow, RecentPolicyItem
 from ..models.database import get_db
 from ..models.models import (
-    Policy, User, Assignment, Acknowledgment, AssignmentStatus, AckMethod, Workspace
+    Policy, User, Assignment, Acknowledgment, AssignmentStatus, AckMethod, Workspace, UserRole
 )
 from ..core.security import get_current_user, require_admin_role
 
@@ -76,14 +76,34 @@ def get_dashboard_stats(
     licensed_seats = None
     used_seats = None
     available_seats = None
+    admin_count = None
+    admin_limit = None
     sso_enabled = None
 
     if workspace_id:
         workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
         if workspace:
+            # Employee seat info (admins don't count towards these)
             licensed_seats = workspace.staff_count
             used_seats = workspace.active_staff_count
             available_seats = max((workspace.staff_count or 0) - (workspace.active_staff_count or 0), 0)
+
+            # Admin info
+            admin_count = db.query(User).filter(
+                User.workspace_id == workspace_id,
+                User.role == UserRole.ADMIN,
+                User.active == True
+            ).count()
+
+            # Admin limits per plan
+            admin_limits = {
+                "small": 1,
+                "medium": 2,
+                "large": 5
+            }
+            plan_tier = workspace.plan.value if workspace.plan else "small"
+            admin_limit = admin_limits.get(plan_tier, 1)
+
             sso_enabled = workspace.sso_enabled or workspace.sso_purchased
 
     stats = DashboardStats(
@@ -98,6 +118,8 @@ def get_dashboard_stats(
         seat_capacity=licensed_seats,
         seat_usage=used_seats,
         seat_available=available_seats,
+        admin_count=admin_count,
+        admin_limit=admin_limit,
         sso_enabled=sso_enabled
     )
     

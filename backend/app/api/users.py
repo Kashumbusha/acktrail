@@ -5,12 +5,35 @@ from uuid import UUID
 import logging
 
 from ..models.database import get_db
-from ..models.models import User, Assignment, Policy, UserRole
+from ..models.models import User, Assignment, Policy, UserRole, Workspace
 from ..core.security import get_current_user, require_admin_role
 from ..core.email import send_invitation_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+def update_workspace_active_staff_count(db: Session, workspace_id: UUID):
+    """
+    Calculate and update the active staff count for a workspace.
+    Active staff = employees only (role=employee, is_guest=False, active=True).
+    Admins do NOT count towards the seat limit.
+    """
+    # Count only active employees (not admins, not guests)
+    active_staff = db.query(User).filter(
+        User.workspace_id == workspace_id,
+        User.role == UserRole.EMPLOYEE,
+        User.is_guest == False,
+        User.active == True
+    ).count()
+
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if workspace:
+        workspace.active_staff_count = active_staff
+        db.commit()
+        logger.info(f"Updated workspace {workspace_id} active_staff_count to {active_staff} (employees only)")
+
+    return active_staff
 
 
 @router.get("/")
@@ -88,6 +111,55 @@ def invite_user(
             detail="Staff users must have login access"
         )
 
+    # Validate admin limits per plan
+    if role == "admin" and current_user.get("workspace_id"):
+        workspace = db.query(Workspace).filter(Workspace.id == UUID(current_user["workspace_id"])).first()
+        if workspace:
+            # Define admin limits per plan
+            admin_limits = {
+                "small": 1,
+                "medium": 2,
+                "large": 5
+            }
+            plan_tier = workspace.plan.value if workspace.plan else "small"
+            max_admins = admin_limits.get(plan_tier, 1)
+
+            # Count existing admins (excluding the user being updated if they already exist)
+            existing_user = db.query(User).filter(User.email == email).first()
+            existing_admin_count = db.query(User).filter(
+                User.workspace_id == workspace.id,
+                User.role == UserRole.ADMIN,
+                User.active == True
+            ).count()
+
+            # If this is a new admin or converting to admin
+            if not existing_user or existing_user.role != UserRole.ADMIN:
+                if existing_admin_count >= max_admins:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Your {plan_tier} plan allows a maximum of {max_admins} admin(s). Please upgrade your plan to add more admins."
+                    )
+
+    # Validate employee seat limits
+    if role == "employee" and not is_guest and current_user.get("workspace_id"):
+        workspace = db.query(Workspace).filter(Workspace.id == UUID(current_user["workspace_id"])).first()
+        if workspace:
+            existing_user = db.query(User).filter(User.email == email).first()
+            current_employee_count = db.query(User).filter(
+                User.workspace_id == workspace.id,
+                User.role == UserRole.EMPLOYEE,
+                User.is_guest == False,
+                User.active == True
+            ).count()
+
+            # If this is a new employee or converting to employee
+            if not existing_user or existing_user.role != UserRole.EMPLOYEE or existing_user.is_guest:
+                if current_employee_count >= (workspace.staff_count or 0):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"You have reached your seat limit of {workspace.staff_count} employees. Please increase your seat count in settings."
+                    )
+
     user = db.query(User).filter(User.email == email).first()
     if not user:
         user = User(email=email, name=name)
@@ -102,6 +174,10 @@ def invite_user(
     if team_id:
         user.team_id = UUID(team_id)  # type: ignore
     db.commit()
+
+    # Update workspace active staff count
+    if current_user.get("workspace_id"):
+        update_workspace_active_staff_count(db, UUID(current_user["workspace_id"]))
 
     # Send invitation email
     try:
@@ -168,6 +244,11 @@ def update_user(
     if "active" in payload:
         user.active = bool(payload["active"])
     db.commit()
+
+    # Update workspace active staff count if relevant fields changed
+    if user.workspace_id and ("active" in payload or "can_login" in payload):
+        update_workspace_active_staff_count(db, user.workspace_id)
+
     return {"success": True}
 
 
@@ -272,5 +353,30 @@ def user_assignments(
             "acknowledged_at": a.acknowledged_at.isoformat() if a.acknowledged_at else None,
         })
     return {"assignments": result}
+
+
+@router.post("/sync-staff-count")
+def sync_workspace_staff_count(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+):
+    """
+    Admin endpoint to manually sync the active_staff_count for the current workspace.
+    This is useful for fixing inconsistent data.
+    """
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not associated with a workspace"
+        )
+
+    active_count = update_workspace_active_staff_count(db, UUID(workspace_id))
+
+    return {
+        "success": True,
+        "message": "Active staff count synced successfully",
+        "active_staff_count": active_count
+    }
 
 

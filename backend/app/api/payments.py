@@ -160,7 +160,7 @@ def get_subscription(
             stripe_customer_id=workspace.stripe_customer_id,
             stripe_subscription_id=workspace.stripe_subscription_id,
             staff_count=workspace.staff_count or 1,  # Licensed seats
-            active_staff_count=workspace.active_staff_count or workspace.staff_count or 0,  # Actual invited users
+            active_staff_count=workspace.active_staff_count or 0,  # Actual invited users
             billing_interval=billing_interval,
             sso_purchased=workspace.sso_purchased,
         )

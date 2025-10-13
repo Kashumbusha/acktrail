@@ -69,6 +69,8 @@ export default function Dashboard() {
     seat_capacity,
     seat_usage,
     seat_available,
+    admin_count,
+    admin_limit,
     sso_enabled
   } = dashboardStats;
 
@@ -131,18 +133,32 @@ export default function Dashboard() {
       </div>
 
       {seat_capacity && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">Seat Usage</h3>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">Employee Seats</h3>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{seat_usage} / {seat_capacity}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">{seat_available} seats available</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{seat_available} available</p>
                 </div>
               </div>
             </div>
           </div>
+
+          {admin_count !== null && admin_limit !== null && (
+            <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+              <div className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-slate-400">Admins</h3>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{admin_count} / {admin_limit}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Not billed</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white overflow-hidden rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
             <div className="p-5">

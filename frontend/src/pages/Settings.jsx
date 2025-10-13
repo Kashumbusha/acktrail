@@ -324,9 +324,12 @@ export default function Settings() {
 
         {subscription && subscription.staff_count ? (
           <div className="mb-8 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="mb-3">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Employee Seats (Billable)</h4>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Licensed seats</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Licensed</p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">{subscription.staff_count}</p>
               </div>
               <div>
@@ -338,6 +341,9 @@ export default function Settings() {
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">{Math.max(subscription.staff_count - subscription.active_staff_count, 0)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-slate-700 pt-3">
+              ℹ️ Admins are not counted towards your seat limit. Your plan includes separate admin allocations.
+            </p>
           </div>
         ) : null}
 
@@ -658,7 +664,7 @@ export default function Settings() {
         {/* Staff Management */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Staff Members</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Employee Seats</h3>
             {subscription.stripe_customer_id && (
               <button
                 onClick={() => setShowUpdateStaff(!showUpdateStaff)}
@@ -674,7 +680,7 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Number of staff members
+                  Number of employee seats
                 </label>
                 <input
                   type="number"
@@ -685,7 +691,7 @@ export default function Settings() {
                   className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Maximum {plan.maxStaff} staff for {plan.name} plan
+                  Maximum {plan.maxStaff} employees for {plan.name} plan (admins not included)
                 </p>
               </div>
               <button
@@ -702,20 +708,20 @@ export default function Settings() {
               <p className="text-gray-600 dark:text-gray-400">
                 {subscription.active_staff_count > 0 ? (
                   <>
-                    You have <strong>{subscription.active_staff_count}</strong> billable staff members.
-                    {' '}Guest users don't count toward this limit.
+                    You have <strong>{subscription.active_staff_count}</strong> billable employees.
+                    {' '}Admins and guest users don't count toward this limit.
                   </>
                 ) : (
                   <>
-                    Your <strong>{plan.name}</strong> plan supports up to <strong>{plan.maxStaff} staff members</strong>.
-                    {' '}Complete checkout to activate your subscription and start inviting staff.
+                    Your <strong>{plan.name}</strong> plan supports up to <strong>{plan.maxStaff} employees</strong>.
+                    {' '}Complete checkout to activate your subscription and start inviting employees.
                   </>
                 )}
               </p>
               {subscription.active_staff_count > 0 && (
                 <div className="mt-3 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Plan capacity: <strong>{subscription.active_staff_count} of {plan.maxStaff}</strong> staff members
+                    Plan capacity: <strong>{subscription.active_staff_count} of {plan.maxStaff}</strong> employees
                   </p>
                 </div>
               )}

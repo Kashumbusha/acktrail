@@ -13,9 +13,11 @@ class DashboardStats(BaseModel):
     acknowledged_assignments: int = 0
     overdue_assignments: int = 0
     acknowledgment_rate: float = 0.0  # Percentage
-    seat_capacity: Optional[int] = None
-    seat_usage: Optional[int] = None
-    seat_available: Optional[int] = None
+    seat_capacity: Optional[int] = None  # Licensed employee seats
+    seat_usage: Optional[int] = None  # Current employee count
+    seat_available: Optional[int] = None  # Available employee seats
+    admin_count: Optional[int] = None  # Current admin count
+    admin_limit: Optional[int] = None  # Admin limit for current plan
     sso_enabled: Optional[bool] = None
 
 
