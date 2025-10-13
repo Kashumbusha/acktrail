@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export default function Legal() {
   const [message, setMessage] = useState('');
   const [optionalEmail, setOptionalEmail] = useState('');
   const [sending, setSending] = useState(false);
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,10 +37,23 @@ export default function Legal() {
 
   const today = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
+  // Scroll to section on hash change and on initial load (e.g., /legal#privacy)
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [location.hash]);
+
   return (
     <div className="bg-white dark:bg-slate-900">
       <div className="container-page py-12">
-        <header className="mb-8">
+        <header className="mb-8" id="top">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Legal</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Last updated: {today}
@@ -212,7 +226,7 @@ export default function Legal() {
               >
                 {sending ? 'Sending…' : 'Send message'}
               </button>
-              <Link to="#top" className="text-sm text-primary-600 dark:text-primary-400">Back to top</Link>
+              <a href="#top" className="text-sm text-primary-600 dark:text-primary-400">Back to top</a>
             </div>
           </form>
         </section>
