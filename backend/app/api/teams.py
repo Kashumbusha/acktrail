@@ -68,19 +68,26 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
             detail=f"Workspace '{team_name}' already exists. Please choose a different name."
         )
 
-    # Check if this email has already used a trial (has a stripe customer ID from another workspace)
+    # Check if this email has already used a trial as a staff member (admin or employee)
+    # Note: Guest users should be allowed to create their own workspace
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user and existing_user.workspace_id:
-        # Check if their workspace has a Stripe customer (meaning they completed checkout/trial before)
-        previous_workspace = db.query(Workspace).filter(
-            Workspace.id == existing_user.workspace_id
-        ).first()
+        # Only block if user is/was staff (admin or employee, not guest) in another workspace
+        if not existing_user.is_guest:
+            # Check if their workspace has a Stripe customer (meaning they completed checkout/trial before)
+            previous_workspace = db.query(Workspace).filter(
+                Workspace.id == existing_user.workspace_id
+            ).first()
 
-        if previous_workspace and previous_workspace.stripe_customer_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="This email has already been used for a trial. Trials are limited to one per email address. Please contact support if you need assistance."
-            )
+            if previous_workspace and previous_workspace.stripe_customer_id:
+                # User is already a staff member in another workspace that has used trial
+                workspace_name = previous_workspace.name
+                user_role = existing_user.role.value if existing_user.role else "member"
+
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"This email is already registered as a {user_role} in workspace '{workspace_name}'. Each email can only be used for one workspace trial. Please use a different email or contact support for assistance."
+                )
 
     # Create workspace with 7-day free trial
     trial_ends_at = datetime.utcnow() + timedelta(days=7)
