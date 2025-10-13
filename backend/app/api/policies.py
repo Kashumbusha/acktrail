@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import Optional, List
+from datetime import datetime
 from uuid import UUID
 from urllib.parse import unquote
 import logging
@@ -75,11 +76,10 @@ def list_policies(
         
         # Calculate overdue (assignments with due_at in the past and not acknowledged)
         overdue_count = 0
-        if policy.due_at:
+        if policy.due_at and policy.due_at < datetime.utcnow():
             overdue_count = db.query(Assignment).filter(
                 Assignment.policy_id == policy.id,
-                Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]),
-                policy.due_at < func.now()
+                Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED])
             ).count()
         
         policy_with_stats = PolicyWithStats(
@@ -413,7 +413,6 @@ async def get_policy_file(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve policy file"
         )
-
 
 
 

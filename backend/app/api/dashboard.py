@@ -389,11 +389,10 @@ def export_all_policies_summary(
         
         # Calculate overdue
         overdue_count = 0
-        if policy.due_at:
+        if policy.due_at and policy.due_at < datetime.utcnow():
             overdue_count = db.query(Assignment).filter(
                 Assignment.policy_id == policy.id,
-                Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED]),
-                policy.due_at < datetime.utcnow()
+                Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED])
             ).count()
         
         # Calculate acknowledgment rate

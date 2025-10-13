@@ -5,7 +5,7 @@ from uuid import UUID
 import logging
 
 from ..models.database import get_db
-from ..models.models import User, Assignment, Policy, UserRole, Workspace
+from ..models.models import User, Assignment, Policy, UserRole, Workspace, Team
 from ..core.security import get_current_user, require_admin_role
 from ..core.email import send_invitation_email
 
@@ -82,6 +82,28 @@ def invite_user(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
 ):
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not associated with a workspace"
+        )
+
+    try:
+        workspace_uuid = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid workspace identifier"
+        )
+
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_uuid).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found"
+        )
+
     email = (payload.get("email") or "").strip().lower()
     name = (payload.get("name") or email.split('@')[0]).strip()
     role = payload.get("role") or "employee"
@@ -111,56 +133,69 @@ def invite_user(
             detail="Staff users must have login access"
         )
 
+    existing_user = db.query(User).filter(
+        User.email == email,
+        User.workspace_id == workspace_uuid
+    ).first()
+
     # Validate admin limits per plan
-    if role == "admin" and current_user.get("workspace_id"):
-        workspace = db.query(Workspace).filter(Workspace.id == UUID(current_user["workspace_id"])).first()
-        if workspace:
-            # Define admin limits per plan
-            admin_limits = {
-                "small": 1,
-                "medium": 2,
-                "large": 5
-            }
-            plan_tier = workspace.plan.value if workspace.plan else "small"
-            max_admins = admin_limits.get(plan_tier, 1)
+    if role == "admin":
+        # Define admin limits per plan
+        admin_limits = {
+            "small": 1,
+            "medium": 2,
+            "large": 5
+        }
+        plan_tier = workspace.plan.value if workspace.plan else "small"
+        max_admins = admin_limits.get(plan_tier, 1)
 
-            # Count existing admins (excluding the user being updated if they already exist)
-            existing_user = db.query(User).filter(User.email == email).first()
-            existing_admin_count = db.query(User).filter(
-                User.workspace_id == workspace.id,
-                User.role == UserRole.ADMIN,
-                User.active == True
-            ).count()
+        existing_admin_count = db.query(User).filter(
+            User.workspace_id == workspace.id,
+            User.role == UserRole.ADMIN,
+            User.active == True
+        ).count()
 
-            # If this is a new admin or converting to admin
-            if not existing_user or existing_user.role != UserRole.ADMIN:
-                if existing_admin_count >= max_admins:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Your {plan_tier} plan allows a maximum of {max_admins} admin(s). Please upgrade your plan to add more admins."
-                    )
+        # If this is a new admin or converting to admin
+        if not existing_user or existing_user.role != UserRole.ADMIN:
+            if existing_admin_count >= max_admins:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Your {plan_tier} plan allows a maximum of {max_admins} admin(s). Please upgrade your plan to add more admins."
+                )
 
     # Validate employee seat limits
-    if role == "employee" and not is_guest and current_user.get("workspace_id"):
-        workspace = db.query(Workspace).filter(Workspace.id == UUID(current_user["workspace_id"])).first()
-        if workspace:
-            existing_user = db.query(User).filter(User.email == email).first()
-            current_employee_count = db.query(User).filter(
-                User.workspace_id == workspace.id,
-                User.role == UserRole.EMPLOYEE,
-                User.is_guest == False,
-                User.active == True
-            ).count()
+    if role == "employee" and not is_guest:
+        current_employee_count = db.query(User).filter(
+            User.workspace_id == workspace.id,
+            User.role == UserRole.EMPLOYEE,
+            User.is_guest == False,
+            User.active == True
+        ).count()
 
-            # If this is a new employee or converting to employee
-            if not existing_user or existing_user.role != UserRole.EMPLOYEE or existing_user.is_guest:
-                if current_employee_count >= (workspace.staff_count or 0):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"You have reached your seat limit of {workspace.staff_count} employees. Please increase your seat count in settings."
-                    )
+        if not existing_user or existing_user.role != UserRole.EMPLOYEE or existing_user.is_guest:
+            if current_employee_count >= (workspace.staff_count or 0):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"You have reached your seat limit of {workspace.staff_count} employees. Please increase your seat count in settings."
+                )
 
-    user = db.query(User).filter(User.email == email).first()
+    if team_id:
+        try:
+            team_uuid = UUID(team_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid team identifier"
+            )
+
+        team = db.query(Team).filter(Team.id == team_uuid).first()
+        if not team or team.workspace_id != workspace.id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Team not found in your workspace"
+            )
+
+    user = existing_user
     if not user:
         user = User(email=email, name=name)
         db.add(user)
@@ -169,15 +204,13 @@ def invite_user(
     user.role = UserRole(role)
     user.is_guest = is_guest
     user.can_login = can_login
-    if current_user.get("workspace_id"):
-        user.workspace_id = UUID(current_user["workspace_id"])  # type: ignore
+    user.workspace_id = workspace.id  # type: ignore
     if team_id:
-        user.team_id = UUID(team_id)  # type: ignore
+        user.team_id = team_uuid  # type: ignore
     db.commit()
 
     # Update workspace active staff count
-    if current_user.get("workspace_id"):
-        update_workspace_active_staff_count(db, UUID(current_user["workspace_id"]))
+    update_workspace_active_staff_count(db, workspace.id)
 
     # Send invitation email
     try:
@@ -206,9 +239,30 @@ def update_user(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
 ):
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not associated with a workspace"
+        )
+
+    try:
+        workspace_uuid = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid workspace identifier"
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not user.workspace_id or user.workspace_id != workspace_uuid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not belong to your workspace"
+        )
 
     # Apply updates to temporary values for validation
     updated_role = UserRole(payload["role"]) if "role" in payload else user.role
@@ -340,7 +394,32 @@ def user_assignments(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
 ):
-    assignments = db.query(Assignment).filter(Assignment.user_id == user_id).all()
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not associated with a workspace"
+        )
+
+    try:
+        workspace_uuid = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid workspace identifier"
+        )
+
+    user = db.query(User).filter(User.id == user_id, User.workspace_id == workspace_uuid).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found in your workspace"
+        )
+
+    assignments = db.query(Assignment).filter(
+        Assignment.user_id == user_id,
+        Assignment.workspace_id == workspace_uuid
+    ).all()
     result = []
     for a in assignments:
         policy = db.query(Policy).filter(Policy.id == a.policy_id).first()
@@ -378,5 +457,3 @@ def sync_workspace_staff_count(
         "message": "Active staff count synced successfully",
         "active_staff_count": active_count
     }
-
-

@@ -108,12 +108,14 @@ def get_acknowledgment_page(
         assignment.status = AssignmentStatus.VIEWED
         db.commit()
     
-    # Compute current policy hash for tamper detection
-    policy_hash = compute_policy_hash(
-        title=policy.title,
-        body_markdown=policy.body_markdown,
-        file_content=None  # We don't re-hash file content for display
-    )
+    # Use stored policy hash (includes file content when present)
+    policy_hash = policy.content_sha256
+    if not policy_hash:
+        # Fallback for legacy records without a stored hash
+        policy_hash = compute_policy_hash(
+            title=policy.title,
+            body_markdown=policy.body_markdown
+        )
     
     return AckPageData(
         assignment_id=assignment.id,
@@ -212,12 +214,13 @@ def create_acknowledgment(
     client_ip = get_client_ip(request)
     user_agent = request.headers.get("User-Agent", "")
     
-    # Compute policy hash at acknowledgment time
-    policy_hash_at_ack = compute_policy_hash(
-        title=policy.title,
-        body_markdown=policy.body_markdown,
-        file_content=None  # For simplicity, not re-hashing file content
-    )
+    # Use stored policy hash to capture full content (including files)
+    policy_hash_at_ack = policy.content_sha256
+    if not policy_hash_at_ack:
+        policy_hash_at_ack = compute_policy_hash(
+            title=policy.title,
+            body_markdown=policy.body_markdown
+        )
     
     # Create acknowledgment record
     ack_record = Acknowledgment(
@@ -257,7 +260,7 @@ def create_acknowledgment(
         logger.info(f"Sent acknowledgment confirmation email to {user.email}")
 
         # Get policy creator/admin to notify
-        policy_creator = db.query(User).filter(User.id == policy.created_by_id).first()
+        policy_creator = db.query(User).filter(User.id == policy.created_by).first()
         if policy_creator:
             send_acknowledgment_notification_email(
                 admin_email=policy_creator.email,
