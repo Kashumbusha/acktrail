@@ -3,12 +3,7 @@ import { CreditCardIcon, UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@he
 import { paymentsAPI } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-
-const PLANS = {
-  small: { name: 'Small Business', basePrice: 49, perStaffPrice: 5, minStaff: 1, maxStaff: 10 },
-  medium: { name: 'Medium Team', basePrice: 149, perStaffPrice: 1, minStaff: 11, maxStaff: 49 },
-  large: { name: 'Large', basePrice: 299, perStaffPrice: 2, minStaff: 50, maxStaff: 100 }
-};
+import { PLAN_MAP } from '../data/plans';
 
 export default function Billing() {
   const [subscription, setSubscription] = useState(null);
@@ -99,7 +94,7 @@ export default function Billing() {
       return;
     }
 
-    const newPlan = PLANS[selectedPlan];
+    const newPlan = PLAN_MAP[selectedPlan];
     const monthlyTotal = newPlan.basePrice + (newPlan.perStaffPrice * parseInt(selectedPlanStaffCount));
 
     if (!window.confirm(`Change to ${newPlan.name} plan with ${selectedPlanStaffCount} staff for $${monthlyTotal}/month?`)) {
@@ -155,7 +150,7 @@ export default function Billing() {
     );
   }
 
-  const plan = PLANS[subscription.plan] || PLANS.small;
+  const plan = PLAN_MAP[subscription.plan] || PLAN_MAP.small;
   const monthlyTotal = plan.basePrice + (plan.perStaffPrice * subscription.staff_count);
   const isTrialing = subscription.status === 'trialing';
   const isCancelled = subscription.status === 'canceled';
@@ -271,7 +266,7 @@ export default function Billing() {
                   value={selectedPlan}
                   onChange={(e) => {
                     setSelectedPlan(e.target.value);
-                    const newPlan = PLANS[e.target.value];
+                  const newPlan = PLAN_MAP[e.target.value];
                     const currentStaff = parseInt(selectedPlanStaffCount);
 
                     // Auto-adjust staff count to meet new plan requirements
@@ -285,9 +280,9 @@ export default function Billing() {
                   }}
                   className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="small">Small Business - ${PLANS.small.basePrice} + ${PLANS.small.perStaffPrice}/staff (1-{PLANS.small.maxStaff} staff)</option>
-                  <option value="medium">Medium Team - ${PLANS.medium.basePrice} + ${PLANS.medium.perStaffPrice}/staff ({PLANS.medium.minStaff}-{PLANS.medium.maxStaff} staff)</option>
-                  <option value="large">Large - ${PLANS.large.basePrice} + ${PLANS.large.perStaffPrice}/staff ({PLANS.large.minStaff}-{PLANS.large.maxStaff} staff)</option>
+                  <option value="small">Small Business - ${PLAN_MAP.small.basePrice} + ${PLAN_MAP.small.perStaffPrice}/staff (1-{PLAN_MAP.small.maxStaff} staff)</option>
+                  <option value="medium">Medium Team - ${PLAN_MAP.medium.basePrice} + ${PLAN_MAP.medium.perStaffPrice}/staff ({PLAN_MAP.medium.minStaff}-{PLAN_MAP.medium.maxStaff} staff)</option>
+                  <option value="large">Large - ${PLAN_MAP.large.basePrice} + ${PLAN_MAP.large.perStaffPrice}/staff ({PLAN_MAP.large.minStaff}-{PLAN_MAP.large.maxStaff} staff)</option>
                 </select>
               </div>
 
@@ -299,7 +294,7 @@ export default function Billing() {
                 <input
                   type="number"
                   min="1"
-                  max={PLANS[selectedPlan]?.maxStaff || 10}
+                  max={PLAN_MAP[selectedPlan]?.maxStaff || 10}
                   value={selectedPlanStaffCount}
                   onChange={(e) => setSelectedPlanStaffCount(e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -312,7 +307,7 @@ export default function Billing() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-blue-900 dark:text-blue-100">New Monthly Total</span>
                     <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      ${PLANS[selectedPlan].basePrice + (PLANS[selectedPlan].perStaffPrice * parseInt(selectedPlanStaffCount))}
+                      ${PLAN_MAP[selectedPlan].basePrice + (PLAN_MAP[selectedPlan].perStaffPrice * parseInt(selectedPlanStaffCount))}
                     </span>
                   </div>
                   <p className="text-xs text-blue-800 dark:text-blue-200 mt-2">

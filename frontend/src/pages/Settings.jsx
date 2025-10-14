@@ -15,12 +15,7 @@ import { paymentsAPI, usersAPI } from '../api/client';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-
-const PLANS = {
-  small: { name: 'Small Business', basePrice: 49, perStaffPrice: 5, minStaff: 1, maxStaff: 10 },
-  medium: { name: 'Medium Team', basePrice: 149, perStaffPrice: 1, minStaff: 11, maxStaff: 49 },
-  large: { name: 'Large', basePrice: 299, perStaffPrice: 2, minStaff: 50, maxStaff: 100 }
-};
+import { PLAN_MAP } from '../data/plans';
 
 const tabs = [
   { id: 'profile', name: 'Profile', icon: UserCircleIcon },
@@ -171,7 +166,7 @@ export default function Settings() {
       return;
     }
 
-    const newPlan = PLANS[selectedPlan];
+    const newPlan = PLAN_MAP[selectedPlan];
     const monthlyTotal = newPlan.basePrice + (newPlan.perStaffPrice * parseInt(selectedPlanStaffCount));
     const isTrialing = subscription.status === 'trialing';
 
@@ -519,7 +514,7 @@ export default function Settings() {
       );
     }
 
-    const plan = PLANS[subscription.plan] || {};
+    const plan = PLAN_MAP[subscription.plan] || PLAN_MAP.small;
     // Use staff_count (licensed seats) for billing, not active_staff_count (current usage)
     const monthlyTotal = plan.basePrice + (plan.perStaffPrice * (subscription.staff_count || 0));
     const isTrialing = subscription.status === 'trialing';
@@ -633,7 +628,7 @@ export default function Settings() {
                     value={selectedPlan}
                     onChange={(e) => {
                       setSelectedPlan(e.target.value);
-                      const newPlan = PLANS[e.target.value];
+                      const newPlan = PLAN_MAP[e.target.value];
                       const currentStaff = parseInt(selectedPlanStaffCount);
 
                       // Auto-adjust staff count to meet new plan requirements
@@ -647,9 +642,9 @@ export default function Settings() {
                     }}
                     className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
-                    <option value="small">Small Business - ${PLANS.small.basePrice} + ${PLANS.small.perStaffPrice}/staff (1-{PLANS.small.maxStaff} staff)</option>
-                    <option value="medium">Medium Team - ${PLANS.medium.basePrice} + ${PLANS.medium.perStaffPrice}/staff ({PLANS.medium.minStaff}-{PLANS.medium.maxStaff} staff)</option>
-                    <option value="large">Large - ${PLANS.large.basePrice} + ${PLANS.large.perStaffPrice}/staff ({PLANS.large.minStaff}-{PLANS.large.maxStaff} staff)</option>
+                    <option value="small">Small Business - ${PLAN_MAP.small.basePrice} + ${PLAN_MAP.small.perStaffPrice}/staff (1-{PLAN_MAP.small.maxStaff} staff)</option>
+                    <option value="medium">Medium Team - ${PLAN_MAP.medium.basePrice} + ${PLAN_MAP.medium.perStaffPrice}/staff ({PLAN_MAP.medium.minStaff}-{PLAN_MAP.medium.maxStaff} staff)</option>
+                    <option value="large">Large - ${PLAN_MAP.large.basePrice} + ${PLAN_MAP.large.perStaffPrice}/staff ({PLAN_MAP.large.minStaff}-{PLAN_MAP.large.maxStaff} staff)</option>
                   </select>
                 </div>
 
@@ -661,7 +656,7 @@ export default function Settings() {
                   <input
                     type="number"
                     min="1"
-                    max={PLANS[selectedPlan]?.maxStaff || 10}
+                    max={PLAN_MAP[selectedPlan]?.maxStaff || 10}
                     value={selectedPlanStaffCount}
                     onChange={(e) => setSelectedPlanStaffCount(e.target.value)}
                     className="block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -674,7 +669,7 @@ export default function Settings() {
                     <div className="flex justify-between items-center mb-2">
                       <span className={`text-sm font-medium ${isTrialing ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>New Monthly Total</span>
                       <span className={`text-xl font-bold ${isTrialing ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
-                        ${PLANS[selectedPlan].basePrice + (PLANS[selectedPlan].perStaffPrice * parseInt(selectedPlanStaffCount))}
+                        ${PLAN_MAP[selectedPlan].basePrice + (PLAN_MAP[selectedPlan].perStaffPrice * parseInt(selectedPlanStaffCount))}
                       </span>
                     </div>
                     <p className={`text-xs ${isTrialing ? 'text-blue-800 dark:text-blue-200' : 'text-gray-600 dark:text-gray-400'}`}>

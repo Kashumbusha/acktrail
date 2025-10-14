@@ -7,45 +7,7 @@ import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-
-const PLANS = [
-  {
-    id: 'small',
-    name: 'Small Business',
-    basePrice: 49,
-    perStaffPrice: 5,
-    maxStaff: 10,
-    guestInvites: 5,
-    admins: 1,
-    features: ['Email support', 'Basic analytics', '5 guest invites/mo']
-  },
-  {
-    id: 'medium',
-    name: 'Medium Team',
-    basePrice: 149,
-    perStaffPrice: 1,
-    minStaff: 11,
-    maxStaff: 49,
-    guestInvites: 50,
-    admins: 2,
-    features: ['Priority support', 'Advanced analytics', '50 guest invites/mo', 'API access'],
-    popular: true
-  },
-  {
-    id: 'large',
-    name: 'Large',
-    basePrice: 299,
-    perStaffPrice: 2,
-    minStaff: 50,
-    maxStaff: 100,
-    guestInvites: 100,
-    admins: 5,
-    features: ['24/7 phone support', 'Advanced security', '100 guest invites/mo', 'Custom integrations']
-  }
-];
-
-const SSO_MONTHLY_PRICE = 50;
-const ANNUAL_DISCOUNT = 0.15; // 15% discount for annual billing
+import { PLANS, SSO_MONTHLY_PRICE, ANNUAL_DISCOUNT, calculatePlanPrice } from '../data/plans';
 
 export default function Signup() {
   const { login, sendCode, isAuthenticated } = useAuth();
@@ -77,33 +39,7 @@ export default function Signup() {
     return <Navigate to={from} replace />;
   }
 
-  // Calculate price dynamically
-  const calculatePrice = (plan, staff, interval, includeSSO) => {
-    const planConfig = PLANS.find(p => p.id === plan);
-    if (!planConfig) return 0;
-
-    let basePrice = planConfig.basePrice;
-    let staffPrice = planConfig.perStaffPrice * staff;
-    let subtotal = basePrice + staffPrice;
-
-    // Add SSO recurring add-on
-    if (includeSSO) {
-      subtotal += SSO_MONTHLY_PRICE;
-    }
-
-    const monthly = interval === 'year' ? Math.round((subtotal * 12 * (1 - ANNUAL_DISCOUNT)) / 12) : subtotal;
-    const annual = interval === 'year' ? Math.round(subtotal * 12 * (1 - ANNUAL_DISCOUNT)) : Math.round((subtotal) * 12 * (1 - ANNUAL_DISCOUNT));
-
-    return {
-      monthly,
-      annual,
-      ssoMonthly: includeSSO ? SSO_MONTHLY_PRICE : 0,
-      basePrice,
-      staffPrice: interval === 'year' ? Math.round(staffPrice * 12 * (1 - ANNUAL_DISCOUNT)) : staffPrice
-    };
-  };
-
-  const pricing = calculatePrice(selectedPlan, staffCount, billingInterval, ssoEnabled);
+  const pricing = calculatePlanPrice(selectedPlan, staffCount, billingInterval, ssoEnabled);
   const selectedPlanConfig = PLANS.find(p => p.id === selectedPlan);
 
   // Handle plan change - automatically adjust staff count to plan's default
