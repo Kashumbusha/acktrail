@@ -40,6 +40,10 @@ export default function Billing() {
     setUpdating(true);
     try {
       await paymentsAPI.updateSubscription({ new_staff_count: parseInt(newStaffCount) });
+
+      // Wait a moment for database to commit changes
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast.success('Staff count updated successfully');
       await loadSubscription();
       setShowUpdateStaff(false);
@@ -63,6 +67,10 @@ export default function Billing() {
     setUpdating(true);
     try {
       await paymentsAPI.updateSubscription({ enable_sso: true });
+
+      // Wait a moment for database to commit changes
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast.success('SSO add-on enabled!');
       await loadSubscription();
     } catch (error) {
@@ -107,7 +115,13 @@ export default function Billing() {
         new_plan: selectedPlan,
         new_staff_count: parseInt(selectedPlanStaffCount)
       });
+
+      // Wait a moment for database to commit changes
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast.success('Plan changed successfully! Your billing will be prorated.');
+
+      // Force reload subscription data from server
       await loadSubscription();
       setShowChangePlan(false);
     } catch (error) {
@@ -125,6 +139,10 @@ export default function Billing() {
     setUpdating(true);
     try {
       await paymentsAPI.cancelSubscription();
+
+      // Wait a moment for database to commit changes
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast.success('Subscription cancelled. You can continue using the service until the end of your billing period.');
       await loadSubscription();
     } catch (error) {
