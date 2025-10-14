@@ -27,6 +27,7 @@ import Settings from './pages/Settings';
 import PublicLayout from './components/PublicLayout';
 import Legal from './pages/Legal';
 import MyAssignments from './pages/MyAssignments';
+import Hiring from './pages/Hiring';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/legal" element={<Legal />} />
+                <Route path="/hiring" element={<Hiring />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/signup/success" element={<CheckoutSuccess />} />
                 <Route path="/signup/cancelled" element={<CheckoutCancelled />} />

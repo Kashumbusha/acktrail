@@ -34,6 +34,7 @@ export default function Signup() {
   const [billingInterval, setBillingInterval] = useState('month'); // 'month' or 'year'
   const [ssoEnabled, setSsoEnabled] = useState(false); // SSO addon
   const [workspaceId, setWorkspaceId] = useState(null);
+  const [isWhitelisted, setIsWhitelisted] = useState(false); // Workspace is whitelisted
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
@@ -150,8 +151,16 @@ export default function Signup() {
       }
 
       setWorkspaceId(newWorkspaceId);
-      setStep(2); // Move to plan selection
-      toast.success('Workspace created! Now choose your plan.');
+
+      // Check if workspace is whitelisted
+      if (registerResponse.data.is_whitelisted) {
+        setIsWhitelisted(true);
+        setStep(3); // Skip plan selection and go directly to verification
+        toast.success('Workspace created! Please verify your email to get started.');
+      } else {
+        setStep(2); // Move to plan selection
+        toast.success('Workspace created! Now choose your plan.');
+      }
     } catch (error) {
       const errorMsg = error.response?.data?.detail || error.message || 'Failed to create workspace';
       if (errorMsg.includes('already exists')) {
@@ -209,7 +218,7 @@ export default function Signup() {
     }
   };
 
-  // Step 3: Verify code and redirect to Stripe Checkout
+  // Step 3: Verify code and redirect to Stripe Checkout (or dashboard if whitelisted)
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
 
@@ -222,17 +231,24 @@ export default function Signup() {
     setCodeError('');
 
     try {
-      // Set flag to prevent auto-redirect to dashboard after login
-      setGoingToCheckout(true);
-
       // First verify the code and login
       const result = await login(email, code, workspaceId);
       if (!result.success) {
         setCodeError(result.error);
         setLoading(false);
-        setGoingToCheckout(false);
         return;
       }
+
+      // If workspace is whitelisted, skip checkout and go to dashboard
+      if (isWhitelisted) {
+        localStorage.removeItem('pendingCheckout');
+        toast.success('Welcome! Your account is ready.');
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      // Set flag to prevent auto-redirect to dashboard after login
+      setGoingToCheckout(true);
 
       // Now create checkout session and redirect to Stripe
       const checkoutResponse = await paymentsAPI.createCheckoutSession(
