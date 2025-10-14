@@ -71,6 +71,9 @@ class Workspace(Base):
     sso_purchased = Column(Boolean, default=False, nullable=False)  # Has SSO been purchased
     sso_purchased_at = Column(DateTime, nullable=True)  # When SSO was purchased
 
+    # Whitelist - bypass payment requirements
+    is_whitelisted = Column(Boolean, default=False, nullable=False)  # Workspace doesn't need payment
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="workspace")

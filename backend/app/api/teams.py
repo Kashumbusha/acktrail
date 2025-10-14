@@ -163,7 +163,8 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
         "plan": workspace.plan.value,
         "trial_ends_at": workspace.trial_ends_at.isoformat() if workspace.trial_ends_at else None,
         "has_trial": workspace.trial_ends_at is not None,
-        "sso_enabled": workspace.sso_enabled
+        "sso_enabled": workspace.sso_enabled,
+        "is_whitelisted": workspace.is_whitelisted or False
     }
 
     # Add informative message if user didn't get trial
@@ -504,5 +505,66 @@ def delete_team(team_id: str, current_user: dict = Depends(get_current_user), db
     db.commit()
 
     return {"success": True, "message": "Team deleted successfully"}
+
+
+# Platform Admin Endpoints
+@router.post("/whitelist-workspace", response_model=dict)
+def whitelist_workspace(
+    payload: dict,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict:
+    """
+    Whitelist a workspace so it bypasses payment requirements.
+    Only platform admins can use this endpoint.
+
+    Expected body: {
+        "workspace_id": str,
+        "is_whitelisted": bool
+    }
+    """
+    # Check if user is a platform admin
+    if not current_user.get("is_platform_admin", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only platform admins can manage workspace whitelist"
+        )
+
+    workspace_id = payload.get("workspace_id")
+    is_whitelisted = payload.get("is_whitelisted", True)
+
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="workspace_id is required"
+        )
+
+    from uuid import UUID
+
+    # Get the workspace
+    workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found"
+        )
+
+    # Update whitelist status
+    workspace.is_whitelisted = is_whitelisted
+    db.commit()
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Workspace {workspace.name} (ID: {workspace_id}) whitelist status set to {is_whitelisted} by platform admin {current_user.get('email')}")
+
+    return {
+        "success": True,
+        "message": f"Workspace '{workspace.name}' {'whitelisted' if is_whitelisted else 'removed from whitelist'}",
+        "workspace": {
+            "id": str(workspace.id),
+            "name": workspace.name,
+            "is_whitelisted": workspace.is_whitelisted
+        }
+    }
 
 

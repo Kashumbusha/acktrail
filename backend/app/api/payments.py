@@ -45,6 +45,7 @@ class SubscriptionInfo(BaseModel):
     active_staff_count: int  # Actual invited users
     billing_interval: str
     sso_purchased: bool
+    is_whitelisted: bool  # Workspace bypasses payment
 
 
 class UpdateSubscriptionRequest(BaseModel):
@@ -92,6 +93,13 @@ def create_checkout_session(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Workspace not found"
+            )
+
+        # Check if workspace is whitelisted (bypasses payment)
+        if workspace.is_whitelisted:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This workspace is whitelisted and does not require payment"
             )
 
         # Check if workspace already has a subscription
@@ -163,6 +171,7 @@ def get_subscription(
             active_staff_count=workspace.active_staff_count or 0,  # Actual invited users
             billing_interval=billing_interval,
             sso_purchased=workspace.sso_purchased,
+            is_whitelisted=workspace.is_whitelisted or False,  # Workspace bypasses payment
         )
 
     except HTTPException:
