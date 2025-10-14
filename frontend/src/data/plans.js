@@ -56,7 +56,7 @@ export const PLANS = [
     marketing: {
       tagline: 'Enterprise readiness with SSO, enhanced security, and early access to Slack notifications.',
       benefits: [
-        'SSO add-on and advanced security controls',
+        'Dedicated compliance success manager',
         'Slack notifications & HRIS sync (beta access)',
       ],
       ctaLabel: 'Scale up',
