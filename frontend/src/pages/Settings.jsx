@@ -39,6 +39,8 @@ export default function Settings() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSending, setSupportSending] = useState(false);
+  const [dataExporting, setDataExporting] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -48,7 +50,7 @@ export default function Settings() {
   });
 
   // Notification preferences state
-  const [notifications, setNotifications] = useState({
+  const [notifications] = useState({
     email: true,
     security: true,
     digest: true,
@@ -238,9 +240,8 @@ export default function Settings() {
     }
   };
 
-  const handleNotificationToggle = (key) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-    toast.success('Notification preferences updated');
+  const handleNotificationToggle = () => {
+    toast('Notification preference controls are coming soon.');
   };
 
   const handleSupportSubmit = async () => {
@@ -263,6 +264,52 @@ export default function Settings() {
       toast.error(detail);
     } finally {
       setSupportSending(false);
+    }
+  };
+
+  const handleDataExport = async () => {
+    setDataExporting(true);
+    try {
+      const response = await usersAPI.exportMyAssignments();
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.href = url;
+      link.download = `policy-acknowledgments-${timestamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Export started. Check your downloads folder.');
+    } catch (error) {
+      const detail = error.response?.data?.detail || 'Failed to export data';
+      toast.error(detail);
+    } finally {
+      setDataExporting(false);
+    }
+  };
+
+  const handleAccountDeletion = async () => {
+    if (!window.confirm('Delete your account and all associated data? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      await usersAPI.contactSupport({
+        message: `Account deletion requested by ${user?.email || 'unknown user'} in workspace ${user?.workspace_name || 'unknown workspace'}. Please confirm once the deletion is complete.`,
+        from: user?.email,
+        name: `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || user?.name,
+        company: user?.workspace_name,
+        goal: 'Account deletion request',
+      });
+      toast.success('Deletion request submitted. We will follow up via email.');
+    } catch (error) {
+      const detail = error.response?.data?.detail || 'Failed to submit deletion request';
+      toast.error(detail);
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -864,7 +911,9 @@ export default function Settings() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Notification Preferences</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">Choose how you receive alerts</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Choose how you receive alerts. More delivery options are coming soon.
+        </p>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700">
@@ -880,10 +929,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
               </div>
               <button
-                onClick={() => handleNotificationToggle(item.key)}
+                onClick={handleNotificationToggle}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   notifications[item.key] ? 'bg-primary-600' : 'bg-gray-200 dark:bg-slate-600'
                 }`}
+                disabled
+                aria-disabled="true"
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -993,15 +1044,23 @@ export default function Settings() {
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Data & Privacy</h3>
         <div className="space-y-3">
-          <button className="w-full text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+          <button
+            onClick={handleDataExport}
+            disabled={dataExporting}
+            className="w-full text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Download Your Data</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Request a copy of all your data</p>
               </div>
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              {dataExporting ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
             </div>
           </button>
         </div>
@@ -1016,14 +1075,12 @@ export default function Settings() {
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Permanently delete your account and all data</p>
           </div>
           <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-                toast.error('Account deletion request submitted');
-              }
-            }}
-            className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:shadow-lg transition-all"
+            onClick={handleAccountDeletion}
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+            disabled={deletingAccount}
           >
-            Delete Account
+            {deletingAccount && <LoadingSpinner size="sm" className="mr-2" />}
+            {deletingAccount ? 'Submitting...' : 'Delete Account'}
           </button>
         </div>
       </div>
