@@ -332,6 +332,7 @@ class StripeService:
         """
         try:
             subscription = stripe.Subscription.retrieve(subscription_id)
+            existing_metadata = dict(subscription.get("metadata", {}))
 
             # Find the per-staff line item and update its quantity
             for item in subscription["items"]["data"]:
@@ -347,7 +348,15 @@ class StripeService:
                     logger.info(f"Updated staff count to {new_staff_count} for subscription {subscription_id}")
                     break
 
-            return stripe.Subscription.retrieve(subscription_id)
+            updated_metadata = {
+                **existing_metadata,
+                "staff_count": str(new_staff_count),
+            }
+
+            return stripe.Subscription.modify(
+                subscription_id,
+                metadata=updated_metadata,
+            )
 
         except stripe.error.StripeError as e:
             logger.error(f"Error updating staff count: {str(e)}")
@@ -374,6 +383,7 @@ class StripeService:
         """
         try:
             subscription = stripe.Subscription.retrieve(subscription_id)
+            existing_metadata = dict(subscription.get("metadata", {}))
 
             # Get new price IDs
             new_base_price_id = StripeService.create_or_get_base_price_id(new_plan, current_interval)
@@ -397,8 +407,19 @@ class StripeService:
                         quantity=new_staff_count,
                     )
 
+            # Keep metadata aligned so webhook updates reflect the latest change
+            updated_metadata = {
+                **existing_metadata,
+                "plan": new_plan,
+                "staff_count": str(new_staff_count),
+            }
+            updated_subscription = stripe.Subscription.modify(
+                subscription_id,
+                metadata=updated_metadata,
+            )
+
             logger.info(f"Changed plan to {new_plan} for subscription {subscription_id}")
-            return stripe.Subscription.retrieve(subscription_id)
+            return updated_subscription
 
         except stripe.error.StripeError as e:
             logger.error(f"Error changing plan: {str(e)}")
