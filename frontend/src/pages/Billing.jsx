@@ -41,8 +41,8 @@ export default function Billing() {
     try {
       await paymentsAPI.updateSubscription({ new_staff_count: parseInt(newStaffCount) });
 
-      // Wait a moment for database to commit changes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for Stripe webhooks to complete (can take 1-5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       toast.success('Staff count updated successfully');
       await loadSubscription();
@@ -68,8 +68,8 @@ export default function Billing() {
     try {
       await paymentsAPI.updateSubscription({ enable_sso: true });
 
-      // Wait a moment for database to commit changes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for Stripe webhooks to complete (can take 1-5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       toast.success('SSO add-on enabled!');
       await loadSubscription();
@@ -116,8 +116,8 @@ export default function Billing() {
         new_staff_count: parseInt(selectedPlanStaffCount)
       });
 
-      // Wait a moment for database to commit changes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for Stripe webhooks to complete (can take 1-5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       toast.success('Plan changed successfully! Your billing will be prorated.');
 
@@ -140,8 +140,8 @@ export default function Billing() {
     try {
       await paymentsAPI.cancelSubscription();
 
-      // Wait a moment for database to commit changes
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for Stripe webhooks to complete (can take 1-5 seconds)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       toast.success('Subscription cancelled. You can continue using the service until the end of your billing period.');
       await loadSubscription();

@@ -298,6 +298,9 @@ def update_subscription(
 
         db.commit()
 
+        # Refresh workspace from DB to get latest values
+        db.refresh(workspace)
+
         return {
             "success": True,
             "message": "Subscription updated successfully",
