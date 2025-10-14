@@ -236,6 +236,7 @@ def get_current_user_info(
         role=current_user["role"],
         workspace_id=current_user.get("workspace_id"),
         workspace_name=current_user.get("workspace_name"),
+        is_platform_admin=current_user.get("is_platform_admin", False),
         department=current_user["department"],
         created_at=datetime.fromisoformat(current_user.get("created_at", datetime.utcnow().isoformat()))
     )
@@ -515,7 +516,6 @@ def change_password(
     logger.info(f"Password changed for user: {user.email}")
 
     return {"success": True, "message": "Password changed successfully"}
-
 
 
 

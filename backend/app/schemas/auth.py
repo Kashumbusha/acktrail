@@ -31,6 +31,7 @@ class CurrentUser(BaseModel):
     role: str
     workspace_id: Optional[str] = None
     workspace_name: Optional[str] = None
+    is_platform_admin: bool = False
     department: Optional[str] = None
     created_at: datetime
 

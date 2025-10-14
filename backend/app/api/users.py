@@ -350,6 +350,10 @@ def update_current_user_profile(
             "last_name": user.last_name,
             "phone": user.phone,
             "country": user.country,
+            "role": user.role.value,
+            "workspace_id": str(user.workspace_id) if user.workspace_id else None,
+            "workspace_name": user.workspace.name if hasattr(user, "workspace") and user.workspace else None,
+            "is_platform_admin": bool(getattr(user, "is_platform_admin", False)),
         }
     }
 
