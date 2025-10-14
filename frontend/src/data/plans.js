@@ -76,6 +76,7 @@ export function calculatePlanPrice(planId, staffCount, billingInterval = 'month'
     return {
       monthly: 0,
       annual: 0,
+      discountedMonthly: 0,
       baseMonthly: 0,
       staffMonthly: 0,
       ssoMonthly: includeSSO ? SSO_MONTHLY_PRICE : 0,
@@ -96,12 +97,13 @@ export function calculatePlanPrice(planId, staffCount, billingInterval = 'month'
   const staffAnnual = Math.round(staffMonthly * annualMultiplier);
   const ssoAnnual = includeSSO ? Math.round(SSO_MONTHLY_PRICE * annualMultiplier) : 0;
   const annualTotal = baseAnnual + staffAnnual + ssoAnnual;
-  const discountedMonthly = Math.round(subtotalMonthly * (1 - ANNUAL_DISCOUNT));
-  const monthlyTotal = billingInterval === 'year' ? discountedMonthly : subtotalMonthly;
+  const discountedMonthly = Math.round(annualTotal / 12);
+  const monthlyTotal = subtotalMonthly;
 
   return {
     monthly: monthlyTotal,
     annual: annualTotal,
+    discountedMonthly,
     baseMonthly,
     staffMonthly,
     ssoMonthly,

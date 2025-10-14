@@ -7,7 +7,16 @@ import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { PLANS, SSO_MONTHLY_PRICE, ANNUAL_DISCOUNT, calculatePlanPrice } from '../data/plans';
+import { PLANS, SSO_MONTHLY_PRICE, calculatePlanPrice } from '../data/plans';
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+});
+
+const formatCurrency = (value) => currencyFormatter.format(Math.round(value));
 
 export default function Signup() {
   const { login, sendCode, isAuthenticated } = useAuth();
@@ -29,8 +38,14 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [teamError, setTeamError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [countryError, setCountryError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [codeError, setCodeError] = useState('');
   const [goingToCheckout, setGoingToCheckout] = useState(false);
+  const [resendingCode, setResendingCode] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -41,6 +56,7 @@ export default function Signup() {
 
   const pricing = calculatePlanPrice(selectedPlan, staffCount, billingInterval, ssoEnabled);
   const selectedPlanConfig = PLANS.find(p => p.id === selectedPlan);
+  const annualSavings = Math.max(0, pricing.undiscountedMonthly * 12 - pricing.annual);
 
   // Handle plan change - automatically adjust staff count to plan's default
   const handlePlanChange = (planId) => {
@@ -61,44 +77,56 @@ export default function Signup() {
   const handleTeamEmailSubmit = async (e) => {
     e.preventDefault();
 
+    let hasError = false;
+
+    setTeamError('');
+    setEmailError('');
+    setFirstNameError('');
+    setLastNameError('');
+    setPhoneError('');
+    setCountryError('');
+    setPasswordError('');
+
     if (!teamName.trim()) {
       setTeamError('Please enter a workspace name');
-      return;
+      hasError = true;
     }
 
     if (!firstName.trim()) {
-      setEmailError('Please enter your first name');
-      return;
+      setFirstNameError('Please enter your first name');
+      hasError = true;
     }
 
     if (!lastName.trim()) {
-      setEmailError('Please enter your last name');
-      return;
+      setLastNameError('Please enter your last name');
+      hasError = true;
     }
 
     if (!isValidEmail(email)) {
       setEmailError('Please enter a valid email address');
-      return;
+      hasError = true;
     }
 
     if (!phone.trim()) {
-      setEmailError('Please enter your phone number');
-      return;
+      setPhoneError('Please enter your phone number');
+      hasError = true;
     }
 
     if (!country.trim()) {
-      setEmailError('Please select your country');
-      return;
+      setCountryError('Please select your country');
+      hasError = true;
     }
 
     if (!password || password.length < 8) {
-      setEmailError('Password must be at least 8 characters');
+      setPasswordError('Password must be at least 8 characters');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
     setLoading(true);
-    setEmailError('');
-    setTeamError('');
 
     try {
       // Register workspace with all user details including plan selection
@@ -315,11 +343,20 @@ export default function Signup() {
                       type="text"
                       required
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        setFirstNameError('');
+                      }}
                       className="appearance-none block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg placeholder-gray-400 text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       placeholder="John"
                       disabled={loading}
                     />
+                    {firstNameError && (
+                      <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                        <span className="mr-1">⚠️</span>
+                        {firstNameError}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -330,11 +367,20 @@ export default function Signup() {
                       type="text"
                       required
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        setLastNameError('');
+                      }}
                       className="appearance-none block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg placeholder-gray-400 text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       placeholder="Doe"
                       disabled={loading}
                     />
+                    {lastNameError && (
+                      <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                        <span className="mr-1">⚠️</span>
+                        {lastNameError}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -364,6 +410,12 @@ export default function Signup() {
                       disabled={loading}
                     />
                   </div>
+                  {emailError && (
+                    <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                      <span className="mr-1">⚠️</span>
+                      {emailError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -375,11 +427,20 @@ export default function Signup() {
                     type="tel"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setPhoneError('');
+                    }}
                     className="appearance-none block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg placeholder-gray-400 text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                     placeholder="+1 (555) 123-4567"
                     disabled={loading}
                   />
+                  {phoneError && (
+                    <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                      <span className="mr-1">⚠️</span>
+                      {phoneError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -390,7 +451,10 @@ export default function Signup() {
                     id="country"
                     required
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => {
+                      setCountry(e.target.value);
+                      setCountryError('');
+                    }}
                     className="appearance-none block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                     disabled={loading}
                   >
@@ -401,6 +465,12 @@ export default function Signup() {
                       </option>
                     ))}
                   </select>
+                  {countryError && (
+                    <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                      <span className="mr-1">⚠️</span>
+                      {countryError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -412,21 +482,23 @@ export default function Signup() {
                     type="password"
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError('');
+                    }}
                     className="appearance-none block w-full px-3 py-2.5 border border-gray-300 dark:border-slate-700 rounded-lg placeholder-gray-400 text-gray-900 dark:text-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                     placeholder="••••••••"
                     minLength="8"
                     disabled={loading}
                   />
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 8 characters</p>
+                  {passwordError && (
+                    <p className="mt-2 text-sm text-danger-600 flex items-start dark:text-danger-400">
+                      <span className="mr-1">⚠️</span>
+                      {passwordError}
+                    </p>
+                  )}
                 </div>
-
-                {emailError && (
-                  <p className="text-sm text-danger-600 flex items-start dark:text-danger-400">
-                    <span className="mr-1">⚠️</span>
-                    {emailError}
-                  </p>
-                )}
 
                 <button
                   type="submit"
@@ -517,7 +589,11 @@ export default function Signup() {
                   </label>
                   <div className="grid gap-3">
                     {PLANS.map((plan) => {
-                      const planPricing = calculatePrice(plan.id, staffCount, billingInterval, false);
+                      const planPricing = calculatePlanPrice(plan.id, staffCount, billingInterval, false);
+                      const isAnnual = billingInterval === 'year';
+                      const primaryAmount = isAnnual ? planPricing.annual : planPricing.monthly;
+                      const primaryLabel = isAnnual ? '/year' : '/month';
+                      const monthlyEquivalent = isAnnual ? planPricing.discountedMonthly : null;
                       return (
                         <div
                           key={plan.id}
@@ -537,7 +613,7 @@ export default function Signup() {
                             <div className="flex-1">
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{plan.name}</h3>
                               <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                                ${plan.basePrice}/mo base + ${plan.perStaffPrice}/staff
+                                {formatCurrency(plan.basePrice)}/mo base + {formatCurrency(plan.perStaffPrice)}/staff
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 {plan.minStaff ? `${plan.minStaff}-${plan.maxStaff}` : `Up to ${plan.maxStaff}`} staff • {plan.guestInvites} guest invites/mo
@@ -545,14 +621,14 @@ export default function Signup() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                ${billingInterval === 'month' ? Math.round(planPricing.monthly) : Math.round(planPricing.monthly)}
+                                {formatCurrency(primaryAmount)}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400">
-                                /{billingInterval === 'month' ? 'month' : 'month'}
+                                {primaryLabel}
                               </div>
-                              {billingInterval === 'year' && (
+                              {isAnnual && (
                                 <div className="text-xs text-success-600 dark:text-success-400 font-medium mt-0.5">
-                                  ${Math.round(planPricing.annual)}/year
+                                  ≈ {formatCurrency(monthlyEquivalent)} /mo after savings
                                 </div>
                               )}
                             </div>
@@ -584,7 +660,8 @@ export default function Signup() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-900 dark:text-white">SSO Add-on</span>
                         <span className="text-lg font-bold text-gray-900 dark:text-white">
-                          $50<span className="text-xs font-normal text-gray-500 dark:text-gray-400">/mo</span>
+                          {formatCurrency(SSO_MONTHLY_PRICE)}
+                          <span className="text-xs font-normal text-gray-500 dark:text-gray-400">/mo</span>
                         </span>
                       </div>
                       <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
@@ -598,33 +675,47 @@ export default function Signup() {
                 <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-300">Base plan</span>
-                    <span className="font-medium text-gray-900 dark:text-white">${selectedPlanConfig.basePrice}/mo</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formatCurrency(billingInterval === 'year' ? pricing.baseAnnual : pricing.baseMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">{staffCount} staff × ${selectedPlanConfig.perStaffPrice}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">${selectedPlanConfig.perStaffPrice * staffCount}/mo</span>
+                    <span className="text-gray-600 dark:text-gray-300">
+                      {staffCount} staff × {formatCurrency(selectedPlanConfig.perStaffPrice)}/mo
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formatCurrency(billingInterval === 'year' ? pricing.staffAnnual : pricing.staffMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
+                    </span>
                   </div>
-                  {billingInterval === 'year' && (
+                  {billingInterval === 'year' && annualSavings > 0 && (
                     <div className="flex justify-between text-sm text-success-600 dark:text-success-400">
-                      <span>Annual discount (15%)</span>
-                      <span className="font-medium">-${Math.round((selectedPlanConfig.basePrice + selectedPlanConfig.perStaffPrice * staffCount) * 12 * ANNUAL_DISCOUNT)}/year</span>
+                      <span>Annual savings (15%)</span>
+                      <span className="font-medium">
+                        -{formatCurrency(annualSavings)}
+                      </span>
                     </div>
                   )}
                   {ssoEnabled && (
                     <div className="flex justify-between text-sm border-t border-gray-200 dark:border-slate-700 pt-2 mt-2">
                       <span className="text-gray-600 dark:text-gray-300">SSO Add-on</span>
-                      <span className="font-medium text-gray-900 dark:text-white">${SSO_MONTHLY_PRICE}/mo</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatCurrency(billingInterval === 'year' ? pricing.ssoAnnual : pricing.ssoMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
+                      </span>
                     </div>
                   )}
                   <div className="border-t border-gray-200 dark:border-slate-700 pt-2 flex justify-between">
-                    <span className="font-semibold text-gray-900 dark:text-white">Recurring Total</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">Recurring total</span>
                     <div className="text-right">
                       <div className="text-xl font-bold text-gray-900 dark:text-white">
-                        ${Math.round(pricing.monthly)}
-                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/{billingInterval === 'month' ? 'mo' : 'mo'}</span>
+                        {formatCurrency(billingInterval === 'year' ? pricing.annual : pricing.monthly)}
+                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                          /{billingInterval === 'year' ? 'year' : 'mo'}
+                        </span>
                       </div>
-                      {billingInterval === 'year' && !ssoEnabled && (
-                        <div className="text-sm text-gray-600 dark:text-gray-400">(${Math.round(pricing.annual)}/year)</div>
+                      {billingInterval === 'year' && (
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          Equivalent to {formatCurrency(pricing.discountedMonthly)}/mo billed annually
+                        </div>
                       )}
                     </div>
                   </div>
@@ -717,22 +808,27 @@ export default function Signup() {
                 <div className="text-center pt-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setLoading(true);
-                      sendCode(email, workspaceId)
-                        .then((result) => {
-                          if (result.success) {
-                            toast.success('New code sent');
-                          } else {
-                            toast.error(result.error);
-                          }
-                        })
-                        .finally(() => setLoading(false));
+                    onClick={async () => {
+                      setResendingCode(true);
+                      try {
+                        const result = await sendCode(email, workspaceId);
+                        if (result.success) {
+                          toast.success('New code sent');
+                        } else {
+                          toast.error(result.error);
+                        }
+                      } catch (error) {
+                        toast.error(error.response?.data?.detail || error.message || 'Failed to resend code');
+                      } finally {
+                        setResendingCode(false);
+                      }
                     }}
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium disabled:opacity-50 transition-colors dark:text-primary-400 dark:hover:text-primary-300"
-                    disabled={loading}
+                    disabled={loading || resendingCode}
                   >
-                    Didn't receive the code? <span className="underline">Send again</span>
+                    {resendingCode ? 'Sending another code...' : (
+                      <>Didn't receive the code? <span className="underline">Send again</span></>
+                    )}
                   </button>
                 </div>
               </form>
