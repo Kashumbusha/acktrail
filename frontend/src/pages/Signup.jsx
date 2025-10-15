@@ -294,15 +294,16 @@ export default function Signup() {
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="bg-primary-600 rounded-2xl p-3 shadow-lg">
-                <DocumentTextIcon className="h-10 w-10 text-white" />
-              </div>
+              <img src="/logo.svg" alt="AckTrail Logo" className="h-20 w-20" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              AckTrail
+            </h1>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
               {step === 1 && 'Create your workspace'}
               {step === 2 && 'Choose your plan'}
               {step === 3 && 'Verify your email'}
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
               {step === 1 && 'Add a workspace name and your email to get started.'}
               {step === 2 && 'Start your 7-day free trial'}

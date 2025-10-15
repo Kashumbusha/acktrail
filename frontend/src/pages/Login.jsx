@@ -176,13 +176,12 @@ export default function Login() {
           {/* Logo/Branding */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="bg-primary-600 rounded-2xl p-3 shadow-lg">
-                <DocumentTextIcon className="h-10 w-10 text-white" />
-              </div>
+              <img src="/logo.svg" alt="AckTrail Logo" className="h-20 w-20" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-              Policy Acknowledgment Tracker
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              AckTrail
             </h1>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-2">Policy Acknowledgment Tracking Made Simple</p>
           </div>
 
           {/* Login Card */}
