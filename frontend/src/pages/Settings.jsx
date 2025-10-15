@@ -1072,21 +1072,18 @@ export default function Settings() {
             <button
               onClick={handleWorkspaceExport}
               disabled={workspaceExporting}
-              className="w-full text-left p-4 border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full text-left p-4 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white flex items-center">
-                    <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-primary-600 text-white mr-2">ADMIN</span>
-                    Export All Workspace Data
-                  </p>
+                  <p className="font-medium text-gray-900 dark:text-white">Export All Workspace Data</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Export complete workspace data including all policies, assignments, and users (CSV)</p>
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Includes: All policy details, employee info, acknowledgment details, IP addresses, and more</p>
                 </div>
                 {workspaceExporting ? (
                   <LoadingSpinner size="sm" />
                 ) : (
-                  <svg className="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}

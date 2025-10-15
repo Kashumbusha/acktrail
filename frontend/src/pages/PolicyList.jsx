@@ -88,18 +88,12 @@ export default function PolicyList() {
     const acknowledgmentRate =
       totalAssignments === 0 ? 0 : Math.round((acknowledgedAssignments / totalAssignments) * 100);
 
-    const summary = policy.body_markdown
-      ? policy.body_markdown.replace(/\s+/g, ' ').trim().slice(0, 120) +
-        (policy.body_markdown.length > 120 ? '…' : '')
-      : '';
-
     return {
       ...policy,
       _status: derivedStatus,
       _acknowledgmentRate: acknowledgmentRate,
       _totalAssignments: totalAssignments,
       _acknowledgedAssignments: acknowledgedAssignments,
-      _summary: summary,
     };
   });
 
@@ -108,7 +102,6 @@ export default function PolicyList() {
     const term = search.toLowerCase();
     return (
       policy.title?.toLowerCase().includes(term) ||
-      policy._summary?.toLowerCase().includes(term) ||
       policy.creator_name?.toLowerCase().includes(term)
     );
   });
@@ -225,15 +218,8 @@ export default function PolicyList() {
                 {filteredPolicies.map((policy) => (
                   <tr key={policy.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {policy.title}
-                        </div>
-                        {policy._summary && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {policy._summary}
-                          </div>
-                        )}
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {policy.title}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
