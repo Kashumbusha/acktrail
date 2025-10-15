@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Disclosure } from '@headlessui/react';
 import {
-  DocumentTextIcon,
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
@@ -20,12 +19,10 @@ export default function PublicLayout({ children }) {
               <>
                 <div className="flex justify-between h-16">
                   <div className="flex items-center min-w-0">
-                    <Link to="/" className="flex items-center">
-                      <div className="bg-indigo-600 rounded-xl p-2 shadow">
-                        <DocumentTextIcon className="h-6 w-6 text-white" />
-                      </div>
-                      <span className="ml-3 text-lg font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap truncate">
-                        Policy Acknowledgment Tracker
+                    <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+                      <img src="/logo.svg" alt="AckTrail" className="h-9 w-9" />
+                      <span className="ml-3 text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                        AckTrail
                       </span>
                     </Link>
                   </div>
@@ -70,16 +67,16 @@ export default function PublicLayout({ children }) {
         <div className="container-page py-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <DocumentTextIcon className="h-6 w-6 text-indigo-400" />
-              <span className="ml-2 text-sm font-semibold text-white">
-                Policy Acknowledgment Tracker
+              <img src="/logo.svg" alt="AckTrail" className="h-7 w-7" />
+              <span className="ml-3 text-base font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                AckTrail
               </span>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/legal" className="text-slate-300 hover:text-white text-xs underline underline-offset-2">
                 Legal
               </Link>
-              <p className="text-slate-400 text-xs">© 2025 Policy Tracker. All rights reserved.</p>
+              <p className="text-slate-400 text-xs">© 2025 AckTrail. All rights reserved.</p>
             </div>
           </div>
         </div>
