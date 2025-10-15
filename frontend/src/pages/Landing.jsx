@@ -48,7 +48,7 @@ export default function Landing() {
                 <span className="block text-indigo-600 dark:text-indigo-400 xl:inline">without enterprise baggage.</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 dark:text-gray-300 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Launch in minutes with passwordless magic links, track every acknowledgment in real-time, and hand auditors tamper-evident receipts backed by SHA-256 hashes. Acktrail keeps HR, Ops, and Compliance teams ready for SOC2, OSHA, and annual trainings without spreadsheets.
+                Launch in minutes with passwordless magic links, track every acknowledgment in real-time, and hand auditors tamper-evident receipts backed by SHA-256 hashes. Acktrail keeps HR, Ops, and Compliance teams on top of critical trainings and attestations without spreadsheets.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                 <div className="rounded-md shadow">
@@ -222,7 +222,7 @@ export default function Landing() {
             <div className="card h-full">
               <div className="card-body space-y-3">
                 <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                  SOC 2 & ISO audits
+                  External audits
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Produce evidence packs in minutes</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300">Hand auditors CSV exports, individual receipts, and hash proofs instead of stitching screenshots together.</p>
@@ -243,7 +243,7 @@ export default function Landing() {
                   Safety & operations
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Keep field teams current and accountable</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Automated reminders and IP-stamped acknowledgments ensure OSHA and safety updates never fall through.</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Automated reminders and IP-stamped acknowledgments help safety-critical updates reach every teammate.</p>
               </div>
             </div>
           </div>
