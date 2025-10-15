@@ -11,7 +11,7 @@ import {
   BoltIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
-import { paymentsAPI, usersAPI } from '../api/client';
+import { paymentsAPI, usersAPI, dashboardAPI } from '../api/client';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -40,6 +40,7 @@ export default function Settings() {
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSending, setSupportSending] = useState(false);
   const [dataExporting, setDataExporting] = useState(false);
+  const [workspaceExporting, setWorkspaceExporting] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Password change state
@@ -287,6 +288,29 @@ export default function Settings() {
       toast.error(detail);
     } finally {
       setDataExporting(false);
+    }
+  };
+
+  const handleWorkspaceExport = async () => {
+    setWorkspaceExporting(true);
+    try {
+      const response = await dashboardAPI.exportWorkspaceData();
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.href = url;
+      link.download = `workspace-data-${timestamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Workspace data exported successfully!');
+    } catch (error) {
+      const detail = error.response?.data?.detail || 'Failed to export workspace data';
+      toast.error(detail);
+    } finally {
+      setWorkspaceExporting(false);
     }
   };
 
@@ -1044,6 +1068,31 @@ export default function Settings() {
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Data & Privacy</h3>
         <div className="space-y-3">
+          {user?.role === 'admin' && (
+            <button
+              onClick={handleWorkspaceExport}
+              disabled={workspaceExporting}
+              className="w-full text-left p-4 border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white flex items-center">
+                    <span className="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-primary-600 text-white mr-2">ADMIN</span>
+                    Export All Workspace Data
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Export complete workspace data including all policies, assignments, and users (CSV)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Includes: All policy details, employee info, acknowledgment details, IP addresses, and more</p>
+                </div>
+                {workspaceExporting ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <svg className="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
+              </div>
+            </button>
+          )}
           <button
             onClick={handleDataExport}
             disabled={dataExporting}
@@ -1052,7 +1101,8 @@ export default function Settings() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">Download Your Data</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Request a copy of all your data</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Export your personal policy assignments (CSV)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Includes: Policy titles, statuses, dates (assigned, viewed, acknowledged, due)</p>
               </div>
               {dataExporting ? (
                 <LoadingSpinner size="sm" />

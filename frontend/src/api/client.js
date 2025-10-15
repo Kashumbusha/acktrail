@@ -126,6 +126,7 @@ export const ackAPI = {
 // Dashboard API
 export const dashboardAPI = {
   getStats: () => apiClient.get('/api/dashboard/stats'),
+  exportWorkspaceData: () => apiClient.get('/api/dashboard/workspace/export.csv', { responseType: 'blob' }),
 };
 
 // Users API

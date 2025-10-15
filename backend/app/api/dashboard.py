@@ -340,6 +340,111 @@ def export_policy_assignments(
     )
 
 
+@router.get("/workspace/export.csv")
+def export_all_workspace_data(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+) -> Response:
+    """Export all workspace data (all policies, all assignments, all users) to CSV. Admin only."""
+
+    # Get workspace_id from current user
+    workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
+
+    # Get all assignments for this workspace with related data
+    assignments = db.query(Assignment).filter(
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).order_by(Assignment.created_at.desc()).all()
+
+    if not assignments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No data found for export"
+        )
+
+    # Prepare CSV data
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write header with comprehensive columns
+    headers = [
+        "policy_title", "policy_version", "policy_due_at", "policy_created_at",
+        "employee_name", "employee_email", "employee_department", "employee_role",
+        "status", "assigned_at", "viewed_at", "acknowledged_at", "reminder_count",
+        "assignment_id", "signer_name", "signer_email", "acknowledgment_method",
+        "ip_address", "is_overdue"
+    ]
+    writer.writerow(headers)
+
+    # Write data rows
+    for assignment in assignments:
+        # Get policy details
+        policy = db.query(Policy).filter(Policy.id == assignment.policy_id).first()
+        if not policy:
+            continue
+
+        # Get user details
+        user = db.query(User).filter(User.id == assignment.user_id).first()
+        if not user:
+            continue
+
+        # Get acknowledgment details if exists
+        acknowledgment = None
+        if assignment.status == AssignmentStatus.ACKNOWLEDGED:
+            acknowledgment = db.query(Acknowledgment).filter(
+                Acknowledgment.assignment_id == assignment.id
+            ).first()
+
+        # Calculate if overdue
+        is_overdue = False
+        if policy.due_at and assignment.status in [AssignmentStatus.PENDING, AssignmentStatus.VIEWED]:
+            is_overdue = policy.due_at < datetime.utcnow()
+
+        writer.writerow([
+            policy.title,  # policy_title
+            policy.version,  # policy_version
+            policy.due_at.isoformat() if policy.due_at else "",  # policy_due_at
+            policy.created_at.isoformat() if policy.created_at else "",  # policy_created_at
+            user.name,  # employee_name
+            user.email,  # employee_email
+            user.department or "",  # employee_department
+            user.role.value if user.role else "",  # employee_role
+            assignment.status.value,  # status
+            assignment.created_at.isoformat() if assignment.created_at else "",  # assigned_at
+            assignment.viewed_at.isoformat() if assignment.viewed_at else "",  # viewed_at
+            assignment.acknowledged_at.isoformat() if assignment.acknowledged_at else "",  # acknowledged_at
+            assignment.reminder_count,  # reminder_count
+            str(assignment.id),  # assignment_id
+            acknowledgment.signer_name if acknowledgment else "",  # signer_name
+            acknowledgment.signer_email if acknowledgment else "",  # signer_email
+            acknowledgment.ack_method.value if acknowledgment else "",  # acknowledgment_method
+            acknowledgment.ip_address if acknowledgment else "",  # ip_address
+            "Yes" if is_overdue else "No"  # is_overdue
+        ])
+
+    # Create response
+    csv_content = output.getvalue()
+    output.close()
+
+    # Get workspace name for filename
+    workspace_name = "workspace"
+    if workspace_id:
+        workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+        if workspace and workspace.name:
+            workspace_name = "".join(c for c in workspace.name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            workspace_name = workspace_name.replace(' ', '_')
+
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    filename = f"workspace_data_{workspace_name}_{timestamp}.csv"
+
+    logger.info(f"Exported {len(assignments)} assignments from workspace")
+
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 @router.get("/policies/export.csv")
 def export_all_policies_summary(
     db: Session = Depends(get_db),
@@ -354,30 +459,30 @@ def export_all_policies_summary(
     policies = db.query(Policy).filter(
         Policy.workspace_id == workspace_id if workspace_id else True
     ).all()
-    
+
     if not policies:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No policies found"
         )
-    
+
     # Prepare CSV data
     output = StringIO()
     writer = csv.writer(output)
-    
+
     # Write header
     headers = [
         "Policy ID", "Title", "Version", "Created At", "Created By", "Due At",
-        "Requires Typed Signature", "Total Assignments", "Pending", "Viewed", 
+        "Requires Typed Signature", "Total Assignments", "Pending", "Viewed",
         "Acknowledged", "Declined", "Overdue", "Acknowledgment Rate %"
     ]
     writer.writerow(headers)
-    
+
     # Write data rows
     for policy in policies:
         # Get creator
         creator = db.query(User).filter(User.id == policy.created_by).first()
-        
+
         # Get assignment stats
         assignment_stats = db.query(
             func.count(Assignment.id).label('total'),
@@ -386,7 +491,7 @@ def export_all_policies_summary(
             func.sum(func.case([(Assignment.status == AssignmentStatus.ACKNOWLEDGED, 1)], else_=0)).label('acknowledged'),
             func.sum(func.case([(Assignment.status == AssignmentStatus.DECLINED, 1)], else_=0)).label('declined')
         ).filter(Assignment.policy_id == policy.id).first()
-        
+
         # Calculate overdue
         overdue_count = 0
         if policy.due_at and policy.due_at < datetime.utcnow():
@@ -394,12 +499,12 @@ def export_all_policies_summary(
                 Assignment.policy_id == policy.id,
                 Assignment.status.in_([AssignmentStatus.PENDING, AssignmentStatus.VIEWED])
             ).count()
-        
+
         # Calculate acknowledgment rate
         total = assignment_stats.total or 0
         acknowledged = assignment_stats.acknowledged or 0
         ack_rate = (acknowledged / total * 100) if total > 0 else 0
-        
+
         writer.writerow([
             str(policy.id),
             policy.title,
@@ -416,16 +521,16 @@ def export_all_policies_summary(
             overdue_count,
             f"{ack_rate:.1f}"
         ])
-    
+
     # Create response
     csv_content = output.getvalue()
     output.close()
-    
+
     timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
     filename = f"policies_summary_{timestamp}.csv"
-    
+
     logger.info(f"Exported summary of {len(policies)} policies")
-    
+
     return Response(
         content=csv_content,
         media_type="text/csv",

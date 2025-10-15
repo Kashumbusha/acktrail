@@ -299,7 +299,7 @@ export default function PolicyList() {
                         <button
                           onClick={() => handleExport(policy.id)}
                           className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          title="Export CSV"
+                          title="Export all assignments for this policy (employee names, emails, departments, acknowledgment details)"
                           disabled={exportMutation.isPending}
                         >
                           <DocumentArrowDownIcon className="h-5 w-5" />
@@ -367,5 +367,7 @@ export default function PolicyList() {
     </div>
   );
 }
+
+
 
 
