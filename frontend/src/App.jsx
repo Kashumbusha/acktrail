@@ -28,6 +28,8 @@ import PublicLayout from './components/PublicLayout';
 import Legal from './pages/Legal';
 import MyAssignments from './pages/MyAssignments';
 import Hiring from './pages/Hiring';
+import SSOSettings from './pages/SSOSettings';
+import AuthCallback from './pages/AuthCallback';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -51,6 +53,7 @@ function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/hiring" element={<Hiring />} />
@@ -67,6 +70,7 @@ function App() {
               <Route path="/platform" element={<PrivateRoute><Layout><PlatformDashboard /></Layout></PrivateRoute>} />
               <Route path="/billing" element={<PrivateRoute><Layout><Billing /></Layout></PrivateRoute>} />
               <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
+              <Route path="/settings/sso" element={<PrivateRoute><Layout><SSOSettings /></Layout></PrivateRoute>} />
               <Route path="/my-assignments" element={<PrivateRoute><Layout><MyAssignments /></Layout></PrivateRoute>} />
               <Route
                 path="/dashboard"

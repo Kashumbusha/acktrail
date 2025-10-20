@@ -184,4 +184,14 @@ export const paymentsAPI = {
   getUpcomingInvoice: () => apiClient.get('/api/payments/upcoming-invoice'),
 };
 
+// SSO API
+export const ssoAPI = {
+  getConfig: () => apiClient.get('/api/sso/config').then(res => res.data),
+  createConfig: (data) => apiClient.post('/api/sso/config', data).then(res => res.data),
+  updateConfig: (data) => apiClient.patch('/api/sso/config', data).then(res => res.data),
+  deleteConfig: () => apiClient.delete('/api/sso/config').then(res => res.data),
+  testConfig: () => apiClient.post('/api/sso/test').then(res => res.data),
+  getStatus: () => apiClient.get('/api/sso/status').then(res => res.data),
+};
+
 export default apiClient;

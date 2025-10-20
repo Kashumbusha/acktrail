@@ -9,6 +9,7 @@ from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from cryptography.fernet import Fernet
 
 from .config import settings
 
@@ -240,6 +241,30 @@ def require_platform_admin(current_user: dict = Depends(get_current_user)) -> di
             detail="Platform admin access required"
         )
     return current_user
+
+
+# SSO Encryption utilities
+def get_encryption_key() -> bytes:
+    """Get or generate encryption key for SSO secrets."""
+    key = settings.sso_encryption_key
+    if not key:
+        # Generate a key for development, but production should set this in env
+        key = Fernet.generate_key().decode()
+        print(f"WARNING: No SSO_ENCRYPTION_KEY set. Generated temporary key: {key}")
+        print("Add this to your .env file: SSO_ENCRYPTION_KEY=" + key)
+    return key.encode() if isinstance(key, str) else key
+
+
+def encrypt_secret(secret: str) -> str:
+    """Encrypt SSO client secret for storage."""
+    f = Fernet(get_encryption_key())
+    return f.encrypt(secret.encode()).decode()
+
+
+def decrypt_secret(encrypted: str) -> str:
+    """Decrypt SSO client secret from storage."""
+    f = Fernet(get_encryption_key())
+    return f.decrypt(encrypted.encode()).decode()
 
 
 

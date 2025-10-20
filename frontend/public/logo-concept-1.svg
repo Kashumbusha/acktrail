@@ -1,0 +1,43 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Document stack with checkmark trail -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Back document -->
+  <path d="M65 60 L65 140 Q65 145 70 145 L130 145 Q135 145 135 140 L135 75 L120 60 Z"
+        fill="url(#grad1)" opacity="0.3"/>
+
+  <!-- Middle document -->
+  <path d="M75 50 L75 130 Q75 135 80 135 L140 135 Q145 135 145 130 L145 65 L130 50 Z"
+        fill="url(#grad1)" opacity="0.5"/>
+
+  <!-- Front document with folded corner -->
+  <path d="M85 40 L85 120 Q85 125 90 125 L150 125 Q155 125 155 120 L155 55 L140 40 Z"
+        fill="url(#grad1)"/>
+  <path d="M140 40 L140 55 L155 55 Z" fill="#312E81" opacity="0.3"/>
+
+  <!-- Document lines -->
+  <line x1="95" y1="60" x2="135" y2="60" stroke="white" stroke-width="2" opacity="0.5"/>
+  <line x1="95" y1="70" x2="145" y2="70" stroke="white" stroke-width="2" opacity="0.5"/>
+  <line x1="95" y1="80" x2="130" y2="80" stroke="white" stroke-width="2" opacity="0.5"/>
+
+  <!-- Trail of checkmarks -->
+  <g transform="translate(25, 90)">
+    <circle cx="0" cy="0" r="12" fill="#10B981" opacity="0.2"/>
+    <path d="M-4 0 L-1 4 L6 -4" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.4"/>
+  </g>
+
+  <g transform="translate(40, 110)">
+    <circle cx="0" cy="0" r="14" fill="#10B981" opacity="0.4"/>
+    <path d="M-5 0 L-1 5 L7 -5" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6"/>
+  </g>
+
+  <g transform="translate(60, 130)">
+    <circle cx="0" cy="0" r="16" fill="#10B981"/>
+    <path d="M-6 0 L-2 6 L8 -6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>

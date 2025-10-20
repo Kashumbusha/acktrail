@@ -136,6 +136,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Login with token (for SSO)
+  const loginWithToken = async (token) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+
+      // Store token
+      localStorage.setItem('token', token);
+      dispatch({ type: 'SET_TOKEN', payload: token });
+
+      // Get user info
+      const response = await authAPI.getMe();
+      const user = response.data;
+
+      // Store user
+      localStorage.setItem('user', JSON.stringify(user));
+      if (user?.workspace_id) {
+        localStorage.setItem('activeWorkspaceId', user.workspace_id);
+        dispatch({ type: 'SET_ACTIVE_WORKSPACE', payload: user.workspace_id });
+      }
+
+      dispatch({ type: 'SET_USER', payload: user });
+
+      return { success: true };
+    } catch (error) {
+      // Clear token if invalid
+      localStorage.removeItem('token');
+      dispatch({ type: 'SET_TOKEN', payload: null });
+
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Failed to authenticate'
+      };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
   const value = {
     ...state,
     setScope: (scope) => {
@@ -147,6 +184,7 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_ACTIVE_WORKSPACE', payload: id });
     },
     login,
+    loginWithToken,
     logout,
     sendCode,
   };

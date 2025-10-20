@@ -1,0 +1,33 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Modern minimalist design - Document with flowing checkmarks -->
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Single document -->
+  <rect x="60" y="40" width="80" height="120" rx="8" fill="url(#grad2)"/>
+  <path d="M120 40 L120 60 Q120 65 125 65 L140 65 L140 65 Q140 60 135 55 Z" fill="#1E3A8A" opacity="0.3"/>
+
+  <!-- Flowing checkmark trail integrated into document -->
+  <g opacity="0.9">
+    <!-- Small check -->
+    <path d="M75 70 L82 78 L95 62" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- Medium check -->
+    <path d="M75 95 L84 105 L100 85" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- Large check -->
+    <path d="M75 120 L86 133 L105 108" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- Flow dots on the right -->
+  <circle cx="120" cy="70" r="3" fill="#10B981"/>
+  <circle cx="125" cy="95" r="3" fill="#10B981"/>
+  <circle cx="120" cy="120" r="3" fill="#10B981"/>
+
+  <!-- Connecting flow line -->
+  <path d="M120 70 Q130 82.5 125 95 Q122 107.5 120 120" stroke="#10B981" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5" fill="none"/>
+</svg>

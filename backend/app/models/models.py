@@ -80,6 +80,7 @@ class Workspace(Base):
     policies = relationship("Policy", back_populates="workspace")
     assignments = relationship("Assignment", back_populates="workspace")
     teams = relationship("Team", back_populates="workspace")
+    sso_config = relationship("SSOConfig", back_populates="workspace", uselist=False)
 
 
 class Team(Base):
@@ -252,3 +253,36 @@ class DemoRequest(Base):
 
     created_by_user = relationship("User", foreign_keys=[created_by_user_id])
     workspace = relationship("Workspace", foreign_keys=[workspace_id])
+
+
+class SSOConfig(Base):
+    """SSO Configuration for workspace - stores Azure AD OAuth settings"""
+    __tablename__ = "sso_configs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, unique=True)
+
+    # Azure AD OAuth Configuration
+    provider = Column(String(50), default="microsoft", nullable=False)  # Future: 'google', 'okta'
+    tenant_id = Column(String(255), nullable=False)  # Customer's Azure AD tenant ID
+    client_id = Column(String(255), nullable=False)  # Application (client) ID
+    client_secret_encrypted = Column(Text, nullable=False)  # Encrypted client secret
+
+    # SSO Settings
+    auto_provision_users = Column(Boolean, default=True, nullable=False)  # Auto-create users on first login
+    default_role = Column(SQLEnum(UserRole), default=UserRole.EMPLOYEE, nullable=False)  # Role for new users
+    enforce_sso = Column(Boolean, default=False, nullable=False)  # Disable password login when true
+
+    # Status and Testing
+    is_active = Column(Boolean, default=True, nullable=False)
+    last_tested_at = Column(DateTime, nullable=True)
+    test_status = Column(String(50), nullable=True)  # 'success', 'failed', 'not_tested'
+
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+
+    # Relationships
+    workspace = relationship("Workspace", back_populates="sso_config")
+    creator = relationship("User")

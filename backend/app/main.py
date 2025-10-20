@@ -23,6 +23,7 @@ from .api.notifications import router as notifications_router
 from .api.payments import router as payments_router
 from .api.webhooks import router as webhooks_router
 from .api.support import router as support_router
+from .api.sso import router as sso_router
 
 # Configure logging
 logging.basicConfig(
@@ -149,6 +150,7 @@ def create_app() -> FastAPI:
     app.include_router(payments_router, prefix="/api/payments", tags=["payments"])
     app.include_router(webhooks_router, prefix="/api/webhooks", tags=["webhooks"])
     app.include_router(support_router, prefix="/api", tags=["support"])
+    app.include_router(sso_router, prefix="/api/sso", tags=["sso"])
 
     # Health check endpoint
     @app.get("/health", tags=["health"])

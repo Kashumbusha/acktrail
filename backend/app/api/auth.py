@@ -1,13 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from uuid import UUID
 import logging
+import httpx
+import msal
 
 from ..schemas.auth import SendCodeRequest, VerifyCodeRequest, TokenResponse, CurrentUser
 from ..schemas.users import UserCreate, UserResponse
 from ..models.database import get_db
-from ..models.models import User, AuthCode, UserRole, Workspace
+from ..models.models import User, AuthCode, UserRole, Workspace, SSOConfig
 from ..core.email import send_auth_code_email
 from ..core.security import (
     create_jwt_token,
@@ -16,6 +19,7 @@ from ..core.security import (
     hash_password,
     verify_password,
     get_current_user,
+    decrypt_secret,
 )
 from ..core.config import settings
 
@@ -516,6 +520,225 @@ def change_password(
     logger.info(f"Password changed for user: {user.email}")
 
     return {"success": True, "message": "Password changed successfully"}
+
+
+# ============================================================================
+# SSO / OAuth Endpoints
+# ============================================================================
+
+@router.get("/sso/microsoft/authorize")
+async def sso_microsoft_authorize(
+    workspace_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Initiate Microsoft OAuth flow.
+    Redirects user to Microsoft login page.
+    """
+    try:
+        workspace_uuid = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid workspace ID")
+
+    # Get workspace
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_uuid).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    # Check if SSO is enabled
+    if not workspace.sso_enabled or not workspace.sso_purchased:
+        raise HTTPException(status_code=403, detail="SSO not enabled for this workspace")
+
+    # Get SSO config
+    sso_config = db.query(SSOConfig).filter(
+        SSOConfig.workspace_id == workspace_uuid,
+        SSOConfig.is_active == True
+    ).first()
+
+    if not sso_config:
+        raise HTTPException(status_code=404, detail="SSO not configured for this workspace")
+
+    # Decrypt client secret
+    try:
+        client_secret = decrypt_secret(sso_config.client_secret_encrypted)
+    except Exception as e:
+        logger.error(f"Failed to decrypt SSO secret for workspace {workspace_id}: {e}")
+        raise HTTPException(status_code=500, detail="SSO configuration error")
+
+    # Build MSAL confidential client
+    authority = f"https://login.microsoftonline.com/{sso_config.tenant_id}"
+
+    app = msal.ConfidentialClientApplication(
+        client_id=sso_config.client_id,
+        client_credential=client_secret,
+        authority=authority
+    )
+
+    # Generate redirect URI
+    redirect_uri = settings.sso_redirect_uri or f"{settings.backend_url}/api/auth/sso/microsoft/callback"
+    scopes = ["User.Read", "email", "profile", "openid"]
+
+    # Generate state parameter with workspace_id for CSRF protection
+    import secrets
+    import json
+    import base64
+
+    state_data = {
+        "workspace_id": str(workspace_uuid),
+        "nonce": secrets.token_urlsafe(16)
+    }
+    state = base64.urlsafe_b64encode(json.dumps(state_data).encode()).decode()
+
+    # Build authorization URL
+    auth_url = app.get_authorization_request_url(
+        scopes=scopes,
+        redirect_uri=redirect_uri,
+        state=state
+    )
+
+    logger.info(f"SSO authorize initiated for workspace {workspace.name}")
+
+    return RedirectResponse(url=auth_url)
+
+
+@router.get("/sso/microsoft/callback")
+async def sso_microsoft_callback(
+    code: str,
+    state: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Handle Microsoft OAuth callback.
+    Exchanges authorization code for tokens and logs user in.
+    """
+    # Decode state to get workspace_id
+    import json
+    import base64
+
+    try:
+        state_data = json.loads(base64.urlsafe_b64decode(state.encode()).decode())
+        workspace_id = UUID(state_data["workspace_id"])
+    except Exception as e:
+        logger.error(f"Invalid state parameter in SSO callback: {e}")
+        # Redirect to login with error
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=invalid_state")
+
+    # Get SSO config
+    sso_config = db.query(SSOConfig).filter(
+        SSOConfig.workspace_id == workspace_id,
+        SSOConfig.is_active == True
+    ).first()
+
+    if not sso_config:
+        logger.error(f"SSO config not found for workspace {workspace_id}")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=sso_not_configured")
+
+    # Decrypt client secret
+    try:
+        client_secret = decrypt_secret(sso_config.client_secret_encrypted)
+    except Exception as e:
+        logger.error(f"Failed to decrypt SSO secret: {e}")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=sso_config_error")
+
+    # Build MSAL app
+    authority = f"https://login.microsoftonline.com/{sso_config.tenant_id}"
+    app = msal.ConfidentialClientApplication(
+        client_id=sso_config.client_id,
+        client_credential=client_secret,
+        authority=authority
+    )
+
+    # Exchange code for token
+    redirect_uri = settings.sso_redirect_uri or f"{settings.backend_url}/api/auth/sso/microsoft/callback"
+
+    try:
+        result = app.acquire_token_by_authorization_code(
+            code=code,
+            scopes=["User.Read", "email", "profile", "openid"],
+            redirect_uri=redirect_uri
+        )
+    except Exception as e:
+        logger.error(f"Failed to acquire token: {e}")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=token_exchange_failed")
+
+    if "error" in result:
+        error_desc = result.get("error_description", result.get("error"))
+        logger.error(f"OAuth error: {error_desc}")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=oauth_failed")
+
+    # Get user info from Microsoft Graph
+    access_token = result.get("access_token")
+    if not access_token:
+        logger.error("No access token in OAuth response")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=no_token")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://graph.microsoft.com/v1.0/me",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            response.raise_for_status()
+            user_info = response.json()
+    except Exception as e:
+        logger.error(f"Failed to get user info from Microsoft Graph: {e}")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=graph_api_failed")
+
+    # Extract user data
+    email = (user_info.get("mail") or user_info.get("userPrincipalName", "")).lower().strip()
+    display_name = user_info.get("displayName", "")
+    given_name = user_info.get("givenName", "")
+    surname = user_info.get("surname", "")
+
+    if not email:
+        logger.error("No email found in Microsoft user profile")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=no_email")
+
+    # Find or create user
+    user = db.query(User).filter(
+        User.email == email,
+        User.workspace_id == workspace_id
+    ).first()
+
+    if not user:
+        if not sso_config.auto_provision_users:
+            logger.warning(f"User {email} not found and auto-provisioning disabled")
+            return RedirectResponse(url=f"{settings.frontend_url}/login?error=user_not_found")
+
+        # Create new user
+        user = User(
+            email=email,
+            name=display_name or f"{given_name} {surname}".strip() or email,
+            first_name=given_name,
+            last_name=surname,
+            workspace_id=workspace_id,
+            role=UserRole[sso_config.default_role.upper()],
+            can_login=True,
+            active=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        logger.info(f"Auto-provisioned user {email} via SSO")
+
+    # Check if user can login
+    if not user.can_login or not user.active:
+        logger.warning(f"User {email} login disabled")
+        return RedirectResponse(url=f"{settings.frontend_url}/login?error=access_denied")
+
+    # Generate JWT token
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    token = create_jwt_token(
+        user_id=str(user.id),
+        email=user.email,
+        role=user.role.value,
+        workspace_id=str(workspace_id)
+    )
+
+    logger.info(f"User {email} logged in via SSO")
+
+    # Redirect to frontend with token
+    return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?token={token}")
 
 
 

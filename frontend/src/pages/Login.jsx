@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { EnvelopeIcon, KeyIcon, DocumentTextIcon, BuildingOfficeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
-import { teamsAPI, authAPI } from '../api/client';
+import { teamsAPI, authAPI, ssoAPI } from '../api/client';
 import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ export default function Login() {
   const [step, setStep] = useState(1); // 1: workspace name, 2: email+password, 3: code (if magic link chosen)
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceId, setWorkspaceId] = useState(null);
+  const [ssoEnabled, setSsoEnabled] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -45,6 +46,19 @@ export default function Login() {
       const response = await teamsAPI.checkWorkspace(workspaceName);
       if (response.data.success && response.data.workspace_id) {
         setWorkspaceId(response.data.workspace_id);
+
+        // Check if SSO is enabled for this workspace
+        try {
+          // Note: We need to pass the token if required, but for public SSO status check we might not need it
+          // The backend endpoint might be public or we'll handle the error
+          const ssoStatus = await ssoAPI.getStatus();
+          setSsoEnabled(ssoStatus.sso_enabled);
+        } catch (err) {
+          // SSO not configured or error checking - just proceed with normal login
+          console.log('SSO check failed:', err);
+          setSsoEnabled(false);
+        }
+
         setStep(2); // Move to email/password input
       } else {
         throw new Error('Workspace ID not returned from server');
@@ -54,6 +68,17 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSSOLogin = () => {
+    if (!workspaceId) {
+      toast.error('Workspace information is missing');
+      return;
+    }
+
+    // Redirect to SSO authorize endpoint
+    const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+    window.location.href = `${baseURL}/api/auth/sso/microsoft/authorize?workspace_id=${workspaceId}`;
   };
 
   const handlePasswordLogin = async (e) => {
@@ -247,6 +272,35 @@ export default function Login() {
               </form>
             ) : step === 2 ? (
               <div>
+                {/* Microsoft SSO Button */}
+                {ssoEnabled && (
+                  <div className="mb-6">
+                    <button
+                      type="button"
+                      onClick={handleSSOLogin}
+                      className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all font-medium dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
+                        <path d="M11 0H0V11H11V0Z" fill="#F25022"/>
+                        <path d="M23 0H12V11H23V0Z" fill="#7FBA00"/>
+                        <path d="M11 12H0V23H11V12Z" fill="#00A4EF"/>
+                        <path d="M23 12H12V23H23V12Z" fill="#FFB900"/>
+                      </svg>
+                      <span>Sign in with Microsoft</span>
+                    </button>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300 dark:border-slate-700"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-white text-gray-500 dark:bg-slate-900 dark:text-slate-400">
+                          Or continue with email
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {!useMagicLink ? (
                   // Password Login Form
                   <form className="space-y-5" onSubmit={handlePasswordLogin}>

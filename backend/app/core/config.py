@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     stripe_publishable_key: str = ""
     stripe_webhook_secret: str = ""
 
+    # SSO Configuration
+    sso_encryption_key: str = ""
+    sso_redirect_uri: str = ""
+
     # CORS - can be set from environment variable or use default
     cors_allow_origins: Union[List[str], str] = ""
 
