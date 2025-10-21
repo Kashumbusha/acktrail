@@ -171,30 +171,14 @@ export default function Billing() {
           <p className="text-gray-600 dark:text-slate-400 mb-6">
             Subscribe now to continue using AckTrail and unlock all features.
           </p>
-          <button
-            onClick={async () => {
-              try {
-                setLoading(true);
-                const response = await paymentsAPI.createCheckoutSession(
-                  'small', // Default to small plan
-                  10,      // Default staff count
-                  'month', // Default to monthly
-                  false    // SSO disabled by default
-                );
-                window.location.href = response.data.checkout_url;
-              } catch (error) {
-                console.error('Failed to create checkout session:', error);
-                toast.error('Failed to start checkout. Please try again.');
-                setLoading(false);
-              }
-            }}
-            disabled={loading}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg"
+          <a
+            href="/pricing"
+            className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold text-lg"
           >
-            Subscribe Now
-          </button>
+            View Plans & Subscribe
+          </a>
           <p className="text-sm text-gray-500 dark:text-slate-400 mt-4">
-            Or <a href="/pricing" className="text-blue-600 dark:text-blue-400 hover:underline">view pricing plans</a>
+            Choose the plan that works best for your team
           </p>
         </div>
       </div>

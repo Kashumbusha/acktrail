@@ -41,9 +41,9 @@ apiClient.interceptors.response.use(
       const message = error.response?.data?.detail || 'Your trial has expired. Please subscribe to continue.';
       toast.error(message, { duration: 6000 });
 
-      // Redirect to billing page after a short delay
+      // Redirect to pricing page to select a plan
       setTimeout(() => {
-        window.location.href = '/billing';
+        window.location.href = '/pricing';
       }, 2000);
 
       return Promise.reject(error);
