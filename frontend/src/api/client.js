@@ -192,6 +192,7 @@ export const ssoAPI = {
   deleteConfig: () => apiClient.delete('/api/sso/config').then(res => res.data),
   testConfig: () => apiClient.post('/api/sso/test').then(res => res.data),
   getStatus: () => apiClient.get('/api/sso/status').then(res => res.data),
+  getPublicStatus: (workspaceId) => apiClient.get('/api/sso/status/public', { params: { workspace_id: workspaceId } }).then(res => res.data),
 };
 
 export default apiClient;

@@ -49,9 +49,7 @@ export default function Login() {
 
         // Check if SSO is enabled for this workspace
         try {
-          // Note: We need to pass the token if required, but for public SSO status check we might not need it
-          // The backend endpoint might be public or we'll handle the error
-          const ssoStatus = await ssoAPI.getStatus();
+          const ssoStatus = await ssoAPI.getPublicStatus(response.data.workspace_id);
           setSsoEnabled(ssoStatus.sso_enabled);
         } catch (err) {
           // SSO not configured or error checking - just proceed with normal login

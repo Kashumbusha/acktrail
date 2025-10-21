@@ -260,3 +260,33 @@ async def get_sso_status(
         "enforce_sso": config.enforce_sso if config else False,
         "provider": config.provider if config else None
     }
+
+
+@router.get("/status/public")
+async def get_public_sso_status(
+    workspace_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Check if SSO is enabled for a workspace (public endpoint for login page).
+    Does not require authentication.
+    """
+    try:
+        ws_id = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid workspace ID format")
+
+    workspace = db.query(Workspace).filter(Workspace.id == ws_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    config = db.query(SSOConfig).filter(
+        SSOConfig.workspace_id == ws_id,
+        SSOConfig.is_active == True
+    ).first()
+
+    return {
+        "sso_enabled": workspace.sso_enabled and config is not None,
+        "enforce_sso": config.enforce_sso if config else False,
+        "provider": config.provider if config else None
+    }
