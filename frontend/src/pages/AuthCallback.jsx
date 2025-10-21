@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -6,8 +6,13 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { loginWithToken } = useAuth();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Prevent running multiple times
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     const handleCallback = async () => {
       const token = searchParams.get('token');
       const error = searchParams.get('error');
@@ -52,7 +57,8 @@ export default function AuthCallback() {
     };
 
     handleCallback();
-  }, [searchParams, navigate, loginWithToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
