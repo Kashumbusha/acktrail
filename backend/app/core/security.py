@@ -223,13 +223,31 @@ def get_current_user(
     return current_user
 
 
-def require_admin_role(current_user: dict = Depends(get_current_user)) -> dict:
-    """Require admin role for endpoint access."""
+def require_admin_role(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(lambda: next(get_db()))
+) -> dict:
+    """Require admin role AND active subscription for endpoint access."""
+    # First check admin role
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
+
+    # Then check subscription
+    from app.models.models import Workspace
+    from uuid import UUID
+
+    workspace_id = current_user.get("workspace_id")
+    if workspace_id:
+        workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+        if workspace and not has_valid_subscription(workspace):
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail="Your trial has expired. Please subscribe to continue using AckTrail."
+            )
+
     return current_user
 
 
@@ -265,6 +283,84 @@ def decrypt_secret(encrypted: str) -> str:
     """Decrypt SSO client secret from storage."""
     f = Fernet(get_encryption_key())
     return f.decrypt(encrypted.encode()).decode()
+
+
+def has_valid_subscription(workspace) -> bool:
+    """Check if workspace has valid access (active subscription, trial, or whitelisted)."""
+    from datetime import datetime
+
+    # Whitelisted workspaces always have access
+    if workspace.is_whitelisted:
+        return True
+
+    # Check if trial is still active
+    if workspace.trial_ends_at and workspace.trial_ends_at > datetime.utcnow():
+        return True
+
+    # Check if subscription is active
+    if workspace.subscription_status in ['trialing', 'active']:
+        return True
+
+    return False
+
+
+def require_active_subscription(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(lambda: next(get_db()))
+) -> dict:
+    """Require active subscription or trial for endpoint access (for any authenticated user)."""
+    from app.models.models import Workspace
+    from uuid import UUID
+
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No workspace associated with this user"
+        )
+
+    workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found"
+        )
+
+    if not has_valid_subscription(workspace):
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="Your trial has expired. Please subscribe to continue using AckTrail."
+        )
+
+    return current_user
+
+
+def get_current_user_with_subscription(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> dict:
+    """Get current user and verify they have active subscription."""
+    current_user = get_current_user(credentials)
+
+    # Import here to avoid circular imports
+    from app.models.database import get_db
+    from app.models.models import Workspace
+    from uuid import UUID
+
+    workspace_id = current_user.get("workspace_id")
+    if workspace_id:
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
+            workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+            if workspace and not has_valid_subscription(workspace):
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Your trial has expired. Please subscribe to continue using AckTrail."
+                )
+        finally:
+            db_gen.close()
+
+    return current_user
 
 
 

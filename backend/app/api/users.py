@@ -11,7 +11,7 @@ import logging
 
 from ..models.database import get_db
 from ..models.models import User, Assignment, Policy, UserRole, Workspace, Team, AssignmentStatus
-from ..core.security import get_current_user, require_admin_role
+from ..core.security import get_current_user, require_admin_role, get_current_user_with_subscription
 from ..core.email import send_invitation_email
 
 logger = logging.getLogger(__name__)
@@ -315,7 +315,7 @@ def update_user(
 def update_current_user_profile(
     payload: dict,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_with_subscription)
 ):
     """Update current user's profile information."""
     user = db.query(User).filter(User.id == UUID(current_user["id"])).first()
@@ -363,7 +363,7 @@ def get_my_assignments(
     page: int = 1,
     per_page: int = 20,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_with_subscription)
 ):
     """Get current user's policy assignments (employee-accessible)."""
     user_id = UUID(current_user["id"])
@@ -436,7 +436,7 @@ def get_my_assignments(
 @router.get("/me/assignments/export.csv")
 def export_my_assignments(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_with_subscription)
 ):
     """Export current user's assignments to CSV."""
     user_id = UUID(current_user["id"])
