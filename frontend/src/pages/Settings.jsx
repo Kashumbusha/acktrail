@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   UserCircleIcon,
   CreditCardIcon,
@@ -8,7 +9,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   QuestionMarkCircleIcon,
-  BoltIcon
+  BoltIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { paymentsAPI, usersAPI, dashboardAPI } from '../api/client';
@@ -27,6 +29,7 @@ const tabs = [
 
 export default function Settings() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1041,6 +1044,43 @@ export default function Settings() {
           Update Password
         </button>
       </div>
+
+      {/* SSO Settings - Show if admin and SSO purchased */}
+      {user?.role === 'admin' && subscription?.sso_purchased && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Single Sign-On (SSO)</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Configure Microsoft 365 SSO for your workspace</p>
+            </div>
+            {subscription.sso_enabled && (
+              <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                Enabled
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
+            <KeyIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                {subscription.sso_enabled
+                  ? 'SSO is configured. Users can sign in with Microsoft 365.'
+                  : 'Configure SSO to allow your team to sign in with their Microsoft 365 accounts.'
+                }
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/settings/sso')}
+            className="w-full flex items-center justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
+          >
+            <KeyIcon className="h-4 w-4 mr-2" />
+            {subscription.sso_enabled ? 'Manage SSO Configuration' : 'Configure SSO'}
+          </button>
+        </div>
+      )}
 
     </div>
   );
