@@ -576,7 +576,8 @@ async def sso_microsoft_authorize(
 
     # Generate redirect URI
     redirect_uri = settings.sso_redirect_uri or f"{settings.backend_url}/api/auth/sso/microsoft/callback"
-    scopes = ["User.Read", "email", "profile", "openid"]
+    # Only include non-reserved scopes (MSAL auto-adds openid, profile, offline_access)
+    scopes = ["User.Read", "email"]
 
     # Generate state parameter with workspace_id for CSRF protection
     import secrets
