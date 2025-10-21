@@ -35,10 +35,23 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    
+
+    // Handle subscription expired (402 Payment Required)
+    if (error.response?.status === 402) {
+      const message = error.response?.data?.detail || 'Your trial has expired. Please subscribe to continue.';
+      toast.error(message, { duration: 6000 });
+
+      // Redirect to billing page after a short delay
+      setTimeout(() => {
+        window.location.href = '/billing';
+      }, 2000);
+
+      return Promise.reject(error);
+    }
+
     const message = error.response?.data?.detail || error.response?.data?.message || 'An error occurred';
     toast.error(message);
-    
+
     return Promise.reject(error);
   }
 );

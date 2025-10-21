@@ -160,10 +160,43 @@ export default function Billing() {
     );
   }
 
-  if (!subscription) {
+  if (!subscription || !subscription.status || subscription.status === 'canceled') {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">No subscription found</p>
+      <div className="max-w-2xl mx-auto text-center py-12">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 border dark:border-slate-700">
+          <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
+            Your Trial Has Expired
+          </h2>
+          <p className="text-gray-600 dark:text-slate-400 mb-6">
+            Subscribe now to continue using AckTrail and unlock all features.
+          </p>
+          <button
+            onClick={async () => {
+              try {
+                setLoading(true);
+                const response = await paymentsAPI.createCheckoutSession(
+                  'small', // Default to small plan
+                  10,      // Default staff count
+                  'month', // Default to monthly
+                  false    // SSO disabled by default
+                );
+                window.location.href = response.data.checkout_url;
+              } catch (error) {
+                console.error('Failed to create checkout session:', error);
+                toast.error('Failed to start checkout. Please try again.');
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg"
+          >
+            Subscribe Now
+          </button>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-4">
+            Or <a href="/pricing" className="text-blue-600 dark:text-blue-400 hover:underline">view pricing plans</a>
+          </p>
+        </div>
       </div>
     );
   }
