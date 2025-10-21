@@ -653,9 +653,10 @@ async def sso_microsoft_callback(
     redirect_uri = settings.sso_redirect_uri or f"{settings.backend_url}/api/auth/sso/microsoft/callback"
 
     try:
+        # Only include non-reserved scopes (MSAL auto-adds openid, profile, offline_access)
         result = app.acquire_token_by_authorization_code(
             code=code,
-            scopes=["User.Read", "email", "profile", "openid"],
+            scopes=["User.Read", "email"],
             redirect_uri=redirect_uri
         )
     except Exception as e:
