@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from cryptography.fernet import Fernet
 
 from .config import settings
+from app.models.database import get_db
 
 
 _CODES_STORE: Dict[str, Tuple[str, float]] = {}
@@ -176,11 +177,9 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type"
         )
-    
-    # Import here to avoid circular imports
-    from app.models.database import get_db
+
+    # Import models here to avoid circular imports
     from app.models.models import User, Workspace
-    from uuid import UUID
     from sqlalchemy.orm import joinedload
 
     # Get a database session
@@ -377,10 +376,8 @@ def get_current_user_with_subscription(
     """Get current user and verify they have active subscription."""
     current_user = get_current_user(credentials)
 
-    # Import here to avoid circular imports
-    from app.models.database import get_db
+    # Import models here to avoid circular imports
     from app.models.models import Workspace
-    from uuid import UUID
 
     workspace_id = current_user.get("workspace_id")
     if workspace_id:
