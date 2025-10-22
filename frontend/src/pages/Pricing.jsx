@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CheckIcon } from '@heroicons/react/24/outline';
 import { PLANS, ANNUAL_DISCOUNT } from '../data/plans';
+import { paymentsAPI } from '../api/client';
+import toast from 'react-hot-toast';
 
 const BILLING_OPTIONS = [
   { id: 'month', label: 'Monthly' },
@@ -28,7 +30,40 @@ function formatStaffRange(plan) {
 }
 
 export default function Pricing() {
+  const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState('month');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [processingPlan, setProcessingPlan] = useState(null);
+
+  // Handle plan selection for logged-in users
+  const handleSelectPlan = async (planId) => {
+    // If not logged in, go to signup
+    if (!isLoggedIn) {
+      navigate('/signup');
+      return;
+    }
+
+    // If logged in, create checkout session and redirect to Stripe
+    setProcessingPlan(planId);
+    try {
+      const plan = PLANS.find(p => p.id === planId);
+      const staffCount = plan.minStaff || 1;
+
+      const response = await paymentsAPI.createCheckoutSession(
+        planId,
+        staffCount,
+        billingInterval,
+        false // SSO disabled by default
+      );
+
+      // Redirect to Stripe checkout
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast.error(error.response?.data?.detail || 'Failed to start checkout. Please try again.');
+      setProcessingPlan(null);
+    }
+  };
 
   const plans = useMemo(() => {
     return PLANS.map((plan) => {
@@ -165,12 +200,15 @@ export default function Pricing() {
                   </ul>
                 </div>
               )}
-              <Link
-                to="/signup"
-                className={`btn mt-6 ${plan.highlighted ? 'btn-primary' : 'btn-secondary'}`}
+              <button
+                onClick={() => handleSelectPlan(plan.id)}
+                disabled={processingPlan !== null}
+                className={`btn mt-6 w-full ${plan.highlighted ? 'btn-primary' : 'btn-secondary'} ${
+                  processingPlan === plan.id ? 'opacity-75 cursor-wait' : ''
+                }`}
               >
-                {plan.ctaLabel}
-              </Link>
+                {processingPlan === plan.id ? 'Processing...' : plan.ctaLabel}
+              </button>
             </div>
           </div>
         ))}
