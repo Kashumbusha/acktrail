@@ -68,45 +68,19 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
             detail=f"Workspace '{team_name}' already exists. Please choose a different name."
         )
 
-    # Check if this email has already used a trial as a staff member (admin or employee)
-    # Note: Guest users should be allowed to create their own workspace with trial
-    has_used_trial = False
-    previous_workspace_name = None
-
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user and existing_user.workspace_id:
-        # Only check if user is/was staff (admin or employee, not guest) in another workspace
-        if not existing_user.is_guest:
-            # Check if their workspace has a Stripe customer (meaning they completed checkout/trial before)
-            previous_workspace = db.query(Workspace).filter(
-                Workspace.id == existing_user.workspace_id
-            ).first()
-
-            if previous_workspace and previous_workspace.stripe_customer_id:
-                # User already used trial in another workspace - can signup but no trial
-                has_used_trial = True
-                previous_workspace_name = previous_workspace.name
-
-    # Create workspace - with or without trial based on history
-    if has_used_trial:
-        # No trial for users who already used one
-        trial_ends_at = None
-        from ..core.config import settings
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"User {email} registering without trial (already used in workspace '{previous_workspace_name}')")
-    else:
-        # 7-day free trial for new users
-        trial_ends_at = datetime.utcnow() + timedelta(days=7)
     # Normalize billing interval (month -> monthly, year -> annual)
     normalized_interval = "annual" if billing_interval == "year" else "monthly"
+
+    # Create workspace WITHOUT trial - trial will only be granted after Stripe checkout success
+    # onboarding_completed will be set to true after checkout webhook confirms payment
     workspace = Workspace(
         name=team_name,
         plan=plan,
-        trial_ends_at=trial_ends_at,
+        trial_ends_at=None,  # Will be set by Stripe webhook after successful checkout
         sso_enabled=sso_enabled,
         staff_count=staff_count,  # Set licensed seats during registration
-        billing_interval=normalized_interval
+        billing_interval=normalized_interval,
+        onboarding_completed=False  # Requires Stripe checkout to complete onboarding
     )
     db.add(workspace)
     db.flush()
@@ -157,21 +131,15 @@ def register_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
     # Note: No email sent here - frontend will call /auth/send-code to send verification email
     # This prevents duplicate emails during signup flow
 
-    response = {
+    return {
         "success": True,
         "workspace_id": str(workspace.id),
         "plan": workspace.plan.value,
-        "trial_ends_at": workspace.trial_ends_at.isoformat() if workspace.trial_ends_at else None,
-        "has_trial": workspace.trial_ends_at is not None,
         "sso_enabled": workspace.sso_enabled,
-        "is_whitelisted": workspace.is_whitelisted or False
+        "is_whitelisted": workspace.is_whitelisted or False,
+        "onboarding_completed": workspace.onboarding_completed,
+        "message": "Workspace created. Please complete Stripe checkout to activate your trial."
     }
-
-    # Add informative message if user didn't get trial
-    if has_used_trial:
-        response["message"] = f"Workspace created successfully. Note: You've already used a trial with workspace '{previous_workspace_name}', so this workspace requires immediate payment."
-
-    return response
 
 
 @router.post("/check-workspace", response_model=dict)

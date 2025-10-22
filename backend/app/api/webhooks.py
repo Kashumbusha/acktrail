@@ -137,8 +137,11 @@ def handle_checkout_completed(session, db: Session):
         if sso_enabled and not workspace.sso_enabled:
             workspace.sso_enabled = True
 
+        # Mark onboarding as completed - user has successfully completed Stripe checkout
+        workspace.onboarding_completed = True
+
         db.commit()
-        logger.info(f"Updated workspace {workspace_id} with Stripe subscription (plan={plan}, staff_count={staff_count}, interval={billing_interval})")
+        logger.info(f"Updated workspace {workspace_id} with Stripe subscription (plan={plan}, staff_count={staff_count}, interval={billing_interval}, onboarding_completed=True)")
 
     except Exception as e:
         logger.error(f"Error handling checkout completed: {str(e)}")

@@ -225,7 +225,7 @@ def get_current_user(
 
 def require_admin_role(
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(lambda: next(get_db()))
+    db: Session = Depends(get_db)
 ) -> dict:
     """Require admin role AND active subscription for endpoint access."""
     # First check admin role
@@ -241,12 +241,28 @@ def require_admin_role(
 
     workspace_id = current_user.get("workspace_id")
     if workspace_id:
-        workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
-        if workspace and not has_valid_subscription(workspace):
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail="Your trial has expired. Please subscribe to continue using AckTrail."
-            )
+        try:
+            workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+            if workspace and not has_valid_subscription(workspace):
+                # Check if it's incomplete onboarding vs expired subscription
+                if not getattr(workspace, 'onboarding_completed', False):
+                    raise HTTPException(
+                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                        detail="Please complete your subscription to access AckTrail features."
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                        detail="Your trial has expired. Please subscribe to continue using AckTrail."
+                    )
+        except HTTPException:
+            raise
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error checking subscription: {e}")
+            # Allow access if subscription check fails - better UX than blocking legitimate users
+            pass
 
     return current_user
 
@@ -293,6 +309,10 @@ def has_valid_subscription(workspace) -> bool:
     if workspace.is_whitelisted:
         return True
 
+    # Block access if onboarding is not completed (user registered but didn't complete Stripe checkout)
+    if not getattr(workspace, 'onboarding_completed', False):
+        return False
+
     # Check if trial is still active
     if workspace.trial_ends_at and workspace.trial_ends_at > datetime.utcnow():
         return True
@@ -306,7 +326,7 @@ def has_valid_subscription(workspace) -> bool:
 
 def require_active_subscription(
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(lambda: next(get_db()))
+    db: Session = Depends(get_db)
 ) -> dict:
     """Require active subscription or trial for endpoint access (for any authenticated user)."""
     from app.models.models import Workspace
@@ -319,18 +339,34 @@ def require_active_subscription(
             detail="No workspace associated with this user"
         )
 
-    workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
-    if not workspace:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workspace not found"
-        )
+    try:
+        workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workspace not found"
+            )
 
-    if not has_valid_subscription(workspace):
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="Your trial has expired. Please subscribe to continue using AckTrail."
-        )
+        if not has_valid_subscription(workspace):
+            # Check if it's incomplete onboarding vs expired subscription
+            if not getattr(workspace, 'onboarding_completed', False):
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Please complete your subscription to access AckTrail features."
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="Your trial has expired. Please subscribe to continue using AckTrail."
+                )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error checking subscription: {e}")
+        # Allow access if subscription check fails
+        pass
 
     return current_user
 
@@ -353,10 +389,17 @@ def get_current_user_with_subscription(
         try:
             workspace = db.query(Workspace).filter(Workspace.id == UUID(workspace_id)).first()
             if workspace and not has_valid_subscription(workspace):
-                raise HTTPException(
-                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                    detail="Your trial has expired. Please subscribe to continue using AckTrail."
-                )
+                # Check if it's incomplete onboarding vs expired subscription
+                if not getattr(workspace, 'onboarding_completed', False):
+                    raise HTTPException(
+                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                        detail="Please complete your subscription to access AckTrail features."
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                        detail="Your trial has expired. Please subscribe to continue using AckTrail."
+                    )
         finally:
             db_gen.close()
 

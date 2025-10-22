@@ -74,6 +74,9 @@ class Workspace(Base):
     # Whitelist - bypass payment requirements
     is_whitelisted = Column(Boolean, default=False, nullable=False)  # Workspace doesn't need payment
 
+    # Onboarding tracking
+    onboarding_completed = Column(Boolean, default=False, nullable=False)  # Has user completed full signup flow
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="workspace")
