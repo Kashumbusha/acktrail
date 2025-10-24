@@ -1,0 +1,178 @@
+# AckTrail
+
+> Policy acknowledgment tracking platform for compliance teams
+
+## Overview
+
+AckTrail is a compliance management platform that helps organizations track employee acknowledgments of policies, procedures, and documents. The platform provides cryptographic proof of acknowledgment with SHA-256 receipt hashing, audit trails, and automated reminders.
+
+## Key Features
+
+- **Policy Distribution**: Send policies to employees via email with magic link access
+- **Acknowledgment Tracking**: Monitor who has viewed, acknowledged, or declined policies
+- **Cryptographic Proof**: SHA-256 hashing of policy content and acknowledgments for tamper-proof audit trails
+- **PDF Evidence**: Generate downloadable receipt PDFs for each acknowledgment
+- **CSV Exports**: Export compliance data for reporting and analysis
+- **Guest Invites**: Free one-time acknowledgments for contractors and vendors (no login required)
+- **Reminders**: Automated reminder system for pending acknowledgments
+- **Teams**: Organize users into teams for targeted policy distribution
+- **SSO Integration**: Microsoft 365 SSO support (Azure AD OAuth)
+- **Dark Mode**: Full dark mode support across the platform
+
+## Pricing
+
+All plans include SHA-256 receipt hashing, PDF evidence, and CSV exports.
+Guest invites are always free on all plans.
+
+### Small Plan
+- **Price**: $99/month + $9/staff/month (or $1,009/year + $92/staff/year - save 15%)
+- **Staff**: Up to 10 staff members
+- **Guest Invites**: 50 per month
+- **Admins**: 1 admin
+- **Best for**: Small teams and startups
+
+### Medium Plan (Most Popular)
+- **Price**: $249/month + $7/staff/month (or $2,540/year + $71/staff/year - save 15%)
+- **Staff**: 11-49 staff members
+- **Guest Invites**: 250 per month
+- **Admins**: 3 admins
+- **Best for**: Growing companies with compliance needs
+
+### Large Plan
+- **Price**: $699/month + $5/staff/month (or $7,128/year + $51/staff/year - save 15%)
+- **Staff**: 50+ staff members
+- **Guest Invites**: 1,000 per month
+- **Admins**: Unlimited
+- **Best for**: Enterprise organizations
+
+### Add-ons
+- **SSO (Microsoft 365)**: $50/month - Enable single sign-on with Azure AD
+
+### Trial
+- **7-day free trial** available on all plans (starts after completing checkout)
+- No credit card required for trial initiation
+- Full feature access during trial period
+
+## How It Works
+
+1. **Create Workspace**: Admin registers and creates a workspace
+2. **Add Users**: Invite team members as staff or admins
+3. **Upload Policies**: Create policies with markdown text or upload PDF documents
+4. **Assign Recipients**: Assign policies to staff members or guest users
+5. **Track Acknowledgments**: Monitor real-time acknowledgment status
+6. **Export Evidence**: Download PDF receipts or CSV reports for audit compliance
+
+## Technical Details
+
+### Authentication
+- Email magic link authentication (passwordless)
+- Optional password-based login
+- Microsoft 365 SSO (Azure AD OAuth)
+- JWT-based session management
+
+### Security
+- SHA-256 content hashing for tamper detection
+- Cryptographic proof of acknowledgment
+- IP address and user agent logging
+- Typed signature support for high-compliance scenarios
+
+### Storage
+- Policy documents stored securely
+- Backblaze B2 integration for file storage
+- PostgreSQL database for metadata
+
+### Integrations
+- **Stripe**: Payment processing and subscription management
+- **Brevo (Sendinblue)**: Transactional email delivery
+- **Microsoft Azure AD**: SSO authentication
+
+## Use Cases
+
+- **HR Policy Acknowledgment**: Track employee handbook and policy acknowledgments
+- **Security Training**: Document completion of security awareness training
+- **Vendor Agreements**: Collect acknowledgments from contractors and vendors
+- **Regulatory Compliance**: Maintain audit trails for GDPR, HIPAA, SOC 2, ISO compliance
+- **Code of Conduct**: Annual ethics and conduct policy acknowledgments
+- **Safety Procedures**: Document safety training and procedure reviews
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/send-code` - Send verification code via email
+- `POST /api/auth/verify-code` - Verify code and issue JWT token
+- `POST /api/auth/login-password` - Password-based login
+- `GET /api/auth/me` - Get current user information
+
+### Policies
+- `GET /api/policies/` - List all policies in workspace
+- `POST /api/policies/` - Create new policy
+- `GET /api/policies/{id}` - Get policy details
+- `POST /api/policies/{id}/recipients` - Add recipients to policy
+- `POST /api/policies/{id}/send` - Send policy to recipients
+- `GET /api/policies/{id}/assignments` - Get acknowledgment status
+
+### Payments
+- `POST /api/payments/create-checkout-session` - Create Stripe checkout
+- `GET /api/payments/subscription` - Get subscription details
+- `POST /api/payments/subscription/update` - Update subscription
+- `POST /api/payments/subscription/cancel` - Cancel subscription
+
+### Dashboard
+- `GET /api/dashboard/stats` - Get workspace statistics
+- `GET /api/dashboard/workspace/export.csv` - Export all data
+
+## Technical Stack
+
+- **Frontend**: React, Vite, TailwindCSS
+- **Backend**: FastAPI (Python), SQLAlchemy
+- **Database**: PostgreSQL (Supabase)
+- **Deployment**: Railway (backend), Vercel (frontend)
+- **Email**: Brevo API
+- **Payments**: Stripe
+- **Storage**: Backblaze B2
+
+## Contact & Support
+
+- **Website**: https://acktrail.com
+- **Email**: support@acktrail.com
+- **Demo Request**: Available via contact form at /contact
+- **Documentation**: https://acktrail.com/docs (planned)
+
+## Company Information
+
+AckTrail helps organizations streamline compliance workflows by automating policy distribution, tracking acknowledgments, and maintaining cryptographic proof for audit purposes. Built for compliance teams, HR departments, and security professionals who need reliable documentation of policy acceptance.
+
+## Common Questions
+
+**Q: What counts as a staff user?**
+A: Staff are managed users with login access and full history tracking. One-time recipients (contractors, vendors) can acknowledge as guests for free.
+
+**Q: Can I change plans?**
+A: Yes, upgrade or downgrade anytime. Changes are prorated immediately.
+
+**Q: What happens after trial expires?**
+A: You'll need to subscribe to continue accessing features. All data is preserved.
+
+**Q: Is SSO required?**
+A: No, SSO is an optional add-on. Email authentication works for all users by default.
+
+**Q: How are guest invites counted?**
+A: Each unique email address that receives a policy as a guest counts toward your monthly quota. Guests don't need accounts or logins.
+
+**Q: What file formats are supported?**
+A: Markdown text (rich text editor) and PDF uploads for policy documents.
+
+**Q: Can I white-label the platform?**
+A: Enterprise white-labeling is on the roadmap. Contact us for early access.
+
+## Roadmap
+
+- **In Development**: Slack notifications
+- **Coming Soon**: HRIS roster sync (BambooHR, Workday, etc.)
+- **Planned**: Custom branding, Advanced analytics, Mobile app
+- **Considering**: API webhooks, Zapier integration, DocuSign integration
+
+---
+
+Last updated: October 2025
+Version: 1.0
