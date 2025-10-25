@@ -1,9 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" fill="none">
+  <!-- Background -->
+  <rect x="0" y="0" width="600" height="400" fill="#0f172a"/>
+
   <defs>
     <!-- Gradients -->
     <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
     </linearGradient>
 
     <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -37,7 +40,7 @@
   <!-- Step 1: Policy Document -->
   <g transform="translate(50, 120)">
     <!-- Card -->
-    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#475569" stroke-width="2" filter="url(#shadow)"/>
 
     <!-- Icon area -->
     <circle cx="70" cy="50" r="28" fill="#EEF2FF"/>
@@ -51,8 +54,8 @@
     </g>
 
     <!-- Text -->
-    <text x="70" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Send Policy</text>
-    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Upload & Distribute</text>
+    <text x="70" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#f1f5f9" text-anchor="middle">Send Policy</text>
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Upload & Distribute</text>
   </g>
 
   <!-- Connector 1 -->
@@ -74,7 +77,7 @@
   <!-- Step 2: Signatures -->
   <g transform="translate(280, 120)">
     <!-- Card -->
-    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#475569" stroke-width="2" filter="url(#shadow)"/>
 
     <!-- Icon area -->
     <circle cx="70" cy="50" r="28" fill="#F0FDF4"/>
@@ -90,12 +93,12 @@
       <circle cx="18" cy="0" r="8" fill="#10B981" opacity="0.9"/>
       <circle cx="36" cy="0" r="8" fill="#8B5CF6" opacity="0.9"/>
       <circle cx="54" cy="0" r="8" fill="#F59E0B" opacity="0.9"/>
-      <text x="66" y="4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#64748B">+12</text>
+      <text x="66" y="4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#94a3b8">+12</text>
     </g>
 
     <!-- Text -->
-    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Get Signatures</text>
-    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Track Acknowledgments</text>
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#f1f5f9" text-anchor="middle">Get Signatures</text>
+    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Track Acknowledgments</text>
   </g>
 
   <!-- Connector 2 -->
@@ -112,7 +115,7 @@
   <!-- Step 3: Proof & Analytics -->
   <g transform="translate(510, 120)">
     <!-- Card -->
-    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#475569" stroke-width="2" filter="url(#shadow)"/>
 
     <!-- Icon area -->
     <circle cx="70" cy="50" r="28" fill="#FEF3C7"/>
@@ -131,8 +134,8 @@
     </g>
 
     <!-- Text -->
-    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Get Proof</text>
-    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Audit-Ready Reports</text>
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#f1f5f9" text-anchor="middle">Get Proof</text>
+    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Audit-Ready Reports</text>
   </g>
 
   <!-- Background decorative elements -->
