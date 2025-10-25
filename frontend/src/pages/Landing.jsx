@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShieldCheckIcon,
@@ -14,6 +14,21 @@ import DemoRequestModal from '../components/DemoRequestModal';
 
 export default function Landing() {
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    { src: '/emailhell.svg', alt: 'Email Hell vs AckTrail Solution' },
+    { src: '/paperhell.svg', alt: 'Paper Hell vs AckTrail Solution' }
+  ];
+
+  // Auto-play carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 4000); // Change slide every 4 seconds
+
+    return () => clearInterval(timer);
+  }, [slides.length]);
 
   return (
     <>
@@ -77,13 +92,66 @@ export default function Landing() {
               </div>
             </div>
             <div className="mt-12 relative lg:mt-0 lg:col-span-5">
-              <div className="mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:p-0 lg:h-full">
-                <div className="rounded-xl shadow-2xl overflow-hidden bg-white dark:bg-slate-800 p-6">
-                  <img
-                    src="/workflow-diagram.svg"
-                    alt="AckTrail Workflow - Send Policy, Get Signatures, Get Proof"
-                    className="w-full h-auto"
-                  />
+              <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:p-0 lg:h-full">
+                {/* Carousel Container */}
+                <div className="relative rounded-xl shadow-2xl overflow-hidden bg-slate-900 dark:bg-slate-950">
+                  {/* Slides */}
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    {slides.map((slide, index) => (
+                      <div
+                        key={index}
+                        className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                          index === currentSlide
+                            ? 'opacity-100 translate-x-0'
+                            : index < currentSlide
+                            ? 'opacity-0 -translate-x-full'
+                            : 'opacity-0 translate-x-full'
+                        }`}
+                      >
+                        <img
+                          src={slide.src}
+                          alt={slide.alt}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Slide Indicators */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {slides.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentSlide
+                            ? 'bg-indigo-500 w-8'
+                            : 'bg-slate-400 hover:bg-slate-300'
+                        }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Navigation Arrows */}
+                  <button
+                    onClick={() => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-slate-800/50 hover:bg-slate-700/70 text-white p-2 rounded-full transition-all"
+                    aria-label="Previous slide"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800/50 hover:bg-slate-700/70 text-white p-2 rounded-full transition-all"
+                    aria-label="Next slide"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>

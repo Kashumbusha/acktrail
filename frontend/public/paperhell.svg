@@ -1,0 +1,193 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="primary-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="success-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effects -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Labels -->
+  <text x="200" y="60" font-size="18" fill="#ef4444" text-anchor="middle" font-weight="bold" opacity="0.8">Paper Hell</text>
+  <text x="600" y="60" font-size="18" fill="#8b5cf6" text-anchor="middle" font-weight="bold">AckTrail</text>
+
+  <!-- LEFT SIDE: The Old Way (Chaos) -->
+  <g id="old-way" opacity="0.6">
+    <!-- Messy email stack -->
+    <g transform="translate(80, 120)">
+      <!-- Email 1 (tilted) -->
+      <rect x="0" y="0" width="140" height="100" rx="8" fill="#475569" transform="rotate(-8)" filter="url(#shadow)"/>
+      <rect x="8" y="8" width="124" height="70" rx="4" fill="#334155" transform="rotate(-8)"/>
+      <line x1="20" y1="25" x2="100" y2="25" stroke="#64748b" stroke-width="3" transform="rotate(-8)"/>
+      <line x1="20" y1="38" x2="85" y2="38" stroke="#64748b" stroke-width="2" transform="rotate(-8)"/>
+      <line x1="20" y1="50" x2="110" y2="50" stroke="#64748b" stroke-width="2" transform="rotate(-8)"/>
+      
+      <!-- Email 2 (tilted other way) -->
+      <rect x="20" y="15" width="140" height="100" rx="8" fill="#475569" transform="rotate(5)" filter="url(#shadow)"/>
+      <rect x="28" y="23" width="124" height="70" rx="4" fill="#334155" transform="rotate(5)"/>
+      <line x1="40" y1="40" x2="120" y2="40" stroke="#64748b" stroke-width="3" transform="rotate(5)"/>
+      <line x1="40" y1="53" x2="105" y2="53" stroke="#64748b" stroke-width="2" transform="rotate(5)"/>
+      
+      <!-- Question marks floating around -->
+      <text x="160" y="40" font-size="32" fill="#ef4444" opacity="0.7">?</text>
+      <text x="170" y="80" font-size="28" fill="#ef4444" opacity="0.6">?</text>
+      <text x="150" y="120" font-size="24" fill="#ef4444" opacity="0.5">?</text>
+    </g>
+    
+    <!-- Paper stack -->
+    <g transform="translate(60, 280)">
+      <rect x="5" y="5" width="120" height="140" rx="4" fill="#475569" opacity="0.3"/>
+      <rect x="10" y="10" width="120" height="140" rx="4" fill="#475569" opacity="0.5"/>
+      <rect x="15" y="15" width="120" height="140" rx="4" fill="#64748b" filter="url(#shadow)"/>
+      <line x1="30" y1="40" x2="105" y2="40" stroke="#334155" stroke-width="2"/>
+      <line x1="30" y1="55" x2="105" y2="55" stroke="#334155" stroke-width="2"/>
+      <line x1="30" y1="70" x2="95" y2="70" stroke="#334155" stroke-width="2"/>
+      
+      <!-- X mark on paper -->
+      <line x1="70" y1="110" x2="95" y2="135" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+      <line x1="95" y1="110" x2="70" y2="135" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Stressed person icon -->
+    <g transform="translate(80, 460)">
+      <circle cx="40" cy="20" r="18" fill="#475569"/>
+      <rect x="28" y="40" width="24" height="35" rx="4" fill="#475569"/>
+      <!-- Stress lines -->
+      <line x1="65" y1="15" x2="75" y2="10" stroke="#ef4444" stroke-width="2"/>
+      <line x1="65" y1="25" x2="75" y2="30" stroke="#ef4444" stroke-width="2"/>
+      <line x1="15" y1="15" x2="5" y2="10" stroke="#ef4444" stroke-width="2"/>
+    </g>
+  </g>
+  
+  <!-- CENTER: Transformation arrow -->
+  <g transform="translate(300, 280)">
+    <path d="M 0 20 L 140 20 L 140 0 L 180 40 L 140 80 L 140 60 L 0 60 Z" 
+          fill="url(#primary-gradient)" 
+          filter="url(#glow)"/>
+    <text x="50" y="45" font-size="16" fill="white" font-weight="bold">AckTrail</text>
+  </g>
+  
+  <!-- RIGHT SIDE: The New Way (Organized) -->
+  <g id="new-way">
+    <!-- Modern dashboard -->
+    <g transform="translate(520, 100)">
+      <!-- Dashboard window -->
+      <rect width="240" height="380" rx="12" fill="#334155" filter="url(#shadow)"/>
+      <rect x="4" y="4" width="232" height="372" rx="8" fill="#1e293b"/>
+      
+      <!-- Header -->
+      <rect x="12" y="12" width="216" height="40" rx="6" fill="url(#primary-gradient)"/>
+      <circle cx="30" cy="32" r="6" fill="white" opacity="0.9"/>
+      <rect x="45" y="26" width="100" height="6" rx="3" fill="white" opacity="0.9"/>
+      <rect x="45" y="36" width="70" height="4" rx="2" fill="white" opacity="0.7"/>
+      
+      <!-- Policy items with checkmarks -->
+      <g transform="translate(20, 70)">
+        <!-- Item 1 - Complete -->
+        <rect width="200" height="50" rx="6" fill="#475569"/>
+        <circle cx="20" cy="25" r="12" fill="url(#success-gradient)"/>
+        <path d="M 15 25 L 19 29 L 26 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="45" y="15" width="120" height="8" rx="4" fill="#94a3b8"/>
+        <rect x="45" y="27" width="80" height="6" rx="3" fill="#64748b"/>
+        
+        <!-- Item 2 - Complete -->
+        <g transform="translate(0, 65)">
+          <rect width="200" height="50" rx="6" fill="#475569"/>
+          <circle cx="20" cy="25" r="12" fill="url(#success-gradient)"/>
+          <path d="M 15 25 L 19 29 L 26 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="45" y="15" width="100" height="8" rx="4" fill="#94a3b8"/>
+          <rect x="45" y="27" width="90" height="6" rx="3" fill="#64748b"/>
+        </g>
+        
+        <!-- Item 3 - In progress -->
+        <g transform="translate(0, 130)">
+          <rect width="200" height="50" rx="6" fill="#475569"/>
+          <circle cx="20" cy="25" r="12" fill="#6366f1" opacity="0.5">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <rect x="45" y="15" width="110" height="8" rx="4" fill="#94a3b8"/>
+          <rect x="45" y="27" width="75" height="6" rx="3" fill="#64748b"/>
+        </g>
+        
+        <!-- Item 4 - Pending -->
+        <g transform="translate(0, 195)">
+          <rect width="200" height="50" rx="6" fill="#475569"/>
+          <circle cx="20" cy="25" r="12" fill="#64748b"/>
+          <rect x="45" y="15" width="95" height="8" rx="4" fill="#94a3b8"/>
+          <rect x="45" y="27" width="85" height="6" rx="3" fill="#64748b"/>
+        </g>
+      </g>
+      
+      <!-- Stats at bottom -->
+      <g transform="translate(20, 330)">
+        <rect width="90" height="35" rx="6" fill="url(#success-gradient)" opacity="0.2"/>
+        <text x="45" y="15" font-size="14" fill="#10b981" text-anchor="middle" font-weight="bold">85%</text>
+        <text x="45" y="28" font-size="9" fill="#10b981" text-anchor="middle">Complete</text>
+        
+        <rect x="110" y="0" width="90" height="35" rx="6" fill="url(#primary-gradient)" opacity="0.2"/>
+        <text x="155" y="15" font-size="14" fill="#8b5cf6" text-anchor="middle" font-weight="bold">15</text>
+        <text x="155" y="28" font-size="9" fill="#8b5cf6" text-anchor="middle">Pending</text>
+      </g>
+    </g>
+    
+    <!-- Happy person with checkmark -->
+    <g transform="translate(580, 500)">
+      <circle cx="40" cy="20" r="18" fill="url(#success-gradient)"/>
+      <rect x="28" y="40" width="24" height="35" rx="4" fill="url(#success-gradient)"/>
+      
+      <!-- Thumbs up -->
+      <path d="M 75 45 L 85 35 L 95 45 L 95 65 L 75 65 Z" fill="url(#success-gradient)"/>
+      <rect x="70" y="50" width="10" height="15" rx="2" fill="url(#success-gradient)"/>
+      
+      <!-- Sparkles -->
+      <circle cx="10" cy="15" r="2" fill="#fbbf24">
+        <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="20" cy="5" r="2" fill="#fbbf24">
+        <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+      <circle cx="70" cy="20" r="2" fill="#fbbf24">
+        <animate attributeName="opacity" values="0;1;0" dur="1.6s" repeatCount="indefinite" begin="0.6s"/>
+      </circle>
+    </g>
+  </g>
+  
+  <!-- Floating notification badges -->
+  <g transform="translate(680, 80)">
+    <circle cx="0" cy="0" r="16" fill="#ef4444" filter="url(#glow)">
+      <animate attributeName="cy" values="0;-5;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="0" y="5" font-size="12" fill="white" text-anchor="middle" font-weight="bold">3</text>
+  </g>
+  
+  <!-- Cryptographic security badge -->
+  <g transform="translate(520, 50)">
+    <rect width="80" height="24" rx="12" fill="#334155"/>
+    <path d="M 15 12 L 15 9 C 15 6 17 4 20 4 C 23 4 25 6 25 9 L 25 12 M 13 12 L 27 12 L 27 19 L 13 19 Z" 
+          fill="#10b981" stroke="none"/>
+    <text x="32" y="16" font-size="10" fill="#94a3b8" font-weight="600">SHA-256</text>
+  </g>
+</svg>
