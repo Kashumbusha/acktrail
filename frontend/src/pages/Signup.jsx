@@ -617,15 +617,6 @@ export default function Signup() {
                       {formatCurrency(selectedPlanConfig.basePrice)}/month
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300 flex items-center">
-                      <span className="mr-1.5">✓</span>
-                      Microsoft 365 SSO included
-                    </span>
-                    <span className="font-medium text-success-600 dark:text-success-400">
-                      Included
-                    </span>
-                  </div>
                   {billingInterval === 'year' && (
                     <div className="flex justify-between text-sm text-success-600 dark:text-success-400">
                       <span>Annual billing discount (20%)</span>
