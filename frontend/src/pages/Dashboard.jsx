@@ -96,7 +96,7 @@ export default function Dashboard() {
             </p>
           </div>
           <Link
-            to="/users"
+            to="/admin/users"
             className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg shadow-lg text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-violet-500/30"
           >
             <UsersIcon className="-ml-1 mr-2 h-5 w-5" />
@@ -222,7 +222,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 bg-slate-800 rounded-xl p-6 border border-slate-700">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-semibold text-slate-100">Acknowledgment Trends</h3>
-              <Link to="/reports" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
+              <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
                 View Details →
               </Link>
             </div>
@@ -241,7 +241,7 @@ export default function Dashboard() {
           <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-semibold text-slate-100">Recent Activity</h3>
-              <Link to="/activity" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
+              <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
                 View All →
               </Link>
             </div>
@@ -283,7 +283,7 @@ export default function Dashboard() {
             </Link>
 
             <Link
-              to="/users"
+              to="/admin/users"
               className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">👥</div>
@@ -292,7 +292,7 @@ export default function Dashboard() {
             </Link>
 
             <Link
-              to="/reports"
+              to="/dashboard"
               className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">📊</div>
@@ -336,7 +336,7 @@ export default function Dashboard() {
                 )}
               </div>
               <Link
-                to="/users"
+                to="/admin/users"
                 className="w-full block text-center py-3 bg-slate-700 text-slate-100 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
               >
                 Invite Team Members
