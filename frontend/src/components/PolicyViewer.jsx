@@ -90,8 +90,8 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
             {/* PDF File Display */}
             <div className={`border-2 rounded-lg p-6 ${
               shouldShowValidation
-                ? (hasViewedDocument ? 'border-green-200 bg-green-50' : 'border-amber-300 bg-amber-50')
-                : 'border-gray-200 bg-gray-50'
+                ? (hasViewedDocument ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/20' : 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20')
+                : 'border-gray-200 bg-gray-50 dark:border-slate-600 dark:bg-slate-800'
             }`}>
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
@@ -108,10 +108,10 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
                     onClick={() => setShowPDFModal(true)}
                     className="text-left w-full group"
                   >
-                    <p className="text-sm font-medium text-indigo-600 group-hover:text-indigo-800 truncate">
+                    <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-800 dark:group-hover:text-indigo-300 truncate">
                       {fileName}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Click to view document
                     </p>
                   </button>

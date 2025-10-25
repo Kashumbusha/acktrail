@@ -96,11 +96,11 @@ def get_acknowledgment_page(
     
     # Check if already acknowledged
     already_acknowledged = assignment.status == AssignmentStatus.ACKNOWLEDGED
-    
-    # Check if expired (if policy has due date)
+
+    # Don't mark as expired based on due_at - let users acknowledge even after due date
+    # The magic link JWT token expiration (30 days) is the primary expiration mechanism
+    # This allows users to still acknowledge "late" as long as their magic link is valid
     is_expired = False
-    if policy.due_at and datetime.utcnow() > policy.due_at:
-        is_expired = True
     
     # Update assignment status to viewed if not already acknowledged
     if assignment.status == AssignmentStatus.PENDING:
