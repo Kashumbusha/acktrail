@@ -24,11 +24,11 @@ export default function Landing() {
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
             <div className="relative sm:text-center lg:text-left lg:col-span-7">
               <a
-                href="#"
+                href="#features"
                 className="inline-flex items-center text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/20 rounded-full p-1 pr-2 text-sm font-medium transition duration-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30"
               >
                 <span className="px-3 py-0.5 text-white text-xs bg-indigo-600 rounded-full">New</span>
-                <span className="ml-4 text-indigo-700 dark:text-indigo-300">Cryptographic receipts shipped</span>
+                <span className="ml-4 text-indigo-700 dark:text-indigo-300">Auto-reminders save 2+ hours/week</span>
                 <svg
                   className="ml-2 h-4 w-4 text-indigo-500 dark:text-indigo-400"
                   xmlns="http://www.w3.org/2000/svg"
@@ -44,11 +44,14 @@ export default function Landing() {
                 </svg>
               </a>
               <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-5xl md:text-6xl">
-                <span className="block xl:inline">Audit-ready policy acknowledgments,</span>{' '}
-                <span className="block text-indigo-600 dark:text-indigo-400 xl:inline">without enterprise baggage.</span>
+                <span className="block xl:inline">Stop Chasing</span>{' '}
+                <span className="block text-indigo-600 dark:text-indigo-400 xl:inline">Policy Signatures</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 dark:text-gray-300 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Launch in minutes with passwordless magic links, track every acknowledgment in real-time, and hand auditors tamper-evident receipts backed by SHA-256 hashes. Acktrail keeps HR, Ops, and Compliance teams on top of critical trainings and attestations without spreadsheets.
+                Send policies. Track acknowledgments. Get proof. All without the email chaos.
+              </p>
+              <p className="mt-2 text-base text-gray-500 dark:text-gray-300 sm:text-lg sm:max-w-xl sm:mx-auto md:text-lg lg:mx-0">
+                No more emailing PDFs and hoping people read them. No more manual follow-ups. No more hunting for signatures during audits. Just send, track, and prove—in seconds.
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                 <div className="rounded-md shadow">
