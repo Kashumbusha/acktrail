@@ -159,135 +159,211 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Feature Cards Section */}
-      <section className="py-16 bg-gray-50 dark:bg-slate-800">
+      {/* Features Section */}
+      <section id="features" className="py-20 bg-white dark:bg-slate-900">
         <div className="container-page">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg p-6 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <SparklesIcon className="mx-auto h-12 w-12 text-indigo-500" />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Automated Reminders</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">Set it and forget it. Our system handles follow-ups.</p>
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">Simple Tools That Replace Email Chaos</h2>
+            <p className="mt-3 text-slate-600 dark:text-slate-300">Built for HR teams drowning in manual follow-ups</p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-14 w-14 rounded-xl bg-indigo-600 text-white grid place-items-center mb-4">
+                  <UserGroupIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Bulk Send & Track</h3>
+                <ul className="mt-3 space-y-2 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Upload policy once, send to entire team</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Dashboard shows who&apos;s done, who&apos;s pending</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg p-6 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <ArrowPathIcon className="mx-auto h-12 w-12 text-green-500" />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Version Control & Distribution</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">Manage policy versions and distribute updates seamlessly.</p>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-14 w-14 rounded-xl bg-yellow-500 text-white grid place-items-center mb-4">
+                  <BellIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Smart Reminders</h3>
+                <ul className="mt-3 space-y-2 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Automatic nudges (Day 3, 7, 14)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Stops after 3 attempts (no spam)</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-lg p-6 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <ShieldCheckIcon className="mx-auto h-12 w-12 text-purple-500" />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">Ironclad Audit Trails</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-300">Comprehensive logs of every action for full compliance.</p>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-14 w-14 rounded-xl bg-purple-600 text-white grid place-items-center mb-4">
+                  <SparklesIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Zero IT Setup</h3>
+                <ul className="mt-3 space-y-2 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Magic links = no passwords needed</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Works for employees, contractors, anyone</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="card hover:shadow-md transition-shadow">
+              <div className="card-body">
+                <div className="h-14 w-14 rounded-xl bg-emerald-600 text-white grid place-items-center mb-4">
+                  <DocumentTextIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Download Proof Anytime</h3>
+                <ul className="mt-3 space-y-2 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>One-click CSV export for audits</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    <span>Individual PDF receipts with timestamps</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white dark:bg-slate-900">
+      {/* Before & After Section */}
+      <section className="py-16 bg-slate-50 dark:bg-slate-950">
         <div className="container-page">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">Everything you need</h2>
-            <p className="mt-3 text-slate-600 dark:text-slate-300">Purpose-built to give regulated teams audit-ready proof without heavyweight software</p>
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">The Old Way vs The AckTrail Way</h2>
+            <p className="mt-3 text-lg text-slate-600 dark:text-slate-300">Stop the manual chaos. Start tracking automatically.</p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-indigo-600 text-white grid place-items-center">
-                  <DocumentTextIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Centralised policy library</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">Upload PDF or Markdown policies, lock versions, and keep previous revisions for easy rollbacks.</p>
-              </div>
-            </div>
-
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-green-600 text-white grid place-items-center">
-                  <ShieldCheckIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Audit-ready receipts</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">PDF receipts with IP addresses, typed signatures, and SHA-256 hashes that prove nothing was tampered with.</p>
-              </div>
-            </div>
-
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-purple-600 text-white grid place-items-center">
-                  <SparklesIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Passwordless rollout</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">Magic links and verification codes mean zero IT setup—invite employees, contractors, and guests instantly.</p>
-              </div>
-            </div>
-
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-sky-600 text-white grid place-items-center">
-                  <UserGroupIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Mixed workforce coverage</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">Admins, employees, seasonal staff, and guests are tracked separately so you stay within paid seats.</p>
-              </div>
-            </div>
-
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-yellow-500 text-white grid place-items-center">
-                  <BellIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Smart reminder engine</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">Automated nudges escalate urgency, log every touch, and stop after three attempts to avoid noise.</p>
-              </div>
-            </div>
-
-            <div className="card hover:shadow-md transition-shadow">
-              <div className="card-body">
-                <div className="h-12 w-12 rounded-lg bg-emerald-600 text-white grid place-items-center">
-                  <ChartBarIcon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">Compliance analytics</h3>
-                <p className="mt-2 text-slate-600 dark:text-slate-300">Track acknowledgement rates, overdue policies, and export auditor-ready CSVs in one click.</p>
-              </div>
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl p-8 shadow-2xl overflow-x-auto">
+              <img
+                src="/before-after-comparison.svg"
+                alt="Comparison between manual policy tracking (chaotic desk, stressed person, spreadsheets) vs AckTrail automated system (clean dashboard, organized tracking, happy user)"
+                className="w-full h-auto min-w-[800px]"
+              />
             </div>
           </div>
         </div>
       </section>
 
       {/* Use Cases Section */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-950">
+      <section className="py-20 bg-white dark:bg-slate-900">
         <div className="container-page">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">Built for compliance-critical moments</h2>
-            <p className="mt-3 text-slate-600 dark:text-slate-300">Acktrail replaces ad-hoc email trails with verifiable proof when the stakes are high.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">Who Uses AckTrail Every Day?</h2>
+            <p className="mt-3 text-slate-600 dark:text-slate-300">Real teams solving real operational headaches</p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
             <div className="card h-full">
-              <div className="card-body space-y-3">
-                <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                  External audits
+              <div className="card-body space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center justify-center rounded-full bg-indigo-600 w-12 h-12 text-white font-bold text-xl">
+                    🎯
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                      BIGGEST USE CASE
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">HR Onboarding</h3>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Produce evidence packs in minutes</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Hand auditors CSV exports, individual receipts, and hash proofs instead of stitching screenshots together.</p>
+                <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+                  New hire starts Monday. Send 10 policies in one click. Track completion. No email chaos.
+                </p>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 italic">
+                    &ldquo;Before: Email 10 PDFs, hope they read them, chase signatures.<br/>
+                    Now: One click. Done.&rdquo;
+                  </p>
+                </div>
               </div>
             </div>
+
             <div className="card h-full">
-              <div className="card-body space-y-3">
-                <div className="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">
-                  HR & people ops
+              <div className="card-body space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center justify-center rounded-full bg-purple-600 w-12 h-12 text-white font-bold text-xl">
+                    📚
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Annual Training</h3>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Onboard every hire with zero IT lift</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Magic links and guest seats ensure policies reach employees, contractors, and vendors on day one.</p>
+                <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+                  Security awareness for 50 people. Auto-remind stragglers. Export proof when compliance asks.
+                </p>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 italic">
+                    &ldquo;Before: Send email, track in spreadsheet.<br/>
+                    Now: Send once, auto-remind, export CSV.&rdquo;
+                  </p>
+                </div>
               </div>
             </div>
+
             <div className="card h-full">
-              <div className="card-body space-y-3">
-                <div className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                  Safety & operations
+              <div className="card-body space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center justify-center rounded-full bg-emerald-600 w-12 h-12 text-white font-bold text-xl">
+                    🔄
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Policy Updates</h3>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Keep field teams current and accountable</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-300">Automated reminders and IP-stamped acknowledgments help safety-critical updates reach every teammate.</p>
+                <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+                  Update handbook. Everyone re-acknowledges. See 85% complete in dashboard, not spreadsheet.
+                </p>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 italic">
+                    &ldquo;Before: Email blast, manual tracking nightmare.<br/>
+                    Now: Bulk send, track completion, done.&rdquo;
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card h-full">
+              <div className="card-body space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center justify-center rounded-full bg-amber-600 w-12 h-12 text-white font-bold text-xl">
+                    🤝
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Contractors & Vendors</h3>
+                  </div>
+                </div>
+                <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+                  NDA for one-time contractor. Magic link → they sign → you get receipt. No printing, scanning, filing.
+                </p>
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 italic">
+                    &ldquo;Before: Email, print, scan, file.<br/>
+                    Now: Magic link, instant receipt.&rdquo;
+                  </p>
+                </div>
               </div>
             </div>
           </div>
