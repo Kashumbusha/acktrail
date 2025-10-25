@@ -83,9 +83,6 @@ export default function PublicLayout({ children }) {
             <div className="flex flex-col gap-3">
               <h3 className="text-white font-semibold text-sm">Company</h3>
               <div className="flex flex-col gap-2">
-                <Link to="/pricing" className="text-slate-300 hover:text-white text-sm transition-colors">
-                  Pricing
-                </Link>
                 <Link to="/legal" className="text-slate-300 hover:text-white text-sm transition-colors">
                   Legal
                 </Link>
