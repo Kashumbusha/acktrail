@@ -205,7 +205,7 @@ export default function Pricing() {
         ))}
       </div>
 
-      <div className="mt-16 grid gap-6 lg:grid-cols-2">
+      <div className="mt-16 grid gap-6 lg:grid-cols-3">
         <div className="card">
           <div className="card-body">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -218,10 +218,26 @@ export default function Pricing() {
             </p>
           </div>
         </div>
+        <div className="card border-2 border-indigo-500 dark:border-indigo-400">
+          <div className="card-body">
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
+                Large Plan Bonus
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              Free Process Automation
+            </h3>
+            <p className="mt-2 text-slate-600 dark:text-slate-300">
+              Large plan includes custom workflow automation at no extra cost. Have a process shortcoming?
+              We'll build and implement the solution for free as part of your subscription.
+            </p>
+          </div>
+        </div>
         <div className="card">
           <div className="card-body">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              What’s next on the roadmap?
+              What's next on the roadmap?
             </h3>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
               Slack notifications are in active development with HRIS roster sync close behind. Book a

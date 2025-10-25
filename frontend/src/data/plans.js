@@ -56,7 +56,7 @@ export const PLANS = [
     maxStaff: null, // No upper limit
     guestInvites: 1000,
     admins: null, // Unlimited admins
-    features: ['24/7 phone support', 'Advanced security', '1,000 guest invites/mo', 'Custom integrations', 'Microsoft 365 SSO included'],
+    features: ['24/7 phone support', 'Advanced security', '1,000 guest invites/mo', 'Custom integrations', 'Microsoft 365 SSO included', 'Free process automation - we build custom workflows for your team'],
     marketing: {
       tagline: 'Perfect for multi-location companies. Handle hundreds of acknowledgments effortlessly with unlimited admins and priority support.',
       benefits: [
@@ -64,6 +64,7 @@ export const PLANS = [
         'Unlimited admin seats - your entire HR team',
         'Handle 100+ staff with ease',
         'Microsoft 365 SSO included',
+        'Custom process automation included - we build workflows for free',
       ],
       ctaLabel: 'Start 7-day free trial',
       highlighted: false,
