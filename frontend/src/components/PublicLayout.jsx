@@ -89,9 +89,6 @@ export default function PublicLayout({ children }) {
                 <Link to="/legal" className="text-slate-300 hover:text-white text-sm transition-colors">
                   Legal
                 </Link>
-                <Link to="/hiring" className="text-slate-300 hover:text-white text-sm transition-colors">
-                  Careers
-                </Link>
               </div>
             </div>
 
