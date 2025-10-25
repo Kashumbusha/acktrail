@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
-import { EnvelopeIcon, KeyIcon, DocumentTextIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { teamsAPI, paymentsAPI } from '../api/client';
 import { isValidEmail, isValidVerificationCode } from '../utils/validators';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { PLANS, SSO_MONTHLY_PRICE, calculatePlanPrice } from '../data/plans';
+import { PLANS, calculatePlanPrice } from '../data/plans';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -59,19 +59,12 @@ export default function Signup() {
   const selectedPlanConfig = PLANS.find(p => p.id === selectedPlan);
   const annualSavings = Math.max(0, pricing.undiscountedMonthly * 12 - pricing.annual);
 
-  // Handle plan change - automatically adjust staff count to plan's default
+  // Handle plan change
   const handlePlanChange = (planId) => {
     setSelectedPlan(planId);
+    // Set staff count to minimum for record-keeping (flat-rate pricing)
     const plan = PLANS.find(p => p.id === planId);
-
-    // Set staff count based on plan defaults
-    if (planId === 'small') {
-      setStaffCount(5); // Small: default to 5 staff
-    } else if (planId === 'medium') {
-      setStaffCount(11); // Medium: minimum 11 staff
-    } else if (planId === 'large') {
-      setStaffCount(50); // Large: minimum 50 staff
-    }
+    setStaffCount(plan.minStaff || 1);
   };
 
   // Step 1: Submit team name and email (create workspace)
@@ -176,17 +169,6 @@ export default function Signup() {
   // Step 2: Submit plan selection
   const handlePlanSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate staff count for selected plan
-    if (selectedPlanConfig.maxStaff && staffCount > selectedPlanConfig.maxStaff) {
-      toast.error(`${selectedPlanConfig.name} supports up to ${selectedPlanConfig.maxStaff} staff`);
-      return;
-    }
-    if (selectedPlanConfig.minStaff && staffCount < selectedPlanConfig.minStaff) {
-      toast.error(`${selectedPlanConfig.name} requires at least ${selectedPlanConfig.minStaff} staff`);
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -562,43 +544,6 @@ export default function Signup() {
                   </div>
                 </div>
 
-                {/* Staff Count Input */}
-                <div>
-                  <label htmlFor="staffCount" className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
-                    Number of staff members
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <UsersIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-                    </div>
-                    <input
-                      id="staffCount"
-                      name="staffCount"
-                      type="number"
-                      min={selectedPlanConfig.minStaff || 1}
-                      max={selectedPlanConfig.maxStaff}
-                      required
-                      value={staffCount}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        const minStaff = selectedPlanConfig.minStaff || 1;
-                        const maxStaff = selectedPlanConfig.maxStaff;
-                        if (value >= minStaff && value <= maxStaff) {
-                          setStaffCount(value);
-                        }
-                      }}
-                      className="appearance-none block w-full px-3 py-3 pl-10 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all dark:bg-slate-800 dark:text-white dark:placeholder-slate-400 dark:border-slate-700"
-                      placeholder={selectedPlanConfig.minStaff || 1}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {selectedPlanConfig.minStaff
-                      ? `${selectedPlanConfig.minStaff}-${selectedPlanConfig.maxStaff} staff for ${selectedPlanConfig.name} plan • Guest users don't count`
-                      : `Up to ${selectedPlanConfig.maxStaff} staff • Guest users don't count`
-                    }
-                  </p>
-                </div>
-
                 {/* Plan Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3 dark:text-gray-200">
@@ -630,24 +575,24 @@ export default function Signup() {
                             <div className="flex-1">
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{plan.name}</h3>
                               <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                                {formatCurrency(plan.basePrice)}/mo base + {formatCurrency(plan.perStaffPrice)}/staff
+                                {formatCurrency(isAnnual ? monthlyEquivalent : plan.basePrice)}/month flat rate
                               </p>
+                              {isAnnual && (
+                                <p className="text-xs text-success-600 dark:text-success-400 mt-0.5">
+                                  Billed annually - save 20%
+                                </p>
+                              )}
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 {plan.minStaff ? `${plan.minStaff}-${plan.maxStaff}` : `Up to ${plan.maxStaff}`} staff • {plan.guestInvites} guest invites/mo
                               </p>
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {formatCurrency(primaryAmount)}
+                                {formatCurrency(isAnnual ? monthlyEquivalent : plan.basePrice)}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {primaryLabel}
+                                /month
                               </div>
-                              {isAnnual && (
-                                <div className="text-xs text-success-600 dark:text-success-400 font-medium mt-0.5">
-                                  ≈ {formatCurrency(monthlyEquivalent)} /mo after savings
-                                </div>
-                              )}
                             </div>
                           </div>
                           <div className="mt-3 space-y-1">
@@ -664,80 +609,49 @@ export default function Signup() {
                   </div>
                 </div>
 
-                {/* SSO Addon */}
-                <div className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg p-4 bg-gray-50/50 dark:bg-slate-800/50">
-                  <label className="flex items-start cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={ssoEnabled}
-                      onChange={(e) => setSsoEnabled(e.target.checked)}
-                      className="mt-1 h-4 w-4 text-primary-600 rounded focus:ring-primary-500"
-                    />
-                    <div className="ml-3 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">SSO Add-on</span>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
-                          {formatCurrency(SSO_MONTHLY_PRICE)}
-                          <span className="text-xs font-normal text-gray-500 dark:text-gray-400">/mo</span>
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                        Enable Single Sign-On (SAML, OAuth) for seamless authentication
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
                 {/* Price Summary */}
-                <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">
+                <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Base plan</span>
+                    <span className="text-gray-600 dark:text-gray-300">{selectedPlanConfig.name} Plan</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(billingInterval === 'year' ? pricing.baseAnnual : pricing.baseMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
+                      {formatCurrency(selectedPlanConfig.basePrice)}/month
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">
-                      {staffCount} staff × {formatCurrency(selectedPlanConfig.perStaffPrice)}/mo
+                    <span className="text-gray-600 dark:text-gray-300 flex items-center">
+                      <span className="mr-1.5">✓</span>
+                      Microsoft 365 SSO included
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(billingInterval === 'year' ? pricing.staffAnnual : pricing.staffMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
+                    <span className="font-medium text-success-600 dark:text-success-400">
+                      Included
                     </span>
                   </div>
-                  {billingInterval === 'year' && annualSavings > 0 && (
+                  {billingInterval === 'year' && (
                     <div className="flex justify-between text-sm text-success-600 dark:text-success-400">
-                      <span>Annual savings (15%)</span>
+                      <span>Annual billing discount (20%)</span>
                       <span className="font-medium">
-                        -{formatCurrency(annualSavings)}
+                        -${Math.round(selectedPlanConfig.basePrice * 0.20)}/mo
                       </span>
                     </div>
                   )}
-                  {ssoEnabled && (
-                    <div className="flex justify-between text-sm border-t border-gray-200 dark:border-slate-700 pt-2 mt-2">
-                      <span className="text-gray-600 dark:text-gray-300">SSO Add-on</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(billingInterval === 'year' ? pricing.ssoAnnual : pricing.ssoMonthly)}/{billingInterval === 'year' ? 'year' : 'mo'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-200 dark:border-slate-700 pt-2 flex justify-between">
-                    <span className="font-semibold text-gray-900 dark:text-white">Recurring total</span>
+                  <div className="border-t border-gray-200 dark:border-slate-700 pt-3 flex justify-between">
+                    <span className="font-semibold text-gray-900 dark:text-white">Total</span>
                     <div className="text-right">
                       <div className="text-xl font-bold text-gray-900 dark:text-white">
-                        {formatCurrency(billingInterval === 'year' ? pricing.annual : pricing.monthly)}
+                        {formatCurrency(Math.round(selectedPlanConfig.basePrice * (billingInterval === 'year' ? 0.80 : 1)))}
                         <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                          /{billingInterval === 'year' ? 'year' : 'mo'}
+                          /month
                         </span>
                       </div>
                       {billingInterval === 'year' && (
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          Equivalent to {formatCurrency(pricing.discountedMonthly)}/mo billed annually
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          Billed annually (${Math.round(selectedPlanConfig.basePrice * 12 * 0.80)}/year)
                         </div>
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-2">
-                    7-day free trial • Cancel anytime
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-slate-700">
+                    <strong>7-day free trial</strong> • Cancel anytime • No credit card required during trial
                   </p>
                 </div>
 
