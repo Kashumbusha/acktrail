@@ -1,0 +1,57 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A78BFA;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#C4B5FD;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+
+  <!-- Main background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="150" fill="url(#accentGradient)"/>
+  <circle cx="1100" cy="530" r="120" fill="url(#accentGradient)"/>
+
+  <!-- Logo (AckTrail icon) -->
+  <g transform="translate(100, 150)">
+    <rect width="80" height="80" rx="16" fill="white" opacity="0.2"/>
+    <text x="40" y="55" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">A</text>
+  </g>
+
+  <!-- Main content -->
+  <g transform="translate(100, 270)">
+    <!-- Brand name -->
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">
+      AckTrail
+    </text>
+
+    <!-- Tagline -->
+    <text x="0" y="70" font-family="Arial, sans-serif" font-size="36" fill="white" opacity="0.95">
+      Stop Chasing Policy Signatures
+    </text>
+
+    <!-- Key benefits -->
+    <g transform="translate(0, 130)">
+      <text x="0" y="0" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.9">
+        ✓ Send to 100 people in one click
+      </text>
+      <text x="0" y="40" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.9">
+        ✓ Track acknowledgments in real-time
+      </text>
+      <text x="0" y="80" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.9">
+        ✓ Get instant proof for audits
+      </text>
+    </g>
+  </g>
+
+  <!-- Website URL -->
+  <text x="1100" y="600" font-family="Arial, sans-serif" font-size="20" fill="white" opacity="0.8" text-anchor="end">
+    acktrail.com
+  </text>
+</svg>
