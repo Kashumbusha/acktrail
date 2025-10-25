@@ -66,17 +66,12 @@ export default function Pricing() {
 
   const plans = useMemo(() => {
     return PLANS.map((plan) => {
-      const annualMultiplier = 12 * (1 - ANNUAL_DISCOUNT);
-      const annualBase = Math.round(plan.basePrice * annualMultiplier);
-      const annualPerStaff = Math.round(plan.perStaffPrice * annualMultiplier);
       const baseMonthlyDiscounted = Math.round(plan.basePrice * (1 - ANNUAL_DISCOUNT));
-      const perStaffMonthlyDiscounted = Math.round(plan.perStaffPrice * (1 - ANNUAL_DISCOUNT));
 
       const isAnnual = billingInterval === 'year';
-      const priceLabel = isAnnual ? `$${annualBase}` : `$${plan.basePrice}`;
-      const perLabel = isAnnual
-        ? `year + $${annualPerStaff}/staff/year`
-        : `month + $${plan.perStaffPrice}/staff`;
+      const priceLabel = isAnnual ? `$${baseMonthlyDiscounted}` : `$${plan.basePrice}`;
+      const perLabel = isAnnual ? 'month' : 'month';
+      const billingNote = isAnnual ? 'Billed annually' : null;
 
       return {
         id: plan.id,
@@ -88,16 +83,11 @@ export default function Pricing() {
         limits: [
           formatStaffRange(plan),
           `${plan.guestInvites} guest invites/mo`,
-          `${plan.admins} ${plan.admins === 1 ? 'admin' : 'admins'}`,
+          `${plan.admins === null ? 'Unlimited' : plan.admins} ${plan.admins === 1 ? 'admin' : 'admins'}`,
         ],
         priceLabel,
         perLabel,
-        approxMonthly: isAnnual
-          ? {
-              base: baseMonthlyDiscounted,
-              perStaff: perStaffMonthlyDiscounted,
-            }
-          : null,
+        billingNote,
       };
     });
   }, [billingInterval]);
@@ -114,7 +104,9 @@ export default function Pricing() {
         <p className="mt-1 text-slate-600 dark:text-slate-300">
           Every plan includes Microsoft 365 SSO, SHA-256 receipt hashing, and CSV exports.
         </p>
-        <p className="mt-1 text-slate-600 dark:text-slate-300">Guest acknowledgments are always free on all plans.</p>
+        <p className="mt-1 text-slate-600 dark:text-slate-300">
+          <strong>7-day free trial</strong> on all plans. Guest acknowledgments are always free.
+        </p>
       </div>
 
       <div className="mt-10 flex justify-center">
@@ -164,11 +156,11 @@ export default function Pricing() {
                 <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                   {plan.priceLabel}
                 </span>
-                <span className="text-slate-500 dark:text-slate-400">{plan.perLabel}</span>
+                <span className="text-slate-500 dark:text-slate-400">/{plan.perLabel}</span>
               </div>
-              {plan.approxMonthly && (
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  ≈ ${plan.approxMonthly.base}/mo + ${plan.approxMonthly.perStaff}/staff/mo after savings
+              {plan.billingNote && (
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {plan.billingNote}
                 </p>
               )}
               {plan.tagline && (
