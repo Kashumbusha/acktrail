@@ -556,7 +556,7 @@ export default function Signup() {
                     >
                       Annual
                       <span className="ml-1 text-xs text-success-600 dark:text-success-400 font-semibold">
-                        Save 15%
+                        Save 20%
                       </span>
                     </button>
                   </div>

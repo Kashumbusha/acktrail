@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const BILLING_OPTIONS = [
   { id: 'month', label: 'Monthly' },
-  { id: 'year', label: 'Annual', badge: 'Save 15%' },
+  { id: 'year', label: 'Annual', badge: 'Save 20%' },
 ];
 
 function formatStaffRange(plan) {
@@ -52,8 +52,7 @@ export default function Pricing() {
       const response = await paymentsAPI.createCheckoutSession(
         planId,
         staffCount,
-        billingInterval,
-        false // SSO disabled by default
+        billingInterval
       );
 
       // Redirect to Stripe checkout
@@ -110,12 +109,12 @@ export default function Pricing() {
           Simple, transparent pricing
         </h1>
         <p className="mt-3 text-slate-600 dark:text-slate-300">
-          Guests are always free. Toggle annual billing to lock in 15% savings.
+          Flat-rate pricing. No per-user charges. Toggle annual billing to save 20%.
         </p>
         <p className="mt-1 text-slate-600 dark:text-slate-300">
-          Every plan includes SHA-256 receipt hashing, PDF evidence, and CSV exports.
+          Every plan includes Microsoft 365 SSO, SHA-256 receipt hashing, and CSV exports.
         </p>
-        <p className="mt-1 text-slate-600 dark:text-slate-300">SSO add-on: $50/month.</p>
+        <p className="mt-1 text-slate-600 dark:text-slate-300">Guest acknowledgments are always free on all plans.</p>
       </div>
 
       <div className="mt-10 flex justify-center">

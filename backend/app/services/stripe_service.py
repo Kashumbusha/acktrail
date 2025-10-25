@@ -1,13 +1,12 @@
 """
 Stripe service for handling payments, subscriptions, and billing.
 
-Pricing Model:
-- Base price + per-staff pricing
-- Small: $49 + $5/staff (up to 10 staff)
-- Medium: $149 + $1/staff (11-49 staff)
-- Large: $299 + $2/staff (50-100 staff)
-- SSO Add-on: $199 one-time payment
-- Annual billing: 15% discount
+Pricing Model (Flat-rate):
+- Small: $99/month (up to 10 staff)
+- Medium: $249/month (up to 49 staff)
+- Large: $699/month (50+ staff)
+- SSO: Included in all plans
+- Annual billing: 20% discount
 """
 import stripe
 import logging
@@ -20,183 +19,42 @@ logger = logging.getLogger(__name__)
 # Initialize Stripe
 stripe.api_key = settings.stripe_secret_key
 
-# Plan pricing configuration - Base + Per-Staff Model
+# Flat-rate pricing configuration
 PLAN_PRICES = {
     "small": {
-        "name": "Small Business",
-        "base_price": 49,  # $49/month base
-        "per_staff_price": 5,  # $5 per staff member
+        "name": "Small Business Plan",
+        "monthly_price_id": "price_1SM6VALvgOLlfex7uHmcYAob",
+        "annual_price_id": "price_1SM6VALvgOLlfex7YQltbycI",
         "max_staff": 10,  # Up to 10 staff
-        "guest_invites": 5,  # 5 guest invites/mo
+        "guest_invites": 50,  # 50 guest invites/mo
         "admins": 1,  # 1 admin
-        "base_price_id": None,  # Stripe price ID for base
-        "per_staff_price_id": None,  # Stripe price ID for per-staff charge
     },
     "medium": {
-        "name": "Medium",
-        "base_price": 149,  # $149/month base
-        "per_staff_price": 1,  # $1 per staff member
+        "name": "Medium Team Plan",
+        "monthly_price_id": "price_1SM6VBLvgOLlfex7if19LSkJ",
+        "annual_price_id": "price_1SM6VBLvgOLlfex7TABIRld8",
         "min_staff": 11,  # 11-49 staff
         "max_staff": 49,
-        "guest_invites": 50,  # 50 guest invites/mo
-        "admins": 2,  # 2 admins
-        "base_price_id": None,
-        "per_staff_price_id": None,
+        "guest_invites": 250,  # 250 guest invites/mo
+        "admins": 3,  # 3 admins
     },
     "large": {
-        "name": "Large",
-        "base_price": 299,  # $299/month base
-        "per_staff_price": 2,  # $2 per staff member
-        "min_staff": 50,  # 50-100 staff
-        "max_staff": 100,
-        "guest_invites": 100,  # 100 guest invites/mo
-        "admins": 5,  # 5 admins
-        "base_price_id": None,
-        "per_staff_price_id": None,
+        "name": "Large Enterprise Plan",
+        "monthly_price_id": "price_1SM6VCLvgOLlfex7j2BGE8Pr",
+        "annual_price_id": "price_1SM6VCLvgOLlfex73TeZUS1Q",
+        "min_staff": 50,  # 50+ staff
+        "max_staff": None,  # Unlimited
+        "guest_invites": 1000,  # 1000 guest invites/mo
+        "admins": None,  # Unlimited admins
     }
 }
 
-# SSO Add-on pricing - Recurring monthly add-on
-SSO_MONTHLY_PRICE_USD = 50
-SSO_RECURRING_PRICE_IDS = {"month": None, "year": None}
-
 TRIAL_DAYS = 7
-ANNUAL_DISCOUNT = 0.15  # 15% discount for annual billing
+ANNUAL_DISCOUNT = 0.20  # 20% discount for annual billing
 
 
 class StripeService:
-    """Service for handling Stripe operations with base + per-staff pricing."""
-
-    @staticmethod
-    def create_or_get_base_price_id(plan: str, interval: str = "month") -> str:
-        """
-        Create or retrieve the Stripe price ID for the BASE fee of a plan.
-
-        Args:
-            plan: Plan tier (small, medium, large)
-            interval: Billing interval (month or year)
-
-        Returns:
-            Stripe price ID for the base fee
-        """
-        try:
-            plan_config = PLAN_PRICES.get(plan)
-            if not plan_config:
-                raise ValueError(f"Invalid plan: {plan}")
-
-            # Check if we've already created this price
-            if plan_config["base_price_id"]:
-                return plan_config["base_price_id"]
-
-            base_price = plan_config["base_price"]
-
-            # Apply annual discount if yearly billing
-            if interval == "year":
-                base_price = int(base_price * 12 * (1 - ANNUAL_DISCOUNT))
-
-            # Create the base price in Stripe
-            price = stripe.Price.create(
-                unit_amount=base_price * 100,  # Convert to cents
-                currency="usd",
-                recurring={"interval": interval},
-                product_data={
-                    "name": f"{plan_config['name']} - Base Fee",
-                },
-            )
-
-            # Cache it (note: in production, you'd want per-interval caching)
-            plan_config["base_price_id"] = price.id
-            logger.info(f"Created base price for {plan} ({interval}): {price.id}")
-            return price.id
-
-        except stripe.error.StripeError as e:
-            logger.error(f"Error creating base price: {str(e)}")
-            raise
-
-    @staticmethod
-    def create_or_get_per_staff_price_id(plan: str, interval: str = "month") -> str:
-        """
-        Create or retrieve the Stripe price ID for PER-STAFF fee of a plan.
-
-        Args:
-            plan: Plan tier (small, medium, large)
-            interval: Billing interval (month or year)
-
-        Returns:
-            Stripe price ID for per-staff charges
-        """
-        try:
-            plan_config = PLAN_PRICES.get(plan)
-            if not plan_config:
-                raise ValueError(f"Invalid plan: {plan}")
-
-            # Check if we've already created this price
-            if plan_config["per_staff_price_id"]:
-                return plan_config["per_staff_price_id"]
-
-            per_staff_price = plan_config["per_staff_price"]
-
-            # Apply annual discount if yearly billing
-            if interval == "year":
-                per_staff_price = int(per_staff_price * 12 * (1 - ANNUAL_DISCOUNT))
-
-            # Create the per-staff price in Stripe
-            price = stripe.Price.create(
-                unit_amount=per_staff_price * 100,  # Convert to cents
-                currency="usd",
-                recurring={"interval": interval},
-                product_data={
-                    "name": f"{plan_config['name']} - Per Staff",
-                },
-            )
-
-            # Cache it
-            plan_config["per_staff_price_id"] = price.id
-            logger.info(f"Created per-staff price for {plan} ({interval}): {price.id}")
-            return price.id
-
-        except stripe.error.StripeError as e:
-            logger.error(f"Error creating per-staff price: {str(e)}")
-            raise
-
-    @staticmethod
-    def create_or_get_sso_recurring_price_id(interval: str = "month") -> str:
-        """
-        Create or retrieve the Stripe price ID for SSO recurring add-on.
-
-        Args:
-            interval: Billing interval (month or year)
-
-        Returns:
-            Stripe price ID for SSO recurring add-on
-        """
-        try:
-            if interval not in ("month", "year"):
-                raise ValueError("interval must be 'month' or 'year'")
-
-            if SSO_RECURRING_PRICE_IDS[interval]:
-                return SSO_RECURRING_PRICE_IDS[interval]
-
-            price_amount = SSO_MONTHLY_PRICE_USD
-            if interval == "year":
-                price_amount = int(SSO_MONTHLY_PRICE_USD * 12 * (1 - ANNUAL_DISCOUNT))
-
-            price = stripe.Price.create(
-                unit_amount=price_amount * 100,
-                currency="usd",
-                recurring={"interval": interval},
-                product_data={
-                    "name": "SSO Add-on",
-                },
-            )
-
-            SSO_RECURRING_PRICE_IDS[interval] = price.id
-            logger.info(f"Created SSO recurring price ({interval}): {price.id}")
-            return price.id
-
-        except stripe.error.StripeError as e:
-            logger.error(f"Error creating SSO recurring price: {str(e)}")
-            raise
+    """Service for handling Stripe operations with flat-rate pricing."""
 
     @staticmethod
     def create_checkout_session(
@@ -205,41 +63,37 @@ class StripeService:
         email: str,
         plan: str,
         staff_count: int,
-        sso_enabled: bool = False,
+        sso_enabled: bool = False,  # Deprecated - SSO now included in all plans
         interval: str = "month",  # month or year
     ) -> Dict:
         """
-        Create a Stripe Checkout session with base + per-staff pricing.
+        Create a Stripe Checkout session with flat-rate pricing.
 
         Args:
             workspace_id: Workspace UUID
             workspace_name: Workspace name
             email: Customer email
             plan: Plan tier (small, medium, large)
-            staff_count: Number of staff users
-            sso_enabled: Whether to add SSO one-time payment
+            staff_count: Number of staff users (for record-keeping only)
+            sso_enabled: Deprecated - SSO now included in all plans
             interval: Billing interval (month or year)
 
         Returns:
             Dict with session_id and checkout URL
         """
         try:
-            line_items = []
+            plan_config = PLAN_PRICES.get(plan)
+            if not plan_config:
+                raise ValueError(f"Invalid plan: {plan}")
 
-            # 1. Add base subscription price (quantity: 1)
-            base_price_id = StripeService.create_or_get_base_price_id(plan, interval)
-            line_items.append({
-                "price": base_price_id,
+            # Get the appropriate price ID based on billing interval
+            price_id = plan_config["annual_price_id"] if interval == "year" else plan_config["monthly_price_id"]
+
+            # Single line item for flat-rate pricing
+            line_items = [{
+                "price": price_id,
                 "quantity": 1,
-            })
-
-            # 2. Add per-staff price (quantity: staff_count)
-            if staff_count > 0:
-                per_staff_price_id = StripeService.create_or_get_per_staff_price_id(plan, interval)
-                line_items.append({
-                    "price": per_staff_price_id,
-                    "quantity": staff_count,
-                })
+            }]
 
             # Create checkout session
             session_params = {
@@ -255,7 +109,7 @@ class StripeService:
                     "workspace_name": workspace_name,
                     "plan": plan,
                     "staff_count": str(staff_count),
-                    "sso_enabled": str(sso_enabled),
+                    "sso_included": "true",  # SSO now included in all plans
                     "billing_interval": interval,
                 },
                 "subscription_data": {
@@ -265,24 +119,16 @@ class StripeService:
                         "workspace_name": workspace_name,
                         "plan": plan,
                         "staff_count": str(staff_count),
-                        "sso_enabled": str(sso_enabled),
+                        "sso_included": "true",
                     },
                 },
             }
-
-            # Add SSO recurring add-on as a separate subscription item
-            if sso_enabled:
-                sso_price_id = StripeService.create_or_get_sso_recurring_price_id(interval)
-                line_items.append({
-                    "price": sso_price_id,
-                    "quantity": 1,
-                })
 
             session = stripe.checkout.Session.create(**session_params)
 
             logger.info(
                 f"Created checkout session for workspace {workspace_id}: {session.id} "
-                f"({plan}, {staff_count} staff, interval={interval}, SSO={sso_enabled})"
+                f"({plan}, flat-rate, interval={interval})"
             )
 
             return {
@@ -321,7 +167,7 @@ class StripeService:
     @staticmethod
     def update_subscription_staff_count(subscription_id: str, new_staff_count: int) -> stripe.Subscription:
         """
-        Update the staff count (quantity) on an existing subscription.
+        Update the staff count (for record-keeping only - flat-rate pricing).
 
         Args:
             subscription_id: Stripe subscription ID
@@ -334,29 +180,19 @@ class StripeService:
             subscription = stripe.Subscription.retrieve(subscription_id)
             existing_metadata = dict(subscription.get("metadata", {}))
 
-            # Find the per-staff line item and update its quantity
-            for item in subscription["items"]["data"]:
-                price = stripe.Price.retrieve(item.price.id)
-                product = stripe.Product.retrieve(price.product)
-
-                # Check if this is the per-staff item
-                if "Per Staff" in product.name:
-                    stripe.SubscriptionItem.modify(
-                        item.id,
-                        quantity=new_staff_count,
-                    )
-                    logger.info(f"Updated staff count to {new_staff_count} for subscription {subscription_id}")
-                    break
-
+            # With flat-rate pricing, we only update metadata (no price changes)
             updated_metadata = {
                 **existing_metadata,
                 "staff_count": str(new_staff_count),
             }
 
-            return stripe.Subscription.modify(
+            updated_subscription = stripe.Subscription.modify(
                 subscription_id,
                 metadata=updated_metadata,
             )
+
+            logger.info(f"Updated staff count metadata to {new_staff_count} for subscription {subscription_id}")
+            return updated_subscription
 
         except stripe.error.StripeError as e:
             logger.error(f"Error updating staff count: {str(e)}")
@@ -370,55 +206,51 @@ class StripeService:
         current_interval: str = "month"
     ) -> stripe.Subscription:
         """
-        Change subscription plan (e.g., small to medium).
+        Change subscription plan (e.g., small to medium) with flat-rate pricing.
 
         Args:
             subscription_id: Stripe subscription ID
             new_plan: New plan tier
-            new_staff_count: Number of staff for new plan
+            new_staff_count: Number of staff for new plan (record-keeping only)
             current_interval: Current billing interval
 
         Returns:
             Updated subscription
         """
         try:
+            plan_config = PLAN_PRICES.get(new_plan)
+            if not plan_config:
+                raise ValueError(f"Invalid plan: {new_plan}")
+
             subscription = stripe.Subscription.retrieve(subscription_id)
             existing_metadata = dict(subscription.get("metadata", {}))
 
-            # Get new price IDs
-            new_base_price_id = StripeService.create_or_get_base_price_id(new_plan, current_interval)
-            new_per_staff_price_id = StripeService.create_or_get_per_staff_price_id(new_plan, current_interval)
+            # Get new price ID for flat-rate plan
+            new_price_id = plan_config["annual_price_id"] if current_interval == "year" else plan_config["monthly_price_id"]
 
-            # Update subscription items
+            # Update subscription items (should only be one item with flat-rate)
             items = subscription["items"]["data"]
 
-            for item in items:
-                price = stripe.Price.retrieve(item.price.id)
-                product = stripe.Product.retrieve(price.product)
+            if len(items) > 0:
+                # Update the first (and should be only) item to the new plan's price
+                stripe.SubscriptionItem.modify(
+                    items[0].id,
+                    price=new_price_id,
+                )
 
-                if "Base Fee" in product.name:
-                    # Update base price
-                    stripe.SubscriptionItem.modify(item.id, price=new_base_price_id)
-                elif "Per Staff" in product.name:
-                    # Update per-staff price and quantity
-                    stripe.SubscriptionItem.modify(
-                        item.id,
-                        price=new_per_staff_price_id,
-                        quantity=new_staff_count,
-                    )
-
-            # Keep metadata aligned so webhook updates reflect the latest change
+            # Update metadata
             updated_metadata = {
                 **existing_metadata,
                 "plan": new_plan,
                 "staff_count": str(new_staff_count),
+                "sso_included": "true",
             }
             updated_subscription = stripe.Subscription.modify(
                 subscription_id,
                 metadata=updated_metadata,
             )
 
-            logger.info(f"Changed plan to {new_plan} for subscription {subscription_id}")
+            logger.info(f"Changed plan to {new_plan} for subscription {subscription_id} (flat-rate)")
             return updated_subscription
 
         except stripe.error.StripeError as e:

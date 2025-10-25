@@ -1,23 +1,24 @@
-export const ANNUAL_DISCOUNT = 0.15; // 15% discount for annual billing
-export const SSO_MONTHLY_PRICE = 50;
+export const ANNUAL_DISCOUNT = 0.20; // 20% discount for annual billing
+export const SSO_MONTHLY_PRICE = 0; // SSO now included in all plans
 
 export const PLANS = [
   {
     id: 'small',
     name: 'Small Business',
-    basePrice: 49,
-    perStaffPrice: 5,
+    basePrice: 99,
+    perStaffPrice: 0, // Flat rate - no per-staff charges
     minStaff: 1,
     maxStaff: 10,
-    guestInvites: 5,
+    guestInvites: 50,
     admins: 1,
-    features: ['Email support', 'Basic analytics', '5 guest invites/mo'],
+    features: ['Email support', 'Basic analytics', '50 guest invites/mo', 'Microsoft 365 SSO included'],
     marketing: {
       tagline: 'Perfect for small teams who want to stop the email chaos. Onboard new hires in 10 minutes instead of 3 hours.',
       benefits: [
+        'Up to 10 staff members - flat rate',
         'Real-time tracking - see who viewed, who ignored',
         'Auto-reminders - stop manual follow-ups',
-        'Instant proof - download receipts for audits',
+        'Microsoft 365 SSO included',
       ],
       ctaLabel: 'Start free trial',
       highlighted: false,
@@ -26,20 +27,21 @@ export const PLANS = [
   {
     id: 'medium',
     name: 'Medium Team',
-    basePrice: 149,
-    perStaffPrice: 1,
+    basePrice: 249,
+    perStaffPrice: 0, // Flat rate - no per-staff charges
     minStaff: 11,
     maxStaff: 49,
-    guestInvites: 50,
-    admins: 2,
-    features: ['Priority support', 'Advanced analytics', '50 guest invites/mo', 'API access'],
+    guestInvites: 250,
+    admins: 3,
+    features: ['Priority support', 'Advanced analytics', '250 guest invites/mo', 'API access', 'Microsoft 365 SSO included'],
     popular: true,
     marketing: {
       tagline: 'Built for growing remote teams. Bulk send to entire company, track completion in real-time, eliminate spreadsheet tracking.',
       benefits: [
+        'Up to 49 staff members - flat rate',
         'Bulk sending - 100 people in one click',
         'Dashboard view - see progress at a glance',
-        'Priority support - get help when you need it',
+        'Microsoft 365 SSO included',
       ],
       ctaLabel: 'Start free trial',
       highlighted: true,
@@ -48,19 +50,20 @@ export const PLANS = [
   {
     id: 'large',
     name: 'Large',
-    basePrice: 299,
-    perStaffPrice: 2,
+    basePrice: 699,
+    perStaffPrice: 0, // Flat rate - no per-staff charges
     minStaff: 50,
-    maxStaff: 100,
-    guestInvites: 100,
-    admins: 5,
-    features: ['24/7 phone support', 'Advanced security', '100 guest invites/mo', 'Custom integrations'],
+    maxStaff: null, // No upper limit
+    guestInvites: 1000,
+    admins: null, // Unlimited admins
+    features: ['24/7 phone support', 'Advanced security', '1,000 guest invites/mo', 'Custom integrations', 'Microsoft 365 SSO included'],
     marketing: {
       tagline: 'Perfect for multi-location companies. Handle hundreds of acknowledgments effortlessly with unlimited admins and priority support.',
       benefits: [
+        '50+ staff members - flat rate',
         'Unlimited admin seats - your entire HR team',
         'Handle 100+ staff with ease',
-        '24/7 priority support for urgent needs',
+        'Microsoft 365 SSO included',
       ],
       ctaLabel: 'Start free trial',
       highlighted: false,
