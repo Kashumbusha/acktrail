@@ -33,5 +33,5 @@ User-agent: CCBot
 Allow: /
 Allow: /pricing
 
-# Add your sitemap here when available
-# Sitemap: https://yourdomain.com/sitemap.xml
+# Sitemap
+Sitemap: https://acktrail.com/sitemap.xml
