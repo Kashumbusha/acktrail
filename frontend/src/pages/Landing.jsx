@@ -78,11 +78,13 @@ export default function Landing() {
             </div>
             <div className="mt-12 relative lg:mt-0 lg:col-span-5">
               <div className="mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:p-0 lg:h-full">
-                <img
-                  src="/workflow-diagram.svg"
-                  alt="AckTrail Workflow - Send Policy, Get Signatures, Get Proof"
-                  className="w-full h-auto rounded-xl shadow-2xl"
-                />
+                <div className="rounded-xl shadow-2xl overflow-hidden bg-slate-800 p-6">
+                  <img
+                    src="/workflow-diagram.svg"
+                    alt="AckTrail Workflow - Send Policy, Get Signatures, Get Proof"
+                    className="w-full h-auto"
+                  />
+                </div>
               </div>
             </div>
           </div>
