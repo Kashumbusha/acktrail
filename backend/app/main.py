@@ -13,7 +13,7 @@ from .models.database import engine, Base
 # Import all routers
 from .api.auth import router as auth_router
 from .api.policies import router as policies_router
-from .api.assignments import router as assignments_router
+from .api.assignments import router as assignments_router, assignment_router
 from .api.acknowledgments import router as acknowledgments_router
 from .api.dashboard import router as dashboard_router
 from .api.teams import router as teams_router
@@ -141,6 +141,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/api")
     app.include_router(policies_router, prefix="/api")
     app.include_router(assignments_router, prefix="/api")
+    app.include_router(assignment_router, prefix="/api")
     app.include_router(acknowledgments_router, prefix="/api")
     app.include_router(dashboard_router, prefix="/api")
     app.include_router(teams_router, prefix="/api")

@@ -107,17 +107,20 @@ export default function PolicyDetail() {
   }, [assignmentsList, policy?.due_at]);
 
   const addRecipientsMutation = useMutation({
-    mutationFn: ({ policyId, recipients }) => 
+    mutationFn: ({ policyId, recipients }) =>
       policiesAPI.addRecipients(policyId, recipients),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POLICY_ASSIGNMENTS(id) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.POLICY(id) });
-      toast.success('Recipients added successfully');
+      const message = data?.sent_emails
+        ? `Assigned ${data.created_assignments} recipient(s) and sent ${data.sent_emails} email(s)`
+        : 'Recipients assigned successfully';
+      toast.success(message);
       setShowAddRecipients(false);
       setRecipients({ recipients: [], includeAdmins: false });
     },
     onError: () => {
-      toast.error('Failed to add recipients');
+      toast.error('Failed to assign recipients');
     },
   });
 
@@ -470,16 +473,16 @@ export default function PolicyDetail() {
                 {addRecipientsMutation.isPending ? (
                   <div className="flex items-center">
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Adding...
+                    Assigning & Sending...
                   </div>
                 ) : (() => {
                   // Check if we're dealing with teams (team:uuid format)
                   const isTeamSelection = recipients.recipients.some(r => r.startsWith('team:'));
                   if (isTeamSelection) {
                     const teamCount = recipients.recipients.length;
-                    return `Add ${teamCount} Team${teamCount !== 1 ? 's' : ''} ${recipients.includeAdmins ? '(All Members)' : '(Staff Only)'}`;
+                    return `Assign & Send to ${teamCount} Team${teamCount !== 1 ? 's' : ''} ${recipients.includeAdmins ? '(All Members)' : '(Staff Only)'}`;
                   }
-                  return `Add ${recipients.recipients.length} Recipient${recipients.recipients.length !== 1 ? 's' : ''}`;
+                  return `Assign & Send to ${recipients.recipients.length} Recipient${recipients.recipients.length !== 1 ? 's' : ''}`;
                 })()}
               </button>
             </div>

@@ -502,49 +502,7 @@ export default function AssignmentTable({
                               )}
                             </button>
                           )}
-                          {canResendLink(assignment) && onResendLink && (
-                            <button
-                              onClick={() => handleResendLink(assignment.id)}
-                              disabled={resendingAssignments.has(assignment.id)}
-                              className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-green-600 hover:text-green-900 hover:bg-green-50 disabled:opacity-50"
-                              title="Regenerate and send fresh magic link"
-                            >
-                              {resendingAssignments.has(assignment.id) ? (
-                                <LoadingSpinner size="sm" className="mr-1" />
-                              ) : (
-                                <PaperAirplaneIcon className="h-4 w-4" />
-                              )}
-                            </button>
-                          )}
-                          {canSendReminder(assignment) && onRemind && (
-                            <button
-                              onClick={() => handleRemind(assignment.id)}
-                              disabled={remindingAssignments.has(assignment.id) || (assignment.reminder_count || 0) >= 3}
-                              className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${
-                                (assignment.reminder_count || 0) >= 3
-                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                  : 'text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50'
-                              }`}
-                            >
-                              {remindingAssignments.has(assignment.id) ? (
-                                <LoadingSpinner size="sm" className="mr-1" />
-                              ) : null}
-                              {(assignment.reminder_count || 0) >= 3 ? 'Max Reached' : 'Remind'}
-                            </button>
-                          )}
-                          {canDelete(assignment) && onDelete && (
-                            <button
-                              onClick={() => handleDelete(assignment.id, assignment.user_email)}
-                              disabled={deletingAssignments.has(assignment.id)}
-                              className="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-red-600 hover:text-red-900 hover:bg-red-50 disabled:opacity-50"
-                            >
-                              {deletingAssignments.has(assignment.id) ? (
-                                <LoadingSpinner size="sm" className="mr-1" />
-                              ) : (
-                                <TrashIcon className="h-4 w-4" />
-                              )}
-                            </button>
-                          )}
+                          {/* Individual action buttons removed - use bulk actions instead */}
                         </div>
                       </td>
                     </tr>

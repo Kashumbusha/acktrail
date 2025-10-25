@@ -20,6 +20,7 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/policies", tags=["assignments"])
+assignment_router = APIRouter(prefix="/assignments", tags=["assignments"])
 
 
 @router.post("/{policy_id}/recipients", response_model=BulkAssignmentResponse)
@@ -162,16 +163,75 @@ def add_policy_recipients(
 
     logger.info(f"Created {created_users} users and {created_assignments} assignments for policy {policy_id}")
 
-    response_message = f"Created {created_assignments} new assignments"
+    # Automatically send emails to newly created assignments
+    sent_emails = 0
+    failed_email_list = []
+
+    if created_assignments > 0:
+        # Get all newly created PENDING assignments for this policy
+        new_assignments = db.query(Assignment).filter(
+            Assignment.policy_id == policy_id,
+            Assignment.status == AssignmentStatus.PENDING
+        ).all()
+
+        for assignment in new_assignments:
+            try:
+                # Get user details
+                user = db.query(User).filter(User.id == assignment.user_id).first()
+                if not user:
+                    failed_email_list.append(f"User {assignment.user_id} not found")
+                    continue
+
+                # Generate magic link token if not exists
+                if not assignment.magic_link_token:
+                    magic_token = create_magic_link_token(
+                        assignment_id=str(assignment.id),
+                        user_email=user.email
+                    )
+                    assignment.magic_link_token = magic_token
+                else:
+                    magic_token = assignment.magic_link_token
+
+                # Create magic link URL
+                magic_link_url = f"{settings.frontend_url}/ack/{magic_token}"
+
+                # Send email
+                message_id = send_policy_assignment_email(
+                    user_email=user.email,
+                    user_name=user.name,
+                    policy_title=policy.title,
+                    magic_link_url=magic_link_url,
+                    due_date=policy.due_at
+                )
+
+                # Record email event
+                email_event = EmailEvent(
+                    assignment_id=assignment.id,
+                    type=EmailEventType.SEND,
+                    provider_message_id=message_id
+                )
+                db.add(email_event)
+
+                sent_emails += 1
+                logger.info(f"Sent assignment email to {user.email} for policy {policy.title}")
+
+            except Exception as e:
+                logger.error(f"Failed to send email to {user.email if 'user' in locals() else 'unknown'}: {e}")
+                failed_email_list.append(f"Failed to send to {user.email if 'user' in locals() else 'unknown user'}")
+
+        db.commit()
+        logger.info(f"Sent {sent_emails} assignment emails automatically")
+
+    response_message = f"Created {created_assignments} new assignments and sent {sent_emails} emails"
     if created_users > 0:
         response_message += f" (including {created_users} new users)"
     if existing_assignments:
         response_message += f". {len(existing_assignments)} users already had assignments."
-    
+
     return BulkAssignmentResponse(
         created_assignments=created_assignments,
-        sent_emails=0,  # Emails are sent separately
-        failed_emails=existing_assignments
+        sent_emails=sent_emails,
+        failed_emails=existing_assignments + failed_email_list
     )
 
 
@@ -363,7 +423,7 @@ def get_policy_assignments(
     )
 
 
-@router.post("/assignments/{assignment_id}/remind", response_model=dict)
+@assignment_router.post("/{assignment_id}/remind", response_model=dict)
 def send_assignment_reminder(
     assignment_id: UUID,
     db: Session = Depends(get_db),
@@ -459,7 +519,7 @@ def send_assignment_reminder(
         )
 
 
-@router.post("/assignments/{assignment_id}/regenerate-link", response_model=dict)
+@assignment_router.post("/{assignment_id}/regenerate-link", response_model=dict)
 def regenerate_magic_link(
     assignment_id: UUID,
     db: Session = Depends(get_db),
@@ -537,7 +597,7 @@ def regenerate_magic_link(
         )
 
 
-@router.delete("/assignments/{assignment_id}", response_model=dict)
+@assignment_router.delete("/{assignment_id}", response_model=dict)
 def delete_assignment(
     assignment_id: UUID,
     db: Session = Depends(get_db),
@@ -697,7 +757,7 @@ def send_bulk_reminders(
     }
 
 
-@router.post("/assignments/{assignment_id}/magic-link", response_model=dict, tags=["assignments"])
+@assignment_router.post("/{assignment_id}/magic-link", response_model=dict)
 def get_self_magic_link(
     assignment_id: UUID,
     db: Session = Depends(get_db),
