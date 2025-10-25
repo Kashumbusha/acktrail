@@ -78,39 +78,12 @@ export default function Landing() {
             </div>
             <div className="mt-12 relative lg:mt-0 lg:col-span-5">
               <div className="mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:p-0 lg:h-full">
-                <div className="aspect-w-10 aspect-h-6 rounded-xl shadow-xl overflow-hidden sm:aspect-w-16 sm:aspect-h-7 lg:aspect-none lg:h-full">
-                  <svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg" class="rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800">
-                    <rect x="0" y="0" width="600" height="400" rx="12" fill="currentColor" class="text-white dark:text-slate-800"/>
-                    <rect x="20" y="20" width="560" height="30" rx="4" fill="currentColor" class="text-gray-200 dark:text-gray-700"/>
-                    <circle cx="35" cy="35" r="8" fill="#F87171"/>
-                    <circle cx="55" cy="35" r="8" fill="#FBBF24"/>
-                    <circle cx="75" cy="35" r="8" fill="#34D399"/>
-                    
-                    <rect x="20" y="60" width="300" height="150" rx="8" fill="currentColor" class="text-indigo-50 dark:text-indigo-900/30"/>
-                    <rect x="340" y="60" width="240" height="150" rx="8" fill="currentColor" class="text-blue-50 dark:text-blue-900/30"/>
-
-                    <path d="M40 180 L80 140 L120 160 L160 120 L200 150 L240 130 L280 170" stroke="#818CF8" stroke-width="4" fill="none" class="text-indigo-400"/>
-                    <circle cx="40" cy="180" r="5" fill="#818CF8"/>
-                    <circle cx="80" cy="140" r="5" fill="#818CF8"/>
-                    <circle cx="120" cy="160" r="5" fill="#818CF8"/>
-                    <circle cx="160" cy="120" r="5" fill="#818CF8"/>
-                    <circle cx="200" cy="150" r="5" fill="#818CF8"/>
-                    <circle cx="240" cy="130" r="5" fill="#818CF8"/>
-                    <circle cx="280" cy="170" r="5" fill="#818CF8"/>
-
-                    <rect x="360" y="80" width="30" height="40" rx="4" fill="#60A5FA"/>
-                    <path d="M375 85 L375 115 M365 95 L385 95" stroke="white" stroke-width="2"/>
-                    <rect x="410" y="80" width="30" height="40" rx="4" fill="#60A5FA"/>
-                    <path d="M425 85 L425 115 M415 95 L435 95" stroke="white" stroke-width="2"/>
-                    <rect x="460" y="80" width="30" height="40" rx="4" fill="#60A5FA"/>
-                    <path d="M475 85 L475 115 M465 95 L485 95" stroke="white" stroke-width="2"/>
-
-                    <rect x="20" y="225" width="560" height="150" rx="8" fill="currentColor" class="text-gray-50 dark:text-gray-700/50"/>
-                    <rect x="40" y="245" width="100" height="15" rx="4" fill="currentColor" class="text-gray-200 dark:text-gray-600"/>
-                    <rect x="40" y="270" width="200" height="10" rx="2" fill="currentColor" class="text-gray-200 dark:text-gray-600"/>
-                    <rect x="40" y="290" width="180" height="10" rx="2" fill="currentColor" class="text-gray-200 dark:text-gray-600"/>
-                    <rect x="40" y="310" width="150" height="10" rx="2" fill="currentColor" class="text-gray-200 dark:text-gray-600"/>
-                  </svg>
+                <div className="rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 p-8">
+                  <img
+                    src="/workflow-diagram.svg"
+                    alt="AckTrail Workflow - Send Policy, Get Signatures, Get Proof"
+                    className="w-full h-auto"
+                  />
                 </div>
               </div>
             </div>

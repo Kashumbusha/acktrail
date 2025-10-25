@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" fill="none">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Drop shadow -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Step 1: Policy Document -->
+  <g transform="translate(50, 120)">
+    <!-- Card -->
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+
+    <!-- Icon area -->
+    <circle cx="70" cy="50" r="28" fill="#EEF2FF"/>
+    <g transform="translate(70, 50)">
+      <!-- Document stack icon -->
+      <rect x="-12" y="-8" width="24" height="28" rx="2" fill="none" stroke="#6366F1" stroke-width="2.5"/>
+      <rect x="-10" y="-12" width="24" height="28" rx="2" fill="none" stroke="#6366F1" stroke-width="2.5" opacity="0.4"/>
+      <line x1="-6" y1="0" x2="6" y2="0" stroke="#6366F1" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-6" y1="6" x2="6" y2="6" stroke="#6366F1" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-6" y1="12" x2="2" y2="12" stroke="#6366F1" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Text -->
+    <text x="70" y="105" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Send Policy</text>
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Upload & Distribute</text>
+  </g>
+
+  <!-- Connector 1 -->
+  <g transform="translate(190, 200)">
+    <defs>
+      <marker id="arrow1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <path d="M 0 0 L 8 4 L 0 8 Z" fill="#8B5CF6"/>
+      </marker>
+    </defs>
+    <path d="M 0 0 Q 40 0, 80 0" stroke="url(#purpleGrad)" stroke-width="3" fill="none" marker-end="url(#arrow1)" stroke-linecap="round"/>
+
+    <!-- Floating dot animation -->
+    <circle cx="20" cy="0" r="4" fill="#6366F1" opacity="0.8">
+      <animate attributeName="cx" values="0;80" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Step 2: Signatures -->
+  <g transform="translate(280, 120)">
+    <!-- Card -->
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+
+    <!-- Icon area -->
+    <circle cx="70" cy="50" r="28" fill="#F0FDF4"/>
+    <g transform="translate(70, 50)">
+      <!-- Signature/check icon -->
+      <circle cx="0" cy="0" r="14" fill="none" stroke="#10B981" stroke-width="2.5"/>
+      <path d="M -6 0 L -2 4 L 6 -6" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Multiple user indicators -->
+    <g transform="translate(30, 95)">
+      <circle cx="0" cy="0" r="8" fill="#6366F1" opacity="0.9"/>
+      <circle cx="18" cy="0" r="8" fill="#10B981" opacity="0.9"/>
+      <circle cx="36" cy="0" r="8" fill="#8B5CF6" opacity="0.9"/>
+      <circle cx="54" cy="0" r="8" fill="#F59E0B" opacity="0.9"/>
+      <text x="66" y="4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#64748B">+12</text>
+    </g>
+
+    <!-- Text -->
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Get Signatures</text>
+    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Track Acknowledgments</text>
+  </g>
+
+  <!-- Connector 2 -->
+  <g transform="translate(420, 200)">
+    <path d="M 0 0 Q 40 0, 80 0" stroke="url(#purpleGrad)" stroke-width="3" fill="none" marker-end="url(#arrow1)" stroke-linecap="round"/>
+
+    <!-- Floating dot animation -->
+    <circle cx="40" cy="0" r="4" fill="#8B5CF6" opacity="0.8">
+      <animate attributeName="cx" values="0;80" dur="2s" begin="0.7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0" dur="2s" begin="0.7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Step 3: Proof & Analytics -->
+  <g transform="translate(510, 120)">
+    <!-- Card -->
+    <rect x="0" y="0" width="140" height="160" rx="12" fill="url(#cardGrad)" stroke="#E2E8F0" stroke-width="2" filter="url(#shadow)"/>
+
+    <!-- Icon area -->
+    <circle cx="70" cy="50" r="28" fill="#FEF3C7"/>
+    <g transform="translate(70, 50)">
+      <!-- Shield with checkmark -->
+      <path d="M 0 -14 L 8 -10 L 8 0 Q 8 6 0 10 Q -8 6 -8 0 L -8 -10 Z" fill="none" stroke="#F59E0B" stroke-width="2.5"/>
+      <path d="M -4 -2 L -1 1 L 4 -5" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Mini chart -->
+    <g transform="translate(35, 90)">
+      <rect x="0" y="15" width="8" height="10" rx="1" fill="#6366F1" opacity="0.7"/>
+      <rect x="12" y="10" width="8" height="15" rx="1" fill="#8B5CF6" opacity="0.7"/>
+      <rect x="24" y="5" width="8" height="20" rx="1" fill="#10B981" opacity="0.7"/>
+      <rect x="36" y="8" width="8" height="17" rx="1" fill="#F59E0B" opacity="0.7"/>
+    </g>
+
+    <!-- Text -->
+    <text x="70" y="125" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15" font-weight="600" fill="#1E293B" text-anchor="middle">Get Proof</text>
+    <text x="70" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Audit-Ready Reports</text>
+  </g>
+
+  <!-- Background decorative elements -->
+  <g opacity="0.05">
+    <circle cx="100" cy="50" r="80" fill="#6366F1"/>
+    <circle cx="550" cy="350" r="100" fill="#8B5CF6"/>
+  </g>
+
+  <!-- Floating particles -->
+  <g opacity="0.3">
+    <circle cx="220" cy="100" r="3" fill="#6366F1">
+      <animate attributeName="cy" values="100;90;100" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="450" cy="80" r="4" fill="#8B5CF6">
+      <animate attributeName="cy" values="80;70;80" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="320" cy="320" r="3" fill="#10B981">
+      <animate attributeName="cy" values="320;310;320" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>
