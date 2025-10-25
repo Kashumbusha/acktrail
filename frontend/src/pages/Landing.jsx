@@ -80,7 +80,7 @@ export default function Landing() {
               <div className="mx-auto max-w-md px-4 sm:max-w-3xl sm:px-6 lg:p-0 lg:h-full">
                 <div className="rounded-xl shadow-2xl overflow-hidden bg-slate-800 p-6">
                   <img
-                    src="/workflow-diagram.svg"
+                    src="/workflow-diagram.png"
                     alt="AckTrail Workflow - Send Policy, Get Signatures, Get Proof"
                     className="w-full h-auto"
                   />
