@@ -25,7 +25,7 @@ export default function Landing() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000); // Change slide every 4 seconds
+    }, 15000); // Change slide every 15 seconds
 
     return () => clearInterval(timer);
   }, [slides.length]);
