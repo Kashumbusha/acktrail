@@ -262,18 +262,9 @@ def update_policy(
         )
         update_data['content_sha256'] = content_hash
         update_data['version'] = policy.version + 1
-    
-    # Parse due_at if provided
-    if 'due_at' in update_data and update_data['due_at']:
-        from datetime import datetime
-        try:
-            update_data['due_at'] = datetime.fromisoformat(update_data['due_at'].replace('Z', '+00:00'))
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid due_at format. Use ISO format."
-            )
-    
+
+    # No need to parse due_at - Pydantic already handles datetime conversion
+
     for field, value in update_data.items():
         setattr(policy, field, value)
     
