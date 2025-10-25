@@ -91,7 +91,7 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
               Dashboard
             </h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-600 dark:text-slate-400">
+            <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
               Welcome back, {user?.name?.split(' ')[0] || 'Admin'}! Here's what's happening with your policies.
             </p>
           </div>
@@ -134,39 +134,39 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Policies */}
-          <div className="relative bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10 overflow-hidden group">
+          <div className="relative bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/10 overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-violet-500 to-indigo-500"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center">
                 <DocumentTextIcon className="h-5 w-5 text-violet-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Total Policies</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Policies</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{total_policies}</div>
-            <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400">
+            <div className="text-4xl font-bold text-slate-100 mb-2">{total_policies}</div>
+            <div className="flex items-center gap-1 text-sm text-slate-400">
               <span>→</span>
               <span>No change</span>
             </div>
           </div>
 
           {/* Acknowledged */}
-          <div className="relative bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 hover:border-emerald-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/10 overflow-hidden group">
+          <div className="relative bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-emerald-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/10 overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-500"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center">
                 <CheckCircleIcon className="h-5 w-5 text-emerald-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Acknowledged</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Acknowledged</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">
-              {acknowledged_assignments} <span className="text-xl text-gray-500 dark:text-slate-500">/ {total_assignments}</span>
+            <div className="text-4xl font-bold text-slate-100 mb-2">
+              {acknowledged_assignments} <span className="text-xl text-slate-500">/ {total_assignments}</span>
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400 mb-3">
+            <div className="flex items-center gap-1 text-sm text-slate-400 mb-3">
               <span>{acknowledgmentPercentage}%</span>
               <span>completion rate</span>
             </div>
             {/* Progress Bar */}
-            <div className="h-2 bg-gray-100 dark:bg-slate-900 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-1000"
                 style={{ width: `${acknowledgmentPercentage}%` }}
@@ -175,31 +175,31 @@ export default function Dashboard() {
           </div>
 
           {/* Pending */}
-          <div className="relative bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 hover:border-amber-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-500/10 overflow-hidden group">
+          <div className="relative bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-amber-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-500/10 overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-500 to-orange-500"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="w-10 h-10 rounded-lg bg-amber-500/15 flex items-center justify-center">
                 <ClockIcon className="h-5 w-5 text-amber-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Pending</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{pending_assignments}</div>
-            <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400">
+            <div className="text-4xl font-bold text-slate-100 mb-2">{pending_assignments}</div>
+            <div className="flex items-center gap-1 text-sm text-slate-400">
               <span>→</span>
               <span>Awaiting responses</span>
             </div>
           </div>
 
           {/* Overdue */}
-          <div className="relative bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 hover:border-red-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/10 overflow-hidden group">
+          <div className="relative bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-red-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/10 overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500 to-rose-500"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
               </div>
-              <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Overdue</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overdue</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{overdue_assignments}</div>
+            <div className="text-4xl font-bold text-slate-100 mb-2">{overdue_assignments}</div>
             <div className="flex items-center gap-1 text-sm">
               {overdue_assignments === 0 ? (
                 <>
@@ -219,15 +219,15 @@ export default function Dashboard() {
         {/* Chart and Activity Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Acknowledgment Trends Chart */}
-          <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
+          <div className="lg:col-span-2 bg-slate-800 rounded-xl p-6 border border-slate-700">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Acknowledgment Trends</h3>
+              <h3 className="text-lg font-semibold text-slate-100">Acknowledgment Trends</h3>
               <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
                 View Details →
               </Link>
             </div>
-            <div className="h-48 bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-slate-700">
-              <div className="text-center text-gray-500 dark:text-slate-500">
+            <div className="h-48 bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-slate-700">
+              <div className="text-center text-slate-500">
                 <svg className="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
@@ -238,9 +238,9 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
+          <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-slate-100">Recent Activity</h3>
               <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
                 View All →
               </Link>
@@ -248,19 +248,19 @@ export default function Dashboard() {
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {recentActivity.slice(0, 5).map((activity, idx) => (
-                  <div key={idx} className="flex gap-3 p-3 bg-gray-100 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:bg-slate-900/70 transition-colors">
+                  <div key={idx} className="flex gap-3 p-3 bg-slate-900 rounded-lg hover:bg-slate-900/70 transition-colors">
                     <div className="w-8 h-8 rounded-md bg-violet-500/15 flex items-center justify-center flex-shrink-0">
                       <CheckCircleIcon className="h-4 w-4 text-violet-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-slate-200 truncate">{activity.description}</p>
-                      <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{activity.timestamp}</p>
+                      <p className="text-xs text-slate-500 mt-1">{activity.timestamp}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-10 text-gray-500 dark:text-slate-500">
+              <div className="text-center py-10 text-slate-500">
                 <div className="text-5xl mb-3">📭</div>
                 <p className="font-semibold mb-1">No activity yet</p>
                 <p className="text-sm">Activity will appear here as people acknowledge policies</p>
@@ -270,43 +270,43 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-5">Quick Actions</h3>
+        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-100 mb-5">Quick Actions</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
               to="/policies/new"
-              className="p-5 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
+              className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">📝</div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Create Policy</div>
-              <div className="text-xs text-gray-600 dark:text-slate-400">Add a new policy document</div>
+              <div className="text-sm font-semibold text-slate-100 mb-1">Create Policy</div>
+              <div className="text-xs text-slate-400">Add a new policy document</div>
             </Link>
 
             <Link
               to="/admin/users"
-              className="p-5 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
+              className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">👥</div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Manage Users</div>
-              <div className="text-xs text-gray-600 dark:text-slate-400">Add or edit team members</div>
+              <div className="text-sm font-semibold text-slate-100 mb-1">Manage Users</div>
+              <div className="text-xs text-slate-400">Add or edit team members</div>
             </Link>
 
             <Link
               to="/dashboard"
-              className="p-5 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
+              className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">📊</div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">View Reports</div>
-              <div className="text-xs text-gray-600 dark:text-slate-400">Export compliance reports</div>
+              <div className="text-sm font-semibold text-slate-100 mb-1">View Reports</div>
+              <div className="text-xs text-slate-400">Export compliance reports</div>
             </Link>
 
             <Link
               to="/settings"
-              className="p-5 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
+              className="p-5 bg-slate-900 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">⚙️</div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Settings</div>
-              <div className="text-xs text-gray-600 dark:text-slate-400">Configure your workspace</div>
+              <div className="text-sm font-semibold text-slate-100 mb-1">Settings</div>
+              <div className="text-xs text-slate-400">Configure your workspace</div>
             </Link>
           </div>
         </div>
@@ -315,53 +315,53 @@ export default function Dashboard() {
         {seat_capacity && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Team Usage */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-5">Team Usage</h3>
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-100 mb-5">Team Usage</h3>
               <div className="flex justify-between mb-6">
                 <div>
-                  <div className="text-xs text-gray-600 dark:text-slate-400 mb-2">Employee Seats</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                    {seat_usage} <span className="text-lg text-gray-500 dark:text-slate-500">/ {seat_capacity}</span>
+                  <div className="text-xs text-slate-400 mb-2">Employee Seats</div>
+                  <div className="text-2xl font-bold text-slate-100">
+                    {seat_usage} <span className="text-lg text-slate-500">/ {seat_capacity}</span>
                   </div>
                   <div className="text-xs text-emerald-400 mt-1">{seat_available} available seats</div>
                 </div>
                 {admin_count !== null && admin_limit !== null && (
                   <div>
-                    <div className="text-xs text-gray-600 dark:text-slate-400 mb-2">Admins</div>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                      {admin_count} <span className="text-lg text-gray-500 dark:text-slate-500">/ {admin_limit}</span>
+                    <div className="text-xs text-slate-400 mb-2">Admins</div>
+                    <div className="text-2xl font-bold text-slate-100">
+                      {admin_count} <span className="text-lg text-slate-500">/ {admin_limit}</span>
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-slate-400 mt-1">Not billed</div>
+                    <div className="text-xs text-slate-400 mt-1">Not billed</div>
                   </div>
                 )}
               </div>
               <Link
                 to="/admin/users"
-                className="w-full block text-center py-3 bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
+                className="w-full block text-center py-3 bg-slate-700 text-slate-100 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
               >
                 Invite Team Members
               </Link>
             </div>
 
             {/* Security & Access */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-5">Security & Access</h3>
-              <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-slate-900 rounded-lg mb-4">
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+              <h3 className="text-lg font-semibold text-slate-100 mb-5">Security & Access</h3>
+              <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg mb-4">
                 <div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">SSO Status</div>
-                  <div className="text-xs text-gray-600 dark:text-slate-400">Single Sign-On</div>
+                  <div className="text-sm font-semibold text-slate-100 mb-1">SSO Status</div>
+                  <div className="text-xs text-slate-400">Single Sign-On</div>
                 </div>
                 <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
                   sso_enabled
                     ? 'bg-emerald-500/15 text-emerald-400'
-                    : 'bg-slate-700 text-gray-600 dark:text-slate-400'
+                    : 'bg-slate-700 text-slate-400'
                 }`}>
                   {sso_enabled ? 'Enabled' : 'Not Enabled'}
                 </div>
               </div>
               <Link
                 to="/settings/sso"
-                className="w-full block text-center py-3 bg-slate-700 text-gray-900 dark:text-slate-100 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
+                className="w-full block text-center py-3 bg-slate-700 text-slate-100 rounded-lg font-semibold hover:bg-slate-600 transition-colors"
               >
                 Manage SSO Settings
               </Link>
@@ -371,10 +371,10 @@ export default function Dashboard() {
 
         {/* Recent Policies */}
         {recent_policies && recent_policies.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+          <div className="bg-slate-800 rounded-xl border border-slate-700">
+            <div className="px-6 py-4 border-b border-slate-700">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Recent Policies</h3>
+                <h3 className="text-lg font-semibold text-slate-100">Recent Policies</h3>
                 <Link
                   to="/policies"
                   className="text-sm text-violet-400 hover:text-violet-300 font-medium"
@@ -392,23 +392,23 @@ export default function Dashboard() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <DocumentTextIcon className="h-5 w-5 text-gray-600 dark:text-slate-400 mr-3" />
+                        <DocumentTextIcon className="h-5 w-5 text-slate-400 mr-3" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                          <p className="text-sm font-medium text-slate-100">
                             {policy.title}
                           </p>
                           {policy.description && (
-                            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
+                            <p className="text-sm text-slate-400 mt-1">
                               {policy.description}
                             </p>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600 dark:text-slate-400">
+                        <p className="text-sm text-slate-400">
                           {policy.assignments_count || 0} assignments
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-slate-500">
+                        <p className="text-xs text-slate-500">
                           {policy.acknowledged_count || 0} acknowledged
                         </p>
                       </div>
