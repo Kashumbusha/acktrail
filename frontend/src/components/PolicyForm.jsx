@@ -3,6 +3,7 @@ import { CloudArrowUpIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
 import { validatePolicy, validateFile } from '../utils/validators';
 import { useQuery } from '@tanstack/react-query';
 import { teamsAPI } from '../api/client';
+import RichTextEditor from './RichTextEditor';
 
 export default function PolicyForm({ 
   policy = null, 
@@ -332,22 +333,17 @@ export default function PolicyForm({
       {/* Content Input */}
       {formData.content_type === 'text' ? (
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Policy Content *
           </label>
-          <textarea
-            id="content"
-            rows={12}
-            value={formData.content}
-            onChange={(e) => handleInputChange('content', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 font-mono text-sm placeholder-gray-400 dark:placeholder-gray-500 ${
-              errors.content ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Enter or paste your policy text here..."
-            disabled={loading}
+          <RichTextEditor
+            content={formData.content}
+            onChange={(value) => handleInputChange('content', value)}
+            placeholder="Enter your policy content here..."
+            error={errors.content}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Simply type or paste plain text. Markdown formatting is optional (e.g. # for headers, ** for bold).
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Use the formatting toolbar to style your policy content. Supports bold, italic, headings, lists, colors, and more.
           </p>
           {errors.content && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>

@@ -184,16 +184,14 @@ export default function PolicyViewer({ policy, token, onDocumentViewed }) {
         )}
 
         <div
-          className="prose max-w-none text-gray-900 dark:text-slate-100 max-h-96 overflow-y-auto border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800"
+          className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-gray-900 dark:text-slate-100 dark:prose-invert max-h-96 overflow-y-auto border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800"
           onScroll={handleScroll}
         >
           {policy.body_markdown ? (
             <div
-              className="whitespace-pre-wrap leading-relaxed"
-              style={{ whiteSpace: 'pre-wrap' }}
-            >
-              {policy.body_markdown}
-            </div>
+              className="leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: policy.body_markdown }}
+            />
           ) : (
             <div className="text-gray-500 dark:text-slate-400 italic text-center py-12">
               No content available for this policy

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamsAPI, usersAPI } from '../api/client';
 import toast from 'react-hot-toast';
-import { ArrowLeftIcon, UserPlusIcon, UserMinusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, UserPlusIcon, UserMinusIcon, UsersIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function TeamDetail() {
@@ -12,6 +12,8 @@ export default function TeamDetail() {
   const queryClient = useQueryClient();
   const [showAddMember, setShowAddMember] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
 
   // Fetch team details
   const { data: teamData, isLoading: teamLoading } = useQuery({
@@ -57,6 +59,20 @@ export default function TeamDetail() {
     },
   });
 
+  // Update team name mutation
+  const updateTeamMutation = useMutation({
+    mutationFn: (name) => teamsAPI.update(id, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team', id] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      toast.success('Team name updated successfully');
+      setIsEditingName(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.detail || 'Failed to update team name');
+    },
+  });
+
   const handleAddMember = () => {
     if (!selectedUserId) {
       toast.error('Please select a user');
@@ -69,6 +85,24 @@ export default function TeamDetail() {
     if (window.confirm(`Remove ${userName} from this team?`)) {
       removeMemberMutation.mutate(userId);
     }
+  };
+
+  const handleStartEdit = () => {
+    setEditedName(team?.name || '');
+    setIsEditingName(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editedName.trim()) {
+      toast.error('Team name cannot be empty');
+      return;
+    }
+    updateTeamMutation.mutate(editedName.trim());
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditedName('');
   };
 
   if (teamLoading) {
@@ -91,18 +125,56 @@ export default function TeamDetail() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div>
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-1">
           <button
             onClick={() => navigate('/teams')}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{team.name}</h1>
+          <div className="flex-1">
+            {isEditingName ? (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="text-2xl font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Team name"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={updateTeamMutation.isPending}
+                  className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-full transition-colors disabled:opacity-50"
+                  title="Save"
+                >
+                  <CheckIcon className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={updateTeamMutation.isPending}
+                  className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors disabled:opacity-50"
+                  title="Cancel"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{team.name}</h1>
+                <button
+                  onClick={handleStartEdit}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Edit team name"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {members.length} {members.length === 1 ? 'member' : 'members'} • {team.policy_count} {team.policy_count === 1 ? 'policy' : 'policies'}
             </p>

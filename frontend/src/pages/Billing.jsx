@@ -191,7 +191,7 @@ export default function Billing() {
   const isCancelled = subscription.status === 'canceled';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Billing & Subscription</h1>

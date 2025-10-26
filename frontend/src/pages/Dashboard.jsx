@@ -84,7 +84,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-800 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -218,23 +218,83 @@ export default function Dashboard() {
 
         {/* Chart and Activity Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Acknowledgment Trends Chart */}
+          {/* Assignment Status Overview */}
           <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Acknowledgment Trends</h3>
-              <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
-                View Details →
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Assignment Status Overview</h3>
+              <Link to="/policies" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
+                View Policies →
               </Link>
             </div>
-            <div className="h-48 bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-slate-700">
-              <div className="text-center text-gray-500 dark:text-slate-500">
-                <svg className="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                <p className="font-semibold mb-1">No data yet</p>
-                <p className="text-sm">Charts will appear once you create policies</p>
+
+            {total_assignments > 0 ? (
+              <div className="space-y-6">
+                {/* Visual Progress Bar */}
+                <div className="h-12 bg-gray-100 dark:bg-slate-900 rounded-lg overflow-hidden flex">
+                  <div
+                    className="bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center text-white text-sm font-semibold transition-all duration-1000"
+                    style={{ width: `${(acknowledged_assignments / total_assignments) * 100}%` }}
+                  >
+                    {acknowledged_assignments > 0 && `${acknowledged_assignments}`}
+                  </div>
+                  <div
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white text-sm font-semibold"
+                    style={{ width: `${(pending_assignments / total_assignments) * 100}%` }}
+                  >
+                    {pending_assignments > 0 && `${pending_assignments}`}
+                  </div>
+                  <div
+                    className="bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center text-white text-sm font-semibold"
+                    style={{ width: `${(overdue_assignments / total_assignments) * 100}%` }}
+                  >
+                    {overdue_assignments > 0 && `${overdue_assignments}`}
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-gradient-to-r from-emerald-500 to-green-500"></div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-slate-100">{acknowledged_assignments}</div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400">Acknowledged</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-gradient-to-r from-amber-500 to-orange-500"></div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-slate-100">{pending_assignments}</div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400">Pending</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-gradient-to-r from-red-500 to-rose-500"></div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-slate-100">{overdue_assignments}</div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400">Overdue</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Summary */}
+                <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
+                  <div className="text-sm text-gray-600 dark:text-slate-400">
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">{total_assignments}</span> total assignments •{' '}
+                    <span className="font-semibold text-emerald-400">{acknowledgmentPercentage}%</span> completion rate
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="h-48 bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-slate-700">
+                <div className="text-center text-gray-500 dark:text-slate-500">
+                  <svg className="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  <p className="font-semibold mb-1">No assignments yet</p>
+                  <p className="text-sm">Data will appear once you assign policies to users</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Recent Activity */}

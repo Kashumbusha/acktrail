@@ -115,7 +115,7 @@ export default function SSOSettings() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="p-6">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-1/4 mb-6"></div>
           <div className="h-64 bg-gray-200 dark:bg-slate-700 rounded"></div>
@@ -125,7 +125,7 @@ export default function SSOSettings() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">SSO Configuration</h1>
         <p className="text-gray-600 dark:text-slate-400 mt-2">Configure Single Sign-On with Microsoft 365 for your workspace</p>
