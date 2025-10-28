@@ -265,6 +265,8 @@ def update_policy(
 
     # Handle file upload/replacement if provided
     if file:
+        logger.info(f"Updating policy {policy_id} - received file: {file.filename}, content_type: {file.content_type}")
+
         if file.content_type not in ["application/pdf"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -273,10 +275,18 @@ def update_policy(
 
         try:
             file_content = file.file.read()
+            file_size = len(file_content)
+            logger.info(f"File content size: {file_size} bytes")
+
+            old_file_url = policy.file_url
             file_key, file_url = upload_policy_file(file_content, file.filename)
             policy.file_url = file_url
             content_changed = True
-            logger.info(f"Replaced policy file: {file_key}")
+
+            logger.info(f"File uploaded successfully:")
+            logger.info(f"  Old URL: {old_file_url}")
+            logger.info(f"  New URL: {file_url}")
+            logger.info(f"  File key: {file_key}")
         except Exception as e:
             logger.error(f"Failed to upload file: {e}")
             raise HTTPException(
