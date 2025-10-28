@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 from datetime import datetime, timezone
 import uuid
 import mimetypes
+import re
 from io import BytesIO
 
 from b2sdk.v2 import InMemoryAccountInfo, B2Api
@@ -10,6 +11,35 @@ from b2sdk.v2 import InMemoryAccountInfo, B2Api
 from .config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize filename by removing/replacing special characters and spaces.
+
+    Args:
+        filename: Original filename
+
+    Returns:
+        Sanitized filename safe for URLs
+    """
+    # Get the file extension
+    name_parts = filename.rsplit('.', 1)
+    name = name_parts[0] if len(name_parts) > 1 else filename
+    extension = name_parts[1] if len(name_parts) > 1 else ''
+
+    # Replace spaces with underscores
+    name = name.replace(' ', '_')
+
+    # Remove or replace special characters, keep only alphanumeric, underscore, hyphen
+    name = re.sub(r'[^\w\-]', '', name)
+
+    # Limit length to avoid overly long filenames
+    if len(name) > 100:
+        name = name[:100]
+
+    # Return with extension
+    return f"{name}.{extension}" if extension else name
 
 
 class B2Storage:
@@ -54,16 +84,15 @@ class B2Storage:
             Tuple of (file_key, public_url)
         """
         try:
+            # Sanitize filename to avoid URL encoding issues
+            clean_filename = sanitize_filename(filename)
+
             # Generate unique key with timestamp and UUID
             timestamp = datetime.now(timezone.utc).strftime('%Y/%m/%d')
             unique_id = str(uuid.uuid4())[:8]
-            file_extension = filename.split('.')[-1] if '.' in filename else ''
 
-            # Create the file key
-            if file_extension:
-                file_key = f"{folder}/{timestamp}/{unique_id}_{filename}"
-            else:
-                file_key = f"{folder}/{timestamp}/{unique_id}_{filename}"
+            # Create the file key with sanitized filename
+            file_key = f"{folder}/{timestamp}/{unique_id}_{clean_filename}"
 
             # Auto-detect content type if not provided
             if not content_type:
