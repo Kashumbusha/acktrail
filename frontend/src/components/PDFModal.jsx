@@ -16,8 +16,9 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   const [viewedPages, setViewedPages] = useState(new Set([1])); // Track which pages have been viewed
   const [pdfLoadError, setPdfLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [canConfirmViewed, setCanConfirmViewed] = useState(false); // For iframe viewers: enable confirm button after minimum time
   const LOADING_TIMEOUT = 5000; // 5 second timeout for PDF loading
-  const IFRAME_VIEWING_TIME = 3; // 3 seconds for iframe-based viewers (Safari) to ensure PDF loaded
+  const IFRAME_MIN_VIEWING_TIME = 5; // 5 seconds minimum for iframe-based viewers before they can confirm
 
   // Detect Safari browser
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -36,8 +37,11 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
       if (!pdfLoadError && !isSafari) {
         return viewedPages.size >= numPages;
       }
-      // For iframe viewers (Safari/fallback): small delay to ensure PDF loaded
-      return viewingTime >= IFRAME_VIEWING_TIME;
+      // For iframe viewers: NO automatic marking - user must click confirm button
+      // We just enable the confirm button after minimum viewing time
+      if (viewingTime >= IFRAME_MIN_VIEWING_TIME && !canConfirmViewed) {
+        setCanConfirmViewed(true);
+      }
     }
     return false;
   };
@@ -73,6 +77,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
       setViewedPages(new Set([1]));
       setPdfLoadError(false);
       setIsLoading(true);
+      setCanConfirmViewed(false);
     }
   }, [isOpen]);
 
@@ -161,14 +166,14 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    {!hasBeenViewed && requireScrollTracking && numPages && (
+                    {!hasBeenViewed && requireScrollTracking && (
                       <div className="text-sm text-amber-600 mr-2">
-                        {!pdfLoadError && !isSafari ? (
+                        {!pdfLoadError && !isSafari && numPages ? (
                           // For react-pdf viewer: only show page requirement
                           <>View all {numPages} pages ({viewedPages.size}/{numPages})</>
                         ) : (
-                          // For iframe viewers: show small timer
-                          <>View document ({Math.max(0, IFRAME_VIEWING_TIME - viewingTime)}s)</>
+                          // For iframe viewers: show message about reviewing
+                          <>Please review entire document</>
                         )}
                       </div>
                     )}
@@ -200,13 +205,6 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                       title="PDF Viewer"
                       onLoad={() => {
                         setIsLoading(false);
-                        // Auto-mark as viewed after brief delay for iframe viewers (to ensure PDF loaded)
-                        if (requireScrollTracking && !hasBeenViewed) {
-                          setTimeout(() => {
-                            setHasBeenViewed(true);
-                            if (onViewed) onViewed();
-                          }, IFRAME_VIEWING_TIME * 1000);
-                        }
                       }}
                     />
                   ) : (
@@ -265,6 +263,36 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                       Next
                       <ChevronRightIcon className="h-4 w-4 ml-1" />
                     </button>
+                  </div>
+                )}
+
+                {/* Confirmation Button for Iframe Viewers */}
+                {requireScrollTracking && (pdfLoadError || isSafari) && !hasBeenViewed && (
+                  <div className="px-6 py-4 border-t border-gray-200 bg-amber-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-amber-900">
+                          {canConfirmViewed
+                            ? '✓ Minimum viewing time met. Click below to confirm you have reviewed the entire document.'
+                            : `⏱ Please review the entire document (${Math.max(0, IFRAME_MIN_VIEWING_TIME - viewingTime)}s remaining)`
+                          }
+                        </p>
+                        <p className="text-xs text-amber-700 mt-1">
+                          You must scroll through and review all pages of the document before confirming.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setHasBeenViewed(true);
+                          if (onViewed) onViewed();
+                        }}
+                        disabled={!canConfirmViewed}
+                        className="ml-4 inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      >
+                        <CheckCircleIcon className="h-5 w-5 mr-2" />
+                        I Have Reviewed This Document
+                      </button>
+                    </div>
                   </div>
                 )}
               </Dialog.Panel>
