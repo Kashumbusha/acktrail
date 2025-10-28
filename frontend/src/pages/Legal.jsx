@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import toast from 'react-hot-toast';
 
 export default function Legal() {
@@ -51,8 +52,14 @@ export default function Legal() {
   }, [location.hash]);
 
   return (
-    <div className="bg-white dark:bg-slate-900">
-      <div className="container-page py-12">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://acktrail.com/legal" />
+        <meta property="og:url" content="https://acktrail.com/legal" />
+      </Helmet>
+
+      <div className="bg-white dark:bg-slate-900">
+        <div className="container-page py-12">
         <header className="mb-8" id="top">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Legal</h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -232,6 +239,7 @@ export default function Legal() {
         </section>
       </div>
     </div>
+    </>
   );
 }
 

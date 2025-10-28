@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   ShieldCheckIcon,
   BellIcon,
@@ -32,6 +33,11 @@ export default function Landing() {
 
   return (
     <>
+      <Helmet>
+        <link rel="canonical" href="https://acktrail.com/" />
+        <meta property="og:url" content="https://acktrail.com/" />
+      </Helmet>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900" />

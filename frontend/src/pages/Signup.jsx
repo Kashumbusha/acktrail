@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { EnvelopeIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { teamsAPI, paymentsAPI } from '../api/client';
@@ -272,7 +273,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-theme(space.16))] py-12 px-4 sm:px-6 lg:px-8">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://acktrail.com/signup" />
+        <meta property="og:url" content="https://acktrail.com/signup" />
+      </Helmet>
+
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-theme(space.16))] py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
@@ -764,6 +771,7 @@ export default function Signup() {
             </Link>
           </p>
         </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { CheckIcon } from '@heroicons/react/24/outline';
 import { PLANS, ANNUAL_DISCOUNT } from '../data/plans';
 import { paymentsAPI } from '../api/client';
@@ -93,8 +94,14 @@ export default function Pricing() {
   }, [billingInterval]);
 
   return (
-    <section className="container-page py-16">
-      <div className="text-center max-w-2xl mx-auto">
+    <>
+      <Helmet>
+        <link rel="canonical" href="https://acktrail.com/pricing" />
+        <meta property="og:url" content="https://acktrail.com/pricing" />
+      </Helmet>
+
+      <section className="container-page py-16">
+        <div className="text-center max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           Simple, transparent pricing
         </h1>
@@ -247,5 +254,6 @@ export default function Pricing() {
         </div>
       </div>
     </section>
+    </>
   );
 }
