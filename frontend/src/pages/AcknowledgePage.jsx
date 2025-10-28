@@ -166,20 +166,20 @@ export default function AcknowledgePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100">
               Policy Acknowledgment Required
             </h1>
-            <p className="mt-2 text-lg text-gray-600">
+            <p className="mt-2 text-lg text-gray-600 dark:text-slate-300">
               Please review the policy below and complete the acknowledgment form
             </p>
-            
+
             {/* Policy info */}
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-gray-500 dark:text-slate-400">
               <div className="flex justify-center space-x-6">
                 <span>Policy: <strong>{ackPageData.policy_title}</strong></span>
                 <span>Version: <strong>{ackPageData.policy_version}</strong></span>
@@ -204,7 +204,7 @@ export default function AcknowledgePage() {
           />
 
           {/* Footer */}
-          <div className="text-center text-xs text-gray-500">
+          <div className="text-center text-xs text-gray-500 dark:text-slate-400">
             <p>
               This is a secure acknowledgment page. Your information will be recorded and stored securely.
             </p>

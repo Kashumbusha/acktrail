@@ -75,17 +75,17 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 dark:text-slate-100 mb-2">
           Policy Acknowledgment
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-slate-400 dark:text-slate-300">
           Please review the policy above and complete the acknowledgment form below.
         </p>
         {ackPageData?.require_typed_signature && (
-          <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <p className="text-sm text-amber-800">
+          <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
               <strong>Note:</strong> This policy requires a typed signature for acknowledgment.
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name Field */}
         <div>
-          <label htmlFor="signer_name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="signer_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-1">
             Full Name *
           </label>
           <input
@@ -103,8 +103,8 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
             id="signer_name"
             value={formData.signer_name}
             onChange={(e) => handleInputChange('signer_name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-              errors.signer_name ? 'border-red-300' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+              errors.signer_name ? 'border-red-300' : 'border-gray-300 dark:border-slate-600'
             }`}
             placeholder="Enter your full name"
             disabled={loading}
@@ -116,7 +116,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
 
         {/* Email Field */}
         <div>
-          <label htmlFor="signer_email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="signer_email" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
             Email Address *
           </label>
           <input
@@ -124,8 +124,8 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
             id="signer_email"
             value={formData.signer_email}
             onChange={(e) => handleInputChange('signer_email', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-              errors.signer_email ? 'border-red-300' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+              errors.signer_email ? 'border-red-300' : 'border-gray-300 dark:border-slate-600'
             }`}
             placeholder="Enter your email address"
             disabled={loading}
@@ -141,7 +141,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         {/* Acknowledgment Method Selection */}
         {!ackPageData?.require_typed_signature && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
               Acknowledgment Method
             </label>
             <div className="space-y-3">
@@ -153,10 +153,10 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
                   value="oneclick"
                   checked={formData.ack_method === 'oneclick'}
                   onChange={(e) => handleMethodChange(e.target.value)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-600"
                   disabled={loading}
                 />
-                <label htmlFor="oneclick" className="ml-3 text-sm text-gray-700">
+                <label htmlFor="oneclick" className="ml-3 text-sm text-gray-700 dark:text-slate-300">
                   <strong>One-Click Acknowledgment</strong> - Quick acknowledgment with your name and email
                 </label>
               </div>
@@ -168,10 +168,10 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
                   value="typed"
                   checked={formData.ack_method === 'typed'}
                   onChange={(e) => handleMethodChange(e.target.value)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-600"
                   disabled={loading}
                 />
-                <label htmlFor="typed" className="ml-3 text-sm text-gray-700">
+                <label htmlFor="typed" className="ml-3 text-sm text-gray-700 dark:text-slate-300">
                   <strong>Typed Signature</strong> - Provide additional typed signature
                 </label>
               </div>
@@ -182,7 +182,7 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         {/* Typed Signature Field */}
         {(formData.ack_method === 'typed' || ackPageData?.require_typed_signature) && (
           <div>
-            <label htmlFor="typed_signature" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="typed_signature" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Typed Signature *
             </label>
             <input
@@ -190,8 +190,8 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
               id="typed_signature"
               value={formData.typed_signature}
               onChange={(e) => handleInputChange('typed_signature', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-                errors.typed_signature ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-md shadow-sm text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+                errors.typed_signature ? 'border-red-300' : 'border-gray-300 dark:border-slate-600'
               }`}
               placeholder="Type your full name as your digital signature"
               disabled={loading}
@@ -213,14 +213,14 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
               type="checkbox"
               checked={formData.acknowledged}
               onChange={(e) => handleInputChange('acknowledged', e.target.checked)}
-              className={`h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 ${
+              className={`h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500 ${
                 errors.acknowledged ? 'border-red-300' : ''
               }`}
               disabled={loading}
             />
           </div>
           <div className="ml-3">
-            <label htmlFor="acknowledged" className="text-sm text-gray-700">
+            <label htmlFor="acknowledged" className="text-sm text-gray-700 dark:text-slate-300">
               I acknowledge that I have read, understood, and agree to comply with this policy. *
             </label>
             {errors.acknowledged && (
@@ -230,9 +230,9 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         </div>
 
         {/* Policy Details */}
-        <div className="bg-gray-50 rounded-md p-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Policy Details</h4>
-          <dl className="text-xs text-gray-600 space-y-1">
+        <div className="bg-gray-50 dark:bg-slate-700 rounded-md p-4">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2">Policy Details</h4>
+          <dl className="text-xs text-gray-600 dark:text-slate-400 space-y-1">
             <div className="flex justify-between">
               <dt>Policy Title:</dt>
               <dd className="font-medium">{ackPageData?.policy_title}</dd>
