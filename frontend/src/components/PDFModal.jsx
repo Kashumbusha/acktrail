@@ -16,8 +16,8 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   const [viewedPages, setViewedPages] = useState(new Set([1])); // Track which pages have been viewed
   const [pdfLoadError, setPdfLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const MINIMUM_VIEWING_TIME = 10; // 10 seconds minimum
   const LOADING_TIMEOUT = 5000; // 5 second timeout for PDF loading
+  const IFRAME_VIEWING_TIME = 3; // 3 seconds for iframe-based viewers (Safari) to ensure PDF loaded
 
   // Detect Safari browser
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -32,14 +32,14 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   // Check if document has been fully viewed
   const checkIfFullyViewed = () => {
     if (requireScrollTracking && numPages) {
-      // For recipients: must view all pages AND meet minimum time
-      const allPagesViewed = viewedPages.size >= numPages;
-      const timeRequirementMet = viewingTime >= MINIMUM_VIEWING_TIME;
-      return allPagesViewed && timeRequirementMet;
-    } else {
-      // For non-recipients or time-only: just need minimum time
-      return viewingTime >= MINIMUM_VIEWING_TIME;
+      // For recipients with react-pdf viewer: must view all pages (no timer!)
+      if (!pdfLoadError && !isSafari) {
+        return viewedPages.size >= numPages;
+      }
+      // For iframe viewers (Safari/fallback): small delay to ensure PDF loaded
+      return viewingTime >= IFRAME_VIEWING_TIME;
     }
+    return false;
   };
 
   // Track viewing time (only if scroll tracking is required)
@@ -163,7 +163,13 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                   <div className="flex items-center space-x-2">
                     {!hasBeenViewed && requireScrollTracking && numPages && (
                       <div className="text-sm text-amber-600 mr-2">
-                        View all {numPages} pages ({viewedPages.size}/{numPages}) & wait {Math.max(0, MINIMUM_VIEWING_TIME - viewingTime)}s
+                        {!pdfLoadError && !isSafari ? (
+                          // For react-pdf viewer: only show page requirement
+                          <>View all {numPages} pages ({viewedPages.size}/{numPages})</>
+                        ) : (
+                          // For iframe viewers: show small timer
+                          <>View document ({Math.max(0, IFRAME_VIEWING_TIME - viewingTime)}s)</>
+                        )}
                       </div>
                     )}
                     <button
@@ -194,12 +200,12 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                       title="PDF Viewer"
                       onLoad={() => {
                         setIsLoading(false);
-                        // Auto-mark as viewed after 10 seconds for iframe viewers
+                        // Auto-mark as viewed after brief delay for iframe viewers (to ensure PDF loaded)
                         if (requireScrollTracking && !hasBeenViewed) {
                           setTimeout(() => {
                             setHasBeenViewed(true);
                             if (onViewed) onViewed();
-                          }, MINIMUM_VIEWING_TIME * 1000);
+                          }, IFRAME_VIEWING_TIME * 1000);
                         }
                       }}
                     />
