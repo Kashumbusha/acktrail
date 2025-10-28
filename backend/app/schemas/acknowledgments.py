@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from app.models.models import AckMethod
@@ -13,11 +13,17 @@ class AcknowledgmentBase(BaseModel):
 class AcknowledgmentCreate(AcknowledgmentBase):
     ack_method: AckMethod = AckMethod.ONECLICK
     typed_signature: Optional[str] = None  # Optional field for typed acknowledgments
+    answers: Optional[List["AnswerSubmission"]] = None
 
 
 class TypedAcknowledgmentCreate(AcknowledgmentBase):
     typed_signature: str = Field(..., min_length=1)
     ack_method: AckMethod = AckMethod.TYPED
+
+
+class AnswerSubmission(BaseModel):
+    question_id: UUID
+    selected_index: int
 
 
 class AcknowledgmentResponse(AcknowledgmentBase):
@@ -58,3 +64,11 @@ class AckPageData(BaseModel):
     require_typed_signature: bool
     is_expired: bool = False
     already_acknowledged: bool = False
+    questions: Optional[List["PolicyQuestionPublic"]] = None
+
+
+class PolicyQuestionPublic(BaseModel):
+    id: UUID
+    order_index: int
+    prompt: str
+    choices: List[str]

@@ -9,6 +9,7 @@ class PolicyBase(BaseModel):
     body_markdown: Optional[str] = None
     due_at: Optional[datetime] = None
     require_typed_signature: bool = False
+    questions_enabled: bool = False
 
     @validator('body_markdown')
     def validate_content(cls, v, values):
@@ -35,6 +36,10 @@ class PolicyResponse(PolicyBase):
     version: int
     created_by: UUID
     created_at: datetime
+    # Optional: include questions for admin views only (backend may choose not to populate)
+    # This structure mirrors DB but should only be sent to admins
+    # For recipients, use AckPageData.questions instead
+    # questions: Optional[List["PolicyQuestion"]] = None
 
     class Config:
         from_attributes = True
@@ -59,3 +64,13 @@ class PolicyListResponse(BaseModel):
     page: int
     per_page: int
     total_pages: int
+
+
+class PolicyQuestion(BaseModel):
+    id: UUID
+    order_index: int
+    prompt: str
+    choices: List[str]
+
+    class Config:
+        from_attributes = True

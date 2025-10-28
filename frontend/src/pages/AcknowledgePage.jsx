@@ -38,7 +38,13 @@ export default function AcknowledgePage() {
       });
     },
     onError: (error) => {
-      const message = error.response?.data?.detail || 'Failed to submit acknowledgment';
+      const detail = error.response?.data?.detail;
+      let message = 'Failed to submit acknowledgment';
+      if (typeof detail === 'string') {
+        message = detail;
+      } else if (detail && typeof detail === 'object') {
+        message = detail.message || message;
+      }
       toast.error(message);
       setSubmitting(false);
     },

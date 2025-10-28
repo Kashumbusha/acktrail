@@ -12,7 +12,7 @@ from ..schemas.policies import (
     PolicyCreate, PolicyUpdate, PolicyResponse, PolicyWithStats, PolicyListResponse
 )
 from ..models.database import get_db
-from ..models.models import Policy, User, Assignment, Acknowledgment, AssignmentStatus
+from ..models.models import Policy, User, Assignment, Acknowledgment, AssignmentStatus, PolicyQuestion
 from ..core.security import get_current_user, require_admin_role, decode_jwt_token
 from ..core.storage import upload_policy_file, delete_policy_file, download_policy_file
 from ..core.hashing import compute_policy_hash
@@ -111,6 +111,8 @@ def create_policy(
     body_markdown: Optional[str] = Form(None),
     due_at: Optional[str] = Form(None),
     require_typed_signature: bool = Form(False),
+    questions_enabled: bool = Form(False),
+    questions_json: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
@@ -172,6 +174,7 @@ def create_policy(
         content_sha256=content_hash,
         due_at=due_at_datetime,
         require_typed_signature=require_typed_signature,
+        questions_enabled=questions_enabled,
         created_by=UUID(current_user["id"]),
         workspace_id=UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
     )
@@ -179,6 +182,45 @@ def create_policy(
     db.add(policy)
     db.commit()
     db.refresh(policy)
+
+    # Create questions if enabled
+    if questions_enabled and questions_json:
+        try:
+            import json
+            questions = json.loads(questions_json)
+            if not isinstance(questions, list):
+                raise ValueError("questions_json must be a list")
+
+            if not (1 <= len(questions) <= 5):
+                raise HTTPException(status_code=400, detail="Questions must be between 1 and 5")
+
+            for idx, q in enumerate(questions):
+                prompt = q.get('prompt')
+                choices = q.get('choices')
+                correct_index = q.get('correct_index')
+                order_index = q.get('order_index', idx)
+
+                if not prompt or not isinstance(prompt, str):
+                    raise HTTPException(status_code=400, detail="Each question must have a prompt")
+                if not isinstance(choices, list) or len(choices) < 2 or len(choices) > 6:
+                    raise HTTPException(status_code=400, detail="Each question must have 2 to 6 choices")
+                if not isinstance(correct_index, int) or not (0 <= correct_index < len(choices)):
+                    raise HTTPException(status_code=400, detail="Invalid correct_index for a question")
+
+                pq = PolicyQuestion(
+                    policy_id=policy.id,
+                    order_index=order_index,
+                    prompt=prompt,
+                    choices=choices,
+                    correct_index=correct_index
+                )
+                db.add(pq)
+            db.commit()
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Invalid questions_json: {e}")
+            raise HTTPException(status_code=400, detail="Invalid questions_json format")
     
     logger.info(f"Created policy: {policy.title} (ID: {policy.id})")
     
@@ -225,6 +267,8 @@ def update_policy(
     body_markdown: Optional[str] = Form(None),
     due_at: Optional[str] = Form(None),
     require_typed_signature: Optional[bool] = Form(None),
+    questions_enabled: Optional[bool] = Form(None),
+    questions_json: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
@@ -307,6 +351,52 @@ def update_policy(
 
     if require_typed_signature is not None:
         policy.require_typed_signature = require_typed_signature
+
+    if questions_enabled is not None:
+        policy.questions_enabled = questions_enabled
+
+    # Replace questions when questions_json provided (only if not acknowledged yet)
+    if questions_json is not None:
+        # Ensure no acknowledged assignments exist (already checked above overall, but keep logic grouped)
+        try:
+            import json
+            new_questions = json.loads(questions_json) if questions_json else []
+            if policy.questions_enabled and (new_questions is None or len(new_questions) == 0):
+                raise HTTPException(status_code=400, detail="questions_enabled is true but no questions provided")
+
+            # Clear existing
+            db.query(PolicyQuestion).filter(PolicyQuestion.policy_id == policy_id).delete()
+
+            # Recreate
+            if new_questions:
+                if not isinstance(new_questions, list):
+                    raise ValueError("questions_json must be a list")
+                if not (1 <= len(new_questions) <= 5):
+                    raise HTTPException(status_code=400, detail="Questions must be between 1 and 5")
+                for idx, q in enumerate(new_questions):
+                    prompt = q.get('prompt')
+                    choices = q.get('choices')
+                    correct_index = q.get('correct_index')
+                    order_index = q.get('order_index', idx)
+                    if not prompt or not isinstance(prompt, str):
+                        raise HTTPException(status_code=400, detail="Each question must have a prompt")
+                    if not isinstance(choices, list) or len(choices) < 2 or len(choices) > 6:
+                        raise HTTPException(status_code=400, detail="Each question must have 2 to 6 choices")
+                    if not isinstance(correct_index, int) or not (0 <= correct_index < len(choices)):
+                        raise HTTPException(status_code=400, detail="Invalid correct_index for a question")
+                    pq = PolicyQuestion(
+                        policy_id=policy.id,
+                        order_index=order_index,
+                        prompt=prompt,
+                        choices=choices,
+                        correct_index=correct_index
+                    )
+                    db.add(pq)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Invalid questions_json on update: {e}")
+            raise HTTPException(status_code=400, detail="Invalid questions_json format")
 
     # Recalculate hash if content changed
     if content_changed:

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, UniqueConstraint
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, UniqueConstraint, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -145,6 +145,7 @@ class Policy(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     due_at = Column(DateTime, nullable=True)
     require_typed_signature = Column(Boolean, default=False, nullable=False)
+    questions_enabled = Column(Boolean, default=False, nullable=False)
     workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=True)
     team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
     
@@ -152,6 +153,7 @@ class Policy(Base):
     assignments = relationship("Assignment", back_populates="policy", cascade="all, delete-orphan")
     workspace = relationship("Workspace", back_populates="policies")
     team = relationship("Team", back_populates="policies")
+    questions = relationship("PolicyQuestion", back_populates="policy", cascade="all, delete-orphan", order_by="PolicyQuestion.order_index")
 
 
 class Assignment(Base):
@@ -205,6 +207,20 @@ class EmailEvent(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     assignment = relationship("Assignment", back_populates="email_events")
+
+
+class PolicyQuestion(Base):
+    __tablename__ = "policy_questions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    policy_id = Column(UUID(as_uuid=True), ForeignKey("policies.id"), nullable=False, index=True)
+    order_index = Column(Integer, default=0, nullable=False)
+    prompt = Column(Text, nullable=False)
+    choices = Column(JSON, nullable=False)  # list[str]
+    correct_index = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    policy = relationship("Policy", back_populates="questions")
 
 
 class AuthCode(Base):

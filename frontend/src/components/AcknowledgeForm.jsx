@@ -10,9 +10,19 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
     ack_method: ackPageData?.require_typed_signature ? 'typed' : 'oneclick'
   });
   const [errors, setErrors] = useState({});
+  const [answers, setAnswers] = useState({}); // question_id -> selected_index
 
   const validateForm = () => {
     const newErrors = {};
+    // Validate questions (if any)
+    if (ackPageData?.questions && ackPageData.questions.length > 0) {
+      for (const q of ackPageData.questions) {
+        if (!(q.id in answers)) {
+          newErrors.questions = 'Please answer all questions';
+          break;
+        }
+      }
+    }
 
     if (!formData.signer_name.trim()) {
       newErrors.signer_name = 'Name is required';
@@ -54,6 +64,14 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         submissionData.typed_signature = formData.typed_signature;
       }
 
+      // Include answers if present
+      if (ackPageData?.questions && ackPageData.questions.length > 0) {
+        submissionData.answers = ackPageData.questions.map(q => ({
+          question_id: q.id,
+          selected_index: answers[q.id]
+        }));
+      }
+
       onSubmit(submissionData);
     }
   };
@@ -93,6 +111,38 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Questions Section (optional) */}
+        {ackPageData?.questions && ackPageData.questions.length > 0 && (
+          <div className="p-4 rounded-md border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-slate-100 mb-3">Comprehension Questions</h4>
+            <p className="text-xs text-gray-600 dark:text-slate-300 mb-3">Answer all questions correctly to proceed.</p>
+            {errors.questions && (
+              <p className="text-sm text-red-600 dark:text-red-400 mb-2">{errors.questions}</p>
+            )}
+            <div className="space-y-4">
+              {ackPageData.questions.map((q, qi) => (
+                <div key={q.id} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-md p-3">
+                  <div className="text-sm font-medium text-gray-800 dark:text-slate-100">Q{qi + 1}. {q.prompt}</div>
+                  <div className="mt-2 space-y-2">
+                    {q.choices.map((choice, ci) => (
+                      <label key={ci} className="flex items-center text-sm text-gray-700 dark:text-slate-200">
+                        <input
+                          type="radio"
+                          name={`q-${q.id}`}
+                          checked={answers[q.id] === ci}
+                          onChange={() => setAnswers(prev => ({ ...prev, [q.id]: ci }))}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-600"
+                          disabled={loading}
+                        />
+                        <span className="ml-2">{choice}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Name Field */}
         <div>
           <label htmlFor="signer_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 dark:text-slate-300 mb-1">
@@ -275,9 +325,9 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
         <div className="flex justify-end pt-4">
           <button
             type="submit"
-            disabled={loading || !hasViewedDocument}
+            disabled={loading || !hasViewedDocument || (ackPageData?.questions?.length > 0 && Object.keys(answers).length !== ackPageData.questions.length)}
             className={`flex items-center px-6 py-3 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-              hasViewedDocument && !loading
+              hasViewedDocument && !loading && (!ackPageData?.questions || Object.keys(answers).length === ackPageData.questions.length)
                 ? 'bg-indigo-600 hover:bg-indigo-700'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
@@ -285,12 +335,12 @@ export default function AcknowledgeForm({ ackPageData, onSubmit, loading = false
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            ) : hasViewedDocument ? (
+            ) : hasViewedDocument && (!ackPageData?.questions || Object.keys(answers).length === ackPageData.questions.length) ? (
               <CheckIcon className="h-4 w-4 mr-2" />
             ) : (
               <EyeSlashIcon className="h-4 w-4 mr-2" />
             )}
-            {loading ? 'Submitting...' : hasViewedDocument ? 'Submit Acknowledgment' : 'Review Document First'}
+            {loading ? 'Submitting...' : hasViewedDocument && (!ackPageData?.questions || Object.keys(answers).length === ackPageData.questions.length) ? 'Submit Acknowledgment' : 'Complete All Requirements'}
           </button>
         </div>
       </form>

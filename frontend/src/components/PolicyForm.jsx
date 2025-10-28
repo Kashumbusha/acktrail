@@ -24,6 +24,8 @@ export default function PolicyForm({
   const [dragOver, setDragOver] = useState(false);
   const [targetAudience, setTargetAudience] = useState(policy?.target_audience || 'all_users'); // e.g., 'all_users', 'teams', 'manual'
   const [selectedTeams, setSelectedTeams] = useState(policy?.selected_teams || []);
+  const [questionsEnabled, setQuestionsEnabled] = useState(false);
+  const [questions, setQuestions] = useState([]); // {prompt, choices[], correct_index}
 
   // Fetch teams for selection
   const { data: teamsData } = useQuery({
@@ -159,6 +161,37 @@ export default function PolicyForm({
       submitData.append('body_markdown', formData.content);
     }
     submitData.append('target_audience', targetAudience);
+
+    // Questions (optional)
+    submitData.append('questions_enabled', questionsEnabled ? 'true' : 'false');
+    if (questionsEnabled) {
+      // client-side validation
+      if (questions.length === 0) {
+        setErrors(prev => ({ ...prev, questions: 'Add at least one question or disable the toggle' }));
+        return;
+      }
+      const sanitized = questions.map((q, idx) => ({
+        prompt: (q.prompt || '').trim(),
+        choices: (q.choices || []).map(c => (c || '').trim()).filter(Boolean),
+        correct_index: typeof q.correct_index === 'number' ? q.correct_index : -1,
+        order_index: idx,
+      }));
+      for (const q of sanitized) {
+        if (!q.prompt) {
+          setErrors(prev => ({ ...prev, questions: 'Each question needs a prompt' }));
+          return;
+        }
+        if (q.choices.length < 2 || q.choices.length > 6) {
+          setErrors(prev => ({ ...prev, questions: 'Each question must have 2 to 6 choices' }));
+          return;
+        }
+        if (q.correct_index < 0 || q.correct_index >= q.choices.length) {
+          setErrors(prev => ({ ...prev, questions: 'Select a correct answer for each question' }));
+          return;
+        }
+      }
+      submitData.append('questions_json', JSON.stringify(sanitized.slice(0, 5)));
+    }
 
     // Add selected teams if team-based audience is selected
     if (targetAudience === 'teams' && selectedTeams.length > 0) {
@@ -425,6 +458,89 @@ export default function PolicyForm({
           )}
         </div>
       )}
+
+      {/* Comprehension Questions (Optional) */}
+      <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+        <label className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require comprehension questions</span>
+          <input
+            type="checkbox"
+            checked={questionsEnabled}
+            onChange={(e) => setQuestionsEnabled(e.target.checked)}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+            disabled={loading}
+          />
+        </label>
+
+        {questionsEnabled && (
+          <div className="mt-4 space-y-6">
+            {errors.questions && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.questions}</p>
+            )}
+            <div className="text-xs text-gray-500 dark:text-gray-400">Add 1 to 5 multiple-choice questions. Each needs 2+ options and one correct answer.</div>
+            {questions.map((q, qi) => (
+              <div key={qi} className="p-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700">
+                <div className="flex items-start justify-between">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Question {qi + 1}</label>
+                  <button type="button" className="text-xs text-red-600 dark:text-red-400" onClick={() => setQuestions(questions.filter((_, i) => i !== qi))}>Remove</button>
+                </div>
+                <input
+                  type="text"
+                  value={q.prompt || ''}
+                  onChange={(e) => setQuestions(questions.map((qq, i) => i === qi ? { ...qq, prompt: e.target.value } : qq))}
+                  placeholder="Enter the question prompt"
+                  className="mt-2 w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-600 dark:text-white dark:border-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  disabled={loading}
+                />
+                <div className="mt-3 space-y-2">
+                  {(q.choices || []).map((choice, ci) => (
+                    <div key={ci} className="flex items-center">
+                      <input
+                        type="radio"
+                        name={`correct-${qi}`}
+                        checked={q.correct_index === ci}
+                        onChange={() => setQuestions(questions.map((qq, i) => i === qi ? { ...qq, correct_index: ci } : qq))}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-500"
+                        disabled={loading}
+                      />
+                      <input
+                        type="text"
+                        value={choice}
+                        onChange={(e) => setQuestions(questions.map((qq, i) => i === qi ? { ...qq, choices: (qq.choices || []).map((c, j) => j === ci ? e.target.value : c) } : qq))}
+                        placeholder={`Option ${ci + 1}`}
+                        className="ml-3 flex-1 px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-600 dark:text-white dark:border-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setQuestions(questions.map((qq, i) => i === qi ? { ...qq, choices: (qq.choices || []).filter((_, j) => j !== ci) } : qq))}
+                        className="ml-2 text-xs text-red-600 dark:text-red-400"
+                      >Remove</button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuestions(questions.map((qq, i) => i === qi ? { ...qq, choices: [...(qq.choices || []), ''] } : qq))}
+                    className="px-3 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-300 rounded border border-indigo-200 dark:border-indigo-800"
+                    disabled={loading || (q.choices || []).length >= 6}
+                  >Add Option</button>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-between">
+              <div className="text-xs text-gray-500 dark:text-gray-400">{questions.length}/5 questions</div>
+              <button
+                type="button"
+                onClick={() => setQuestions([...questions, { prompt: '', choices: ['', ''], correct_index: -1 }])}
+                className="px-3 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-300 rounded border border-indigo-200 dark:border-indigo-800"
+                disabled={loading || questions.length >= 5}
+              >Add Question</button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
