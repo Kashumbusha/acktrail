@@ -23,6 +23,10 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   // Detect Safari browser
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+  // For acknowledgment pages that require scroll tracking, always use react-pdf (not iframe)
+  // because scroll tracking is impossible in PDF iframes due to browser security
+  const forceReactPDF = requireScrollTracking;
+
   // Track page changes
   useEffect(() => {
     if (currentPage) {
@@ -34,13 +38,26 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
   const canUserConfirm = () => {
     if (!requireScrollTracking) return false;
 
-    // For react-pdf viewers: can confirm when all pages viewed
-    if (!pdfLoadError && !isSafari && numPages) {
+    // When forcing react-pdf (scroll tracking required), only allow confirmation after viewing all pages
+    if (forceReactPDF && numPages) {
       return viewedPages.size >= numPages;
     }
 
-    // For iframe viewers: can confirm after minimum viewing time
+    // For react-pdf viewers: can confirm when all pages viewed
+    if (!shouldUseIframe() && numPages) {
+      return viewedPages.size >= numPages;
+    }
+
+    // For iframe viewers (fallback only): can confirm after minimum viewing time
     return viewingTime >= IFRAME_MIN_VIEWING_TIME;
+  };
+
+  // Determine if we should use iframe viewer
+  const shouldUseIframe = () => {
+    // Never use iframe when forcing react-pdf (scroll tracking required)
+    if (forceReactPDF) return false;
+    // Use iframe on Safari or if PDF failed to load with react-pdf
+    return pdfLoadError || isSafari;
   };
 
   // Track viewing time (only if scroll tracking is required)
@@ -155,7 +172,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                   <div className="flex items-center space-x-2">
                     {!hasBeenViewed && requireScrollTracking && (
                       <div className="text-sm text-amber-600 mr-2">
-                        {!pdfLoadError && !isSafari && numPages ? (
+                        {!shouldUseIframe() && numPages ? (
                           // For react-pdf viewer: only show page requirement
                           <>View all {numPages} pages ({viewedPages.size}/{numPages})</>
                         ) : (
@@ -185,7 +202,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
 
                 {/* PDF Viewer */}
                 <div className="relative bg-gray-100" style={{ height: '75vh' }}>
-                  {pdfLoadError || isSafari ? (
+                  {shouldUseIframe() ? (
                     <iframe
                       src={pdfUrl}
                       className="w-full h-full border-0"
@@ -220,7 +237,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                 </div>
 
                 {/* Page Navigation */}
-                {numPages && numPages > 1 && !pdfLoadError && !isSafari && (
+                {numPages && numPages > 1 && !shouldUseIframe() && (
                   <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
                     <button
                       onClick={goToPrevPage}
@@ -261,13 +278,15 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                         <p className="text-sm font-medium text-amber-900">
                           {canUserConfirm()
                             ? '✓ Document review complete. Click below to confirm you have reviewed the entire document.'
-                            : (!pdfLoadError && !isSafari && numPages)
+                            : (!shouldUseIframe() && numPages)
                             ? `📄 Please view all ${numPages} pages (${viewedPages.size}/${numPages} viewed)`
                             : `⏱ Please review the entire document (${Math.max(0, IFRAME_MIN_VIEWING_TIME - viewingTime)}s remaining)`
                           }
                         </p>
                         <p className="text-xs text-amber-700 mt-1">
-                          You must scroll through and review all pages of the document before confirming.
+                          {!shouldUseIframe() && numPages
+                            ? 'You must view all pages of the document before confirming.'
+                            : 'You must scroll through and review all pages of the document before confirming.'}
                         </p>
                       </div>
                       <button
