@@ -27,11 +27,23 @@ class Settings(BaseSettings):
     sender_email: str = "kashustephen@gmail.com"
     sender_name: str = "PolicyTracker Team"
 
-    # JWT
-    jwt_secret: str = secrets.token_urlsafe(48)
+    # JWT - CRITICAL: Must be set in .env and kept stable (changing invalidates all tokens)
+    jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     jwt_expire_days: int = 7
     magic_link_expire_days: int = 30
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Generate a temporary secret only if not set in environment (development only)
+        if not self.jwt_secret:
+            self.jwt_secret = secrets.token_urlsafe(48)
+            print("=" * 80)
+            print("WARNING: JWT_SECRET not set in environment!")
+            print(f"Generated temporary secret: {self.jwt_secret}")
+            print("Add this to your .env file:")
+            print(f"JWT_SECRET={self.jwt_secret}")
+            print("=" * 80)
 
     # Brevo (Sendinblue)
     brevo_api_key: str = ""
