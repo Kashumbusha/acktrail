@@ -36,18 +36,25 @@ def get_client_ip(request: Request) -> str:
     # Check for forwarded headers first (for proxy setups)
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    
+        client_ip = forwarded_for.split(",")[0].strip()
+        logger.info(f"Client IP from X-Forwarded-For: {client_ip}")
+        return client_ip
+
     forwarded = request.headers.get("X-Forwarded")
     if forwarded:
-        return forwarded.split(",")[0].strip()
-    
+        client_ip = forwarded.split(",")[0].strip()
+        logger.info(f"Client IP from X-Forwarded: {client_ip}")
+        return client_ip
+
     real_ip = request.headers.get("X-Real-IP")
     if real_ip:
+        logger.info(f"Client IP from X-Real-IP: {real_ip}")
         return real_ip
-    
-    # Fallback to client host
-    return request.client.host if request.client else "unknown"
+
+    # Fallback to client host (this will be Railway's internal IP)
+    fallback_ip = request.client.host if request.client else "unknown"
+    logger.warning(f"No proxy headers found! Using fallback IP: {fallback_ip}. All headers: X-Forwarded-For={request.headers.get('X-Forwarded-For')}, X-Real-IP={request.headers.get('X-Real-IP')}")
+    return fallback_ip
 
 
 @router.get("/{token}", response_model=AckPageData)
