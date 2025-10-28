@@ -30,20 +30,17 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
     }
   }, [currentPage]);
 
-  // Check if document has been fully viewed
-  const checkIfFullyViewed = () => {
-    if (requireScrollTracking && numPages) {
-      // For recipients with react-pdf viewer: must view all pages (no timer!)
-      if (!pdfLoadError && !isSafari) {
-        return viewedPages.size >= numPages;
-      }
-      // For iframe viewers: NO automatic marking - user must click confirm button
-      // We just enable the confirm button after minimum viewing time
-      if (viewingTime >= IFRAME_MIN_VIEWING_TIME && !canConfirmViewed) {
-        setCanConfirmViewed(true);
-      }
+  // Check if user can confirm they've viewed the document
+  const canUserConfirm = () => {
+    if (!requireScrollTracking) return false;
+
+    // For react-pdf viewers: can confirm when all pages viewed
+    if (!pdfLoadError && !isSafari && numPages) {
+      return viewedPages.size >= numPages;
     }
-    return false;
+
+    // For iframe viewers: can confirm after minimum viewing time
+    return viewingTime >= IFRAME_MIN_VIEWING_TIME;
   };
 
   // Track viewing time (only if scroll tracking is required)
@@ -51,23 +48,13 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
     if (!isOpen || !requireScrollTracking) return;
 
     const interval = setInterval(() => {
-      setViewingTime(prev => {
-        const newTime = prev + 1;
-        const fullyViewed = checkIfFullyViewed();
-        if (fullyViewed && !hasBeenViewed) {
-          setHasBeenViewed(true);
-          if (onViewed) {
-            onViewed();
-          }
-        }
-        return newTime;
-      });
+      setViewingTime(prev => prev + 1);
     }, 1000);
 
     return () => {
       clearInterval(interval);
     };
-  }, [isOpen, hasBeenViewed, onViewed, viewingTime, viewedPages, numPages, requireScrollTracking]);
+  }, [isOpen, requireScrollTracking]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -266,14 +253,16 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                   </div>
                 )}
 
-                {/* Confirmation Button for Iframe Viewers */}
-                {requireScrollTracking && (pdfLoadError || isSafari) && !hasBeenViewed && (
+                {/* Confirmation Button for All Viewers */}
+                {requireScrollTracking && !hasBeenViewed && (
                   <div className="px-6 py-4 border-t border-gray-200 bg-amber-50">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-amber-900">
-                          {canConfirmViewed
-                            ? '✓ Minimum viewing time met. Click below to confirm you have reviewed the entire document.'
+                          {canUserConfirm()
+                            ? '✓ Document review complete. Click below to confirm you have reviewed the entire document.'
+                            : (!pdfLoadError && !isSafari && numPages)
+                            ? `📄 Please view all ${numPages} pages (${viewedPages.size}/${numPages} viewed)`
                             : `⏱ Please review the entire document (${Math.max(0, IFRAME_MIN_VIEWING_TIME - viewingTime)}s remaining)`
                           }
                         </p>
@@ -286,7 +275,7 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
                           setHasBeenViewed(true);
                           if (onViewed) onViewed();
                         }}
-                        disabled={!canConfirmViewed}
+                        disabled={!canUserConfirm()}
                         className="ml-4 inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
                       >
                         <CheckCircleIcon className="h-5 w-5 mr-2" />
