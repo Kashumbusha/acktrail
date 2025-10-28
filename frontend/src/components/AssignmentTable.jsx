@@ -248,14 +248,14 @@ export default function AssignmentTable({
                   className="flex items-center px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <ArrowPathIcon className="h-4 w-4 mr-2" />
-                  Bulk Remind
+                  {selectedAssignments.size === 1 ? 'Remind' : 'Bulk Remind'}
                 </button>
                 <button
                   onClick={handleBulkDelete}
                   className="flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   <TrashIcon className="h-4 w-4 mr-2" />
-                  Bulk Delete
+                  {selectedAssignments.size === 1 ? 'Delete' : 'Bulk Delete'}
                 </button>
               </>
             )}
