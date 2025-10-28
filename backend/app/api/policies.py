@@ -221,7 +221,11 @@ def get_policy(
 @router.put("/{policy_id}", response_model=PolicyResponse)
 def update_policy(
     policy_id: UUID,
-    policy_update: PolicyUpdate,
+    title: Optional[str] = Form(None),
+    body_markdown: Optional[str] = Form(None),
+    due_at: Optional[str] = Form(None),
+    require_typed_signature: Optional[bool] = Form(None),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_admin_role)
 ) -> PolicyResponse:
@@ -232,47 +236,83 @@ def update_policy(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Policy not found"
         )
-    
+
     # Check if there are any acknowledged assignments
     acknowledged_assignments = db.query(Assignment).filter(
         Assignment.policy_id == policy_id,
         Assignment.status == AssignmentStatus.ACKNOWLEDGED
     ).count()
-    
+
     if acknowledged_assignments > 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot update policy that has been acknowledged by users"
         )
-    
-    # Update fields
-    update_data = policy_update.dict(exclude_unset=True)
-    
+
+    # Track if content changed for hash recalculation
+    content_changed = False
+    file_content = None
+
+    # Update title if provided
+    if title is not None:
+        policy.title = title
+        content_changed = True
+
+    # Update markdown if provided
+    if body_markdown is not None:
+        policy.body_markdown = body_markdown
+        content_changed = True
+
+    # Handle file upload/replacement if provided
+    if file:
+        if file.content_type not in ["application/pdf"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only PDF files are supported"
+            )
+
+        try:
+            file_content = file.file.read()
+            file_key, file_url = upload_policy_file(file_content, file.filename)
+            policy.file_url = file_url
+            content_changed = True
+            logger.info(f"Replaced policy file: {file_key}")
+        except Exception as e:
+            logger.error(f"Failed to upload file: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to upload file"
+            )
+
+    # Update other fields
+    if due_at is not None:
+        from datetime import datetime
+        try:
+            policy.due_at = datetime.fromisoformat(due_at.replace('Z', '+00:00'))
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid due_at format. Use ISO format."
+            )
+
+    if require_typed_signature is not None:
+        policy.require_typed_signature = require_typed_signature
+
     # Recalculate hash if content changed
-    if 'title' in update_data or 'body_markdown' in update_data:
-        new_title = update_data.get('title', policy.title)
-        new_body = update_data.get('body_markdown', policy.body_markdown)
-        
-        # For simplicity, we're not handling file updates here
-        # In a full implementation, you'd want to handle file replacement
+    if content_changed:
         content_hash = compute_policy_hash(
-            title=new_title,
-            body_markdown=new_body,
-            file_content=None  # Would need to fetch file content if exists
+            title=policy.title,
+            body_markdown=policy.body_markdown,
+            file_content=file_content
         )
-        update_data['content_sha256'] = content_hash
-        update_data['version'] = policy.version + 1
+        policy.content_sha256 = content_hash
+        policy.version = policy.version + 1
 
-    # No need to parse due_at - Pydantic already handles datetime conversion
-
-    for field, value in update_data.items():
-        setattr(policy, field, value)
-    
     db.commit()
     db.refresh(policy)
-    
+
     logger.info(f"Updated policy: {policy.title} (ID: {policy.id})")
-    
+
     return PolicyResponse(**policy.__dict__)
 
 

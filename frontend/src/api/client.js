@@ -101,7 +101,11 @@ export const policiesAPI = {
     return apiClient.post('/api/policies/', data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
   },
   get: (id) => apiClient.get(`/api/policies/${id}`),
-  update: (id, data) => apiClient.put(`/api/policies/${id}`, data),
+  update: (id, data) => {
+    // Ensure multipart when sending FormData (file uploads)
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    return apiClient.put(`/api/policies/${id}`, data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined);
+  },
   delete: (id) => apiClient.delete(`/api/policies/${id}`),
   addRecipients: (id, recipientsData) => apiClient.post(`/api/policies/${id}/recipients`, {
     recipients: recipientsData.recipients,
