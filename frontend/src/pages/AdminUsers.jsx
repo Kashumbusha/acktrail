@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersAPI } from '../api/client';
 import InviteUserModal from '../components/InviteUserModal';
 import EditUserModal from '../components/EditUserModal';
-import { PencilIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 export default function AdminUsers() {
@@ -58,6 +58,23 @@ export default function AdminUsers() {
     updateMutation.mutate({ id: userId, data: formData });
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: (userId) => usersAPI.delete(userId),
+    onSuccess: () => {
+      toast.success('User deleted successfully');
+      fetchUsers(); // Refresh the list
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.detail || 'Failed to delete user');
+    },
+  });
+
+  const handleDeleteClick = (user) => {
+    if (window.confirm(`Are you sure you want to delete ${user.name} (${user.email})? This action cannot be undone.`)) {
+      deleteMutation.mutate(user.id);
+    }
+  };
+
   const handleEditClick = (user) => {
     setSelectedUser(user);
     setShowEditModal(true);
@@ -89,6 +106,7 @@ export default function AdminUsers() {
                 <th className="py-2 pr-4">Name</th>
                 <th className="py-2 pr-4">Email</th>
                 <th className="py-2 pr-4">Role</th>
+                <th className="py-2 pr-4">Status</th>
                 <th className="py-2 pr-4">Login</th>
                 <th className="py-2 pr-4 text-right">Actions</th>
               </tr>
@@ -106,15 +124,36 @@ export default function AdminUsers() {
                       </span>
                     )}
                   </td>
+                  <td className="py-2 pr-4 dark:text-slate-300">
+                    {u.active ? (
+                      <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 px-2 py-0.5 rounded">
+                        Inactive
+                      </span>
+                    )}
+                  </td>
                   <td className="py-2 pr-4 dark:text-slate-300">{u.can_login ? 'Enabled' : 'Disabled'}</td>
                   <td className="py-2 pr-4 text-right">
-                    <button
-                      onClick={() => handleEditClick(u)}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                      title="Edit user"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditClick(u)}
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        title="Edit user"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(u)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        title="Delete user"
+                        disabled={deleteMutation.isPending}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

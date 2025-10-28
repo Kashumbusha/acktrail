@@ -311,6 +311,77 @@ def update_user(
     return {"success": True}
 
 
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+):
+    """
+    Delete a user from the workspace.
+    Admins can only delete users in their own workspace.
+    Cannot delete the last admin in a workspace.
+    """
+    workspace_id = current_user.get("workspace_id")
+    if not workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not associated with a workspace"
+        )
+
+    try:
+        workspace_uuid = UUID(workspace_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid workspace identifier"
+        )
+
+    # Find the user to delete
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Verify user belongs to the same workspace
+    if not user.workspace_id or user.workspace_id != workspace_uuid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not belong to your workspace"
+        )
+
+    # Prevent deleting yourself
+    if str(user.id) == current_user.get("id"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot delete your own account"
+        )
+
+    # Prevent deleting the last admin
+    if user.role == UserRole.ADMIN:
+        admin_count = db.query(User).filter(
+            User.workspace_id == workspace_uuid,
+            User.role == UserRole.ADMIN,
+            User.active == True
+        ).count()
+
+        if admin_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot delete the last admin in the workspace"
+            )
+
+    # Delete the user (assignments will be cascade deleted based on DB constraints)
+    db.delete(user)
+    db.commit()
+
+    # Update workspace active staff count
+    update_workspace_active_staff_count(db, workspace_uuid)
+
+    logger.info(f"User {user.email} (ID: {user.id}) deleted from workspace {workspace_uuid}")
+
+    return {"success": True, "message": "User deleted successfully"}
+
+
 @router.patch("/me")
 def update_current_user_profile(
     payload: dict,
