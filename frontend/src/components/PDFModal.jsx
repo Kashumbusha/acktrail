@@ -5,8 +5,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Configure PDF.js worker - use https explicitly for better reliability
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, requireScrollTracking = false }) {
   const [viewingTime, setViewingTime] = useState(0);
@@ -22,6 +22,15 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
 
   // Detect Safari browser
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  // Debug: log PDF URL when modal opens
+  useEffect(() => {
+    if (isOpen && pdfUrl) {
+      console.log('PDFModal opened with URL:', pdfUrl);
+      console.log('Require scroll tracking:', requireScrollTracking);
+      console.log('Force react-pdf:', requireScrollTracking);
+    }
+  }, [isOpen, pdfUrl, requireScrollTracking]);
 
   // For acknowledgment pages that require scroll tracking, always use react-pdf (not iframe)
   // because scroll tracking is impossible in PDF iframes due to browser security
@@ -108,6 +117,8 @@ export default function PDFModal({ isOpen, onClose, pdfUrl, fileName, onViewed, 
 
   const onDocumentLoadError = (error) => {
     console.error('PDF load error:', error);
+    console.error('PDF URL that failed:', pdfUrl);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     setPdfLoadError(true);
     setIsLoading(false);
   };
