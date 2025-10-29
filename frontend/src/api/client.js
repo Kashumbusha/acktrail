@@ -113,7 +113,7 @@ export const policiesAPI = {
   }),
   send: (id) => apiClient.post(`/api/policies/${id}/send`, { assignment_ids: null }),
   getAssignments: (id) => apiClient.get(`/api/policies/${id}/assignments`),
-  exportCSV: (id) => apiClient.get(`/api/dashboard/policies/${id}/export.csv`, { responseType: 'blob' }),
+  exportCSV: (id) => apiClient.get(`/api/policies/${id}/export.csv`, { responseType: 'blob' }),
   sendBulkReminders: (id) => apiClient.post(`/api/policies/${id}/remind-all`),
 };
 

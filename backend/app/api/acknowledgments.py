@@ -16,11 +16,11 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from ..schemas.acknowledgments import (
-    AckPageData, AcknowledgmentCreate, TypedAcknowledgmentCreate, AcknowledgmentResponse
+    AckPageData, AcknowledgmentCreate, TypedAcknowledgmentCreate, AcknowledgmentResponse, PolicyQuestionPublic
 )
 from ..models.database import get_db
 from ..models.models import (
-    Assignment, Acknowledgment, Policy, User, AssignmentStatus, AckMethod
+    Assignment, Acknowledgment, Policy, User, AssignmentStatus, AckMethod, PolicyQuestion
 )
 from ..core.security import decode_magic_link_token
 from ..core.hashing import compute_policy_hash
@@ -117,6 +117,18 @@ def get_acknowledgment_page(
             body_markdown=policy.body_markdown
         )
     
+    policy_questions = db.query(PolicyQuestion).filter(PolicyQuestion.policy_id == policy.id).order_by(PolicyQuestion.order_index).all()
+
+    questions = [
+        PolicyQuestionPublic(
+            id=q.id,
+            order_index=q.order_index,
+            prompt=q.prompt,
+            choices=q.choices,
+        )
+        for q in policy_questions
+    ] if policy_questions else None
+
     return AckPageData(
         assignment_id=assignment.id,
         policy_title=policy.title,
@@ -128,7 +140,8 @@ def get_acknowledgment_page(
         user_email=user.email,
         require_typed_signature=policy.require_typed_signature,
         is_expired=is_expired,
-        already_acknowledged=already_acknowledged
+        already_acknowledged=already_acknowledged,
+        questions=questions
     )
 
 
@@ -210,6 +223,32 @@ def create_acknowledgment(
             )
         typed_signature = acknowledgment.typed_signature
     
+    # Validate comprehension questions if enabled
+    policy_questions = db.query(PolicyQuestion).filter(PolicyQuestion.policy_id == policy.id).order_by(PolicyQuestion.order_index).all()
+
+    if policy.questions_enabled or policy_questions:
+        submitted_answers = acknowledgment.answers or []
+
+        if not submitted_answers or len(submitted_answers) != len(policy_questions):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="All questions must be answered"
+            )
+
+        answers_by_id = {answer.question_id: answer.selected_index for answer in submitted_answers}
+        incorrect = []
+
+        for idx, question in enumerate(policy_questions):
+            selected = answers_by_id.get(question.id)
+            if selected is None or selected != question.correct_index:
+                incorrect.append(idx)
+
+        if incorrect:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Some answers are incorrect", "incorrect": incorrect}
+            )
+
     # Get client information
     client_ip = get_client_ip(request)
     user_agent = request.headers.get("User-Agent", "")
