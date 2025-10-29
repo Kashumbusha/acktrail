@@ -78,7 +78,7 @@ export default function Landing() {
                 <div className="rounded-md shadow">
                   <Link
                     to="/signup"
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                    className="w-full flex items-center justify-center px-8 py-3 text-base font-semibold rounded-md text-white bg-indigo-600 shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition md:py-4 md:text-lg md:px-10"
                   >
                     Start Free Trial
                   </Link>
@@ -87,7 +87,7 @@ export default function Landing() {
                   <button
                     type="button"
                     onClick={() => setShowDemoModal(true)}
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-indigo-200 text-base font-medium rounded-md text-indigo-700 bg-white/70 hover:bg-white dark:text-indigo-200 dark:border-indigo-400 dark:bg-transparent dark:hover:bg-indigo-500/10 transition md:py-4 md:text-lg md:px-10"
                   >
                     Book a demo
                   </button>
