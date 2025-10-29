@@ -170,7 +170,7 @@ def check_workspace(payload: dict, db: Session = Depends(get_db)) -> dict:
 
 # Team Management Endpoints
 from ..models.models import Team
-from ..core.security import get_current_user
+from ..core.security import get_current_user, require_admin_role
 
 
 @router.get("/list", response_model=dict)
@@ -197,14 +197,11 @@ def list_teams(current_user: dict = Depends(get_current_user), db: Session = Dep
 
 
 @router.post("/create", response_model=dict)
-def create_team(payload: dict, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+def create_team(payload: dict, current_user: dict = Depends(require_admin_role), db: Session = Depends(get_db)) -> dict:
     """Create a new team in the current user's workspace.
 
     Expected body: {"name": str}
     """
-    # Only admins can create teams
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create teams")
 
     workspace_id = current_user.get("workspace_id")
     if not workspace_id:
@@ -247,14 +244,11 @@ def create_team(payload: dict, current_user: dict = Depends(get_current_user), d
 
 
 @router.patch("/{team_id}", response_model=dict)
-def update_team(team_id: str, payload: dict, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+def update_team(team_id: str, payload: dict, current_user: dict = Depends(require_admin_role), db: Session = Depends(get_db)) -> dict:
     """Update a team's name.
 
     Expected body: {"name": str}
     """
-    # Only admins can update teams
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update teams")
 
     workspace_id = current_user.get("workspace_id")
     if not workspace_id:
@@ -344,14 +338,11 @@ def get_team_detail(team_id: str, current_user: dict = Depends(get_current_user)
 
 
 @router.post("/{team_id}/members", response_model=dict)
-def add_team_member(team_id: str, payload: dict, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+def add_team_member(team_id: str, payload: dict, current_user: dict = Depends(require_admin_role), db: Session = Depends(get_db)) -> dict:
     """Add a user to a team.
 
     Expected body: {"user_id": str}
     """
-    # Only admins can manage team members
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can manage team members")
 
     workspace_id = current_user.get("workspace_id")
     if not workspace_id:
@@ -397,11 +388,8 @@ def add_team_member(team_id: str, payload: dict, current_user: dict = Depends(ge
 
 
 @router.delete("/{team_id}/members/{user_id}", response_model=dict)
-def remove_team_member(team_id: str, user_id: str, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+def remove_team_member(team_id: str, user_id: str, current_user: dict = Depends(require_admin_role), db: Session = Depends(get_db)) -> dict:
     """Remove a user from a team."""
-    # Only admins can manage team members
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can manage team members")
 
     workspace_id = current_user.get("workspace_id")
     if not workspace_id:
@@ -435,11 +423,8 @@ def remove_team_member(team_id: str, user_id: str, current_user: dict = Depends(
 
 
 @router.delete("/{team_id}", response_model=dict)
-def delete_team(team_id: str, current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
+def delete_team(team_id: str, current_user: dict = Depends(require_admin_role), db: Session = Depends(get_db)) -> dict:
     """Delete a team."""
-    # Only admins can delete teams
-    if current_user.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete teams")
 
     workspace_id = current_user.get("workspace_id")
     if not workspace_id:

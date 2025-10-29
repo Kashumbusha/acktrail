@@ -13,7 +13,7 @@ import stripe
 from ..models.database import get_db
 from ..models.models import Workspace
 from ..services.stripe_service import StripeService
-from .auth import get_current_user
+from ..core.security import get_current_user
 
 logger = logging.getLogger(__name__)
 

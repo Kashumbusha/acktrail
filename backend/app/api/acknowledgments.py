@@ -16,11 +16,11 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from ..schemas.acknowledgments import (
-    AckPageData, AcknowledgmentCreate, TypedAcknowledgmentCreate, AcknowledgmentResponse, PolicyQuestionPublic
+    AckPageData, AcknowledgmentCreate, TypedAcknowledgmentCreate, AcknowledgmentResponse
 )
 from ..models.database import get_db
 from ..models.models import (
-    Assignment, Acknowledgment, Policy, User, AssignmentStatus, AckMethod, PolicyQuestion
+    Assignment, Acknowledgment, Policy, User, AssignmentStatus, AckMethod
 )
 from ..core.security import decode_magic_link_token
 from ..core.hashing import compute_policy_hash
@@ -36,25 +36,18 @@ def get_client_ip(request: Request) -> str:
     # Check for forwarded headers first (for proxy setups)
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
-        client_ip = forwarded_for.split(",")[0].strip()
-        logger.info(f"Client IP from X-Forwarded-For: {client_ip}")
-        return client_ip
-
+        return forwarded_for.split(",")[0].strip()
+    
     forwarded = request.headers.get("X-Forwarded")
     if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
-        logger.info(f"Client IP from X-Forwarded: {client_ip}")
-        return client_ip
-
+        return forwarded.split(",")[0].strip()
+    
     real_ip = request.headers.get("X-Real-IP")
     if real_ip:
-        logger.info(f"Client IP from X-Real-IP: {real_ip}")
         return real_ip
-
-    # Fallback to client host (this will be Railway's internal IP)
-    fallback_ip = request.client.host if request.client else "unknown"
-    logger.warning(f"No proxy headers found! Using fallback IP: {fallback_ip}. All headers: X-Forwarded-For={request.headers.get('X-Forwarded-For')}, X-Real-IP={request.headers.get('X-Real-IP')}")
-    return fallback_ip
+    
+    # Fallback to client host
+    return request.client.host if request.client else "unknown"
 
 
 @router.get("/{token}", response_model=AckPageData)
@@ -135,15 +128,7 @@ def get_acknowledgment_page(
         user_email=user.email,
         require_typed_signature=policy.require_typed_signature,
         is_expired=is_expired,
-        already_acknowledged=already_acknowledged,
-        questions=[
-            PolicyQuestionPublic(
-                id=q.id,
-                order_index=q.order_index,
-                prompt=q.prompt,
-                choices=q.choices,
-            ) for q in db.query(PolicyQuestion).filter(PolicyQuestion.policy_id == policy.id).order_by(PolicyQuestion.order_index).all()
-        ] if policy.questions_enabled else None
+        already_acknowledged=already_acknowledged
     )
 
 
@@ -237,31 +222,6 @@ def create_acknowledgment(
             body_markdown=policy.body_markdown
         )
     
-    # If questions are enabled, validate answers: all must be correct
-    if policy.questions_enabled:
-        submitted_answers = acknowledgment.answers or []
-        questions = db.query(PolicyQuestion).filter(PolicyQuestion.policy_id == policy.id).order_by(PolicyQuestion.order_index).all()
-        if not submitted_answers or len(submitted_answers) != len(questions):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="All questions must be answered"
-            )
-        # Map answers by id
-        answers_by_id = {str(a.question_id): a.selected_index for a in submitted_answers}
-        incorrect = []
-        for idx, q in enumerate(questions):
-            key = str(q.id)
-            if key not in answers_by_id:
-                incorrect.append(idx)
-                continue
-            if answers_by_id[key] != q.correct_index:
-                incorrect.append(idx)
-        if incorrect:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail={"message": "Some answers are incorrect", "incorrect": incorrect}
-            )
-
     # Create acknowledgment record
     ack_record = Acknowledgment(
         assignment_id=assignment.id,

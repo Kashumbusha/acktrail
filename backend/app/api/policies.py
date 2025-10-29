@@ -6,11 +6,14 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from urllib.parse import unquote
+from io import StringIO
 import logging
+import csv
 
 from ..schemas.policies import (
     PolicyCreate, PolicyUpdate, PolicyResponse, PolicyWithStats, PolicyListResponse
 )
+from ..schemas.dashboard import PolicyExportRow
 from ..models.database import get_db
 from ..models.models import Policy, User, Assignment, Acknowledgment, AssignmentStatus, PolicyQuestion
 from ..core.security import get_current_user, require_admin_role, decode_jwt_token
@@ -546,7 +549,123 @@ async def get_policy_file(
         )
 
 
+@router.get("/{policy_id}/export.csv")
+def export_policy_assignments(
+    policy_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+) -> Response:
+    """Export policy assignments to CSV."""
+    # Get workspace_id from current user
+    workspace_id = UUID(current_user["workspace_id"]) if current_user.get("workspace_id") else None
 
+    # Check if policy exists and belongs to user's workspace
+    policy = db.query(Policy).filter(
+        Policy.id == policy_id,
+        Policy.workspace_id == workspace_id if workspace_id else True
+    ).first()
+    if not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy not found"
+        )
+
+    # Get all assignments for this policy with related data - filtered by workspace
+    assignments = db.query(Assignment).filter(
+        Assignment.policy_id == policy_id,
+        Assignment.workspace_id == workspace_id if workspace_id else True
+    ).all()
+    
+    if not assignments:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No assignments found for this policy"
+        )
+    
+    # Prepare CSV data
+    csv_rows = []
+    
+    for assignment in assignments:
+        # Get user details
+        user = db.query(User).filter(User.id == assignment.user_id).first()
+        if not user:
+            continue
+        
+        # Get acknowledgment details if exists
+        acknowledgment = None
+        if assignment.status == AssignmentStatus.ACKNOWLEDGED:
+            acknowledgment = db.query(Acknowledgment).filter(
+                Acknowledgment.assignment_id == assignment.id
+            ).first()
+        
+        # Create export row
+        row = PolicyExportRow(
+            assignment_id=str(assignment.id),
+            user_name=user.name,
+            user_email=user.email,
+            user_department=user.department or "",
+            status=assignment.status.value,
+            assigned_at=assignment.created_at,
+            viewed_at=assignment.viewed_at,
+            acknowledged_at=assignment.acknowledged_at,
+            reminder_count=assignment.reminder_count,
+            signer_name=acknowledgment.signer_name if acknowledgment else None,
+            signer_email=acknowledgment.signer_email if acknowledgment else None,
+            acknowledgment_method=acknowledgment.ack_method.value if acknowledgment else None,
+            ip_address=acknowledgment.ip_address if acknowledgment else None
+        )
+        csv_rows.append(row)
+    
+    # Generate CSV content
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header with proper column names as requested
+    headers = [
+        "policy_title", "version", "employee_name", "email", "department", 
+        "status", "viewed_at", "acknowledged_at", "reminder_count",
+        "assignment_id", "signer_name", "signer_email", "acknowledgment_method", 
+        "ip_address", "assigned_at"
+    ]
+    writer.writerow(headers)
+    
+    # Write data rows with proper column order
+    for row in csv_rows:
+        writer.writerow([
+            policy.title,  # policy_title
+            policy.version,  # version
+            row.user_name,  # employee_name
+            row.user_email,  # email
+            row.user_department,  # department
+            row.status,  # status
+            row.viewed_at.isoformat() if row.viewed_at else "",  # viewed_at
+            row.acknowledged_at.isoformat() if row.acknowledged_at else "",  # acknowledged_at
+            row.reminder_count,  # reminder_count
+            row.assignment_id,  # assignment_id
+            row.signer_name or "",  # signer_name
+            row.signer_email or "",  # signer_email
+            row.acknowledgment_method or "",  # acknowledgment_method
+            row.ip_address or "",  # ip_address
+            row.assigned_at.isoformat() if row.assigned_at else ""  # assigned_at
+        ])
+    
+    # Create response
+    csv_content = output.getvalue()
+    output.close()
+    
+    # Generate filename with policy title and timestamp
+    safe_title = "".join(c for c in policy.title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    safe_title = safe_title.replace(' ', '_')
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    filename = f"policy_assignments_{safe_title}_{timestamp}.csv"
+    
+    logger.info(f"Exported {len(csv_rows)} assignments for policy {policy.title}")
+    
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 
