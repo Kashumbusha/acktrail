@@ -325,6 +325,18 @@ def export_all_workspace_data(
     )
 
 
+@router.get("/policies/{policy_id}/export.csv")
+def export_policy_assignments_legacy(
+    policy_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin_role)
+) -> Response:
+    """Backward-compatible route that forwards to the policies export handler."""
+    from .policies import export_policy_assignments as _export_policy_assignments
+
+    return _export_policy_assignments(policy_id=policy_id, db=db, current_user=current_user)
+
+
 @router.get("/policies/export.csv")
 def export_all_policies_summary(
     db: Session = Depends(get_db),
