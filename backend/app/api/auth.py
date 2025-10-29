@@ -188,8 +188,6 @@ def verify_code(
     
     workspace = getattr(user, "workspace", None)
 
-    workspace = getattr(user, "workspace", None)
-
     # Create JWT token
     token = create_jwt_token(
         user_id=str(user.id),

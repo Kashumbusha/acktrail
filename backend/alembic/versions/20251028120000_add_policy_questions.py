@@ -30,3 +30,4 @@ def downgrade():
     op.drop_column('policies', 'questions_enabled')
 
 
+
