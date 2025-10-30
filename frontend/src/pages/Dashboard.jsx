@@ -6,12 +6,13 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
-  PlusIcon
+  InboxStackIcon,
+  BoltIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { dashboardAPI } from '../api/client';
 import { QUERY_KEYS } from '../utils/constants';
-import { formatNumber, formatPercentage } from '../utils/formatters';
-import StatsCard from '../components/StatsCard';
+import { formatNumber } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 
@@ -82,9 +83,88 @@ export default function Dashboard() {
     ? Math.round((acknowledged_assignments / total_assignments) * 100)
     : 0;
 
+  const outstandingAssignments = Math.max(total_assignments - acknowledged_assignments, 0);
+
+  const policyPriorityList = (recent_policies || [])
+    .map((policy) => {
+      const total = policy.assignments_count ?? 0;
+      const acknowledged = policy.acknowledged_count ?? 0;
+      const outstanding = Math.max(total - acknowledged, 0);
+      const progress = total > 0 ? Math.round((acknowledged / total) * 100) : 0;
+
+      return {
+        id: policy.id,
+        title: policy.title,
+        description: policy.description,
+        total,
+        acknowledged,
+        outstanding,
+        progress,
+        due_at: policy.due_at,
+      };
+    })
+    .filter((policy) => policy.outstanding > 0)
+    .sort((a, b) => b.outstanding - a.outstanding)
+    .slice(0, 3);
+
+  const actionItems = [];
+
+  if (overdue_assignments > 0) {
+    actionItems.push({
+      id: 'overdue',
+      tone: 'rose',
+      title: 'Resolve overdue acknowledgments',
+      description: `${formatNumber(overdue_assignments)} people still owe a signature.`,
+      cta: 'Open policy inbox',
+      to: '/policies',
+    });
+  }
+
+  if (pending_assignments > 0) {
+    actionItems.push({
+      id: 'pending',
+      tone: 'amber',
+      title: 'Follow up with pending readers',
+      description: `${formatNumber(pending_assignments)} assignments are still in progress.`,
+      cta: 'Schedule reminders',
+      to: '/policies',
+    });
+  }
+
+  if (total_assignments > 0 && acknowledgmentPercentage < 80) {
+    actionItems.push({
+      id: 'improve-rate',
+      tone: 'indigo',
+      title: 'Boost completion rate',
+      description: `Overall acknowledgment rate is ${acknowledgmentPercentage}%. Consider an escalation.`,
+      cta: 'View escalation playbook',
+      to: '/policies',
+    });
+  }
+
+  const toneStyles = {
+    rose: {
+      border: 'border-rose-500/30',
+      badge: 'bg-rose-500/10 text-rose-400',
+      iconBg: 'bg-rose-500/10',
+      icon: 'text-rose-400',
+    },
+    amber: {
+      border: 'border-amber-500/30',
+      badge: 'bg-amber-500/10 text-amber-500',
+      iconBg: 'bg-amber-500/10',
+      icon: 'text-amber-500',
+    },
+    indigo: {
+      border: 'border-indigo-500/30',
+      badge: 'bg-indigo-500/10 text-indigo-400',
+      iconBg: 'bg-indigo-500/10',
+      icon: 'text-indigo-400',
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-800 p-6">
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -142,10 +222,9 @@ export default function Dashboard() {
               </div>
               <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Total Policies</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{total_policies}</div>
+            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{formatNumber(total_policies)}</div>
             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400">
-              <span>→</span>
-              <span>No change</span>
+              <span>{hasPolicies ? 'Active policies in flight' : 'Create your first policy to get started'}</span>
             </div>
           </div>
 
@@ -159,7 +238,7 @@ export default function Dashboard() {
               <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Acknowledged</span>
             </div>
             <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">
-              {acknowledged_assignments} <span className="text-xl text-gray-500 dark:text-slate-500">/ {total_assignments}</span>
+              {formatNumber(acknowledged_assignments)} <span className="text-xl text-gray-500 dark:text-slate-500">/ {formatNumber(total_assignments)}</span>
             </div>
             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400 mb-3">
               <span>{acknowledgmentPercentage}%</span>
@@ -183,9 +262,8 @@ export default function Dashboard() {
               </div>
               <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Pending</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{pending_assignments}</div>
+            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{formatNumber(pending_assignments)}</div>
             <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-slate-400">
-              <span>→</span>
               <span>Awaiting responses</span>
             </div>
           </div>
@@ -199,7 +277,7 @@ export default function Dashboard() {
               </div>
               <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wider">Overdue</span>
             </div>
-            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{overdue_assignments}</div>
+            <div className="text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{formatNumber(overdue_assignments)}</div>
             <div className="flex items-center gap-1 text-sm">
               {overdue_assignments === 0 ? (
                 <>
@@ -214,6 +292,126 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Action Center */}
+        {actionItems.length > 0 && (
+          <div className="card p-6 space-y-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Action Center</h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400">
+                  AckTrail flags the next best moves so you stay ahead of follow-ups.
+                </p>
+              </div>
+              <Link
+                to="/policies"
+                className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-indigo-500"
+              >
+                Jump to policy inbox
+                <ArrowRightIcon className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {actionItems.slice(0, 3).map((item) => {
+                const tone = toneStyles[item.tone] || toneStyles.indigo;
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.to}
+                    className={`group rounded-xl border ${tone.border} bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:bg-slate-900/70`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`h-10 w-10 rounded-lg ${tone.iconBg} flex items-center justify-center`}>
+                        <BoltIcon className={`h-5 w-5 ${tone.icon}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{item.title}</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{item.description}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${tone.badge}`}>
+                        {item.cta}
+                      </span>
+                      <ArrowRightIcon className={`h-4 w-4 transition group-hover:translate-x-1 ${tone.icon}`} />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Policy Inbox Snapshot */}
+        <div className="card p-6 space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                <InboxStackIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Policy inbox snapshot</h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400">
+                  {outstandingAssignments > 0
+                    ? `${formatNumber(outstandingAssignments)} acknowledgments still pending across your workspace.`
+                    : 'Nothing pending — enjoy the quiet.'}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/policies"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-500 hover:text-indigo-400"
+            >
+              Open inbox
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {policyPriorityList.length > 0 ? (
+            <ul className="space-y-4">
+              {policyPriorityList.map((policy) => (
+                <li
+                  key={policy.id}
+                  className="rounded-xl border border-gray-200 p-4 transition hover:border-indigo-400 hover:shadow-md dark:border-slate-700 dark:hover:border-indigo-500/60"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-1">
+                      <Link
+                        to={`/policies/${policy.id}`}
+                        className="text-sm font-semibold text-gray-900 hover:text-indigo-500 dark:text-slate-100 dark:hover:text-indigo-300"
+                      >
+                        {policy.title}
+                      </Link>
+                      {policy.description && (
+                        <p className="text-xs text-gray-500 dark:text-slate-400 max-w-xl">
+                          {policy.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-3 py-1 font-semibold text-indigo-500 dark:bg-indigo-500/20 dark:text-indigo-200">
+                        {formatNumber(policy.outstanding)} waiting
+                      </span>
+                      <span>
+                        {policy.progress}% acknowledged
+                      </span>
+                      {policy.total > 0 && (
+                        <span>
+                          {formatNumber(policy.total)} sent
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
+              All active policies are fully acknowledged. Nice work!
+            </div>
+          )}
         </div>
 
         {/* Chart and Activity Grid */}
@@ -313,7 +511,7 @@ export default function Dashboard() {
                       <CheckCircleIcon className="h-4 w-4 text-violet-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-200 truncate">{activity.description}</p>
+                      <p className="text-sm text-gray-800 dark:text-slate-200 truncate">{activity.description}</p>
                       <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{activity.timestamp}</p>
                     </div>
                   </div>
@@ -479,7 +677,6 @@ export default function Dashboard() {
             </ul>
           </div>
         )}
-      </div>
     </div>
   );
 }

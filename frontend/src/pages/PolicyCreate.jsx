@@ -31,17 +31,17 @@ export default function PolicyCreate() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Policy</h1>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Create a new policy document to be acknowledged by recipients
+      <div className="space-y-2">
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">New Policy</h1>
+        <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl">
+          Draft a policy, choose who needs to acknowledge it, and publish when you're ready. Save progress at any time; we'll keep your work until you send it.
         </p>
       </div>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="card p-6 sm:p-8">
         <PolicyForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}

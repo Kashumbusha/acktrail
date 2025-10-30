@@ -124,70 +124,97 @@ export default function TeamDetail() {
     );
   }
 
+  const guestCount = members.filter(member => member.is_guest).length;
+  const adminCount = members.filter(member => member.role === 'admin').length;
+
   return (
-    <div>
+    <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center space-x-4 flex-1">
-          <button
-            onClick={() => navigate('/teams')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-          >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-          </button>
-          <div className="flex-1">
-            {isEditingName ? (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  className="text-2xl font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Team name"
-                  autoFocus
-                />
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={updateTeamMutation.isPending}
-                  className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-full transition-colors disabled:opacity-50"
-                  title="Save"
-                >
-                  <CheckIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  disabled={updateTeamMutation.isPending}
-                  className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors disabled:opacity-50"
-                  title="Cancel"
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{team.name}</h1>
-                <button
-                  onClick={handleStartEdit}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  title="Edit team name"
-                >
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {members.length} {members.length === 1 ? 'member' : 'members'} • {team.policy_count} {team.policy_count === 1 ? 'policy' : 'policies'}
-            </p>
+      <div className="card p-6 sm:p-7 space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-3 md:gap-4">
+            <button
+              onClick={() => navigate('/teams')}
+              className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition"
+              title="Back to teams"
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+            <div className="space-y-2">
+              {isEditingName ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <input
+                    type="text"
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    className="text-2xl font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Team name"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={updateTeamMutation.isPending}
+                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-full transition disabled:opacity-50"
+                      title="Save"
+                    >
+                      <CheckIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={updateTeamMutation.isPending}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition disabled:opacity-50"
+                      title="Cancel"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">{team.name}</h1>
+                    <button
+                      onClick={handleStartEdit}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
+                      title="Edit team name"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {members.length} {members.length === 1 ? 'member' : 'members'} • {team.policy_count} {team.policy_count === 1 ? 'policy' : 'policies'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAddMember(true)}
+              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+            >
+              <UserPlusIcon className="h-5 w-5 mr-2" />
+              Add Member
+            </button>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowAddMember(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <UserPlusIcon className="h-5 w-5 mr-2" />
-          Add Member
-        </button>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+            <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Admins</div>
+            <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{adminCount}</div>
+          </div>
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+            <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Guests</div>
+            <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{guestCount}</div>
+          </div>
+          <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+            <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Policies</div>
+            <div className="mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{team.policy_count}</div>
+          </div>
+        </div>
       </div>
 
       {/* Add Member Modal */}
@@ -244,81 +271,120 @@ export default function TeamDetail() {
         </div>
       )}
 
-      {/* Members List */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-            <UsersIcon className="h-5 w-5 mr-2" />
-            Team Members
-          </h2>
-        </div>
-
-        {members.length === 0 ? (
-          <div className="p-12 text-center">
-            <UsersIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No members</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Get started by adding a member to this team.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => setShowAddMember(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-              >
-                <UserPlusIcon className="h-5 w-5 mr-2" />
-                Add Member
-              </button>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8 lg:items-start">
+        <div className="space-y-6">
+          <div className="card overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <UsersIcon className="h-5 w-5" />
+                Team Members
+              </h2>
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {members.length} total
+              </span>
             </div>
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {members.map((member) => (
-              <li key={member.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-shrink-0">
+
+            {members.length === 0 ? (
+              <div className="p-10 text-center space-y-4">
+                <UsersIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">No members yet</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Invite teammates so you can assign policies by department or focus area.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAddMember(true)}
+                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                >
+                  <UserPlusIcon className="h-5 w-5 mr-2" />
+                  Add member
+                </button>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {members.map((member) => (
+                  <li key={member.id} className="px-5 sm:px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
                           <span className="text-indigo-600 dark:text-indigo-300 font-medium">
                             {member.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {member.name}
+                            {member.is_guest && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+                                Guest
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {member.email}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {member.name}
-                          {member.is_guest && (
-                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
-                              Guest
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          {member.email}
-                        </p>
+
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                          {member.role}
+                        </span>
+                        <button
+                          onClick={() => handleRemoveMember(member.id, member.name)}
+                          disabled={removeMemberMutation.isPending}
+                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition disabled:opacity-50"
+                          title="Remove from team"
+                        >
+                          <UserMinusIcon className="h-5 w-5" />
+                        </button>
                       </div>
                     </div>
-                  </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
 
-                  <div className="flex items-center space-x-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                      {member.role}
-                    </span>
+        <aside className="space-y-6 mt-8 lg:mt-0">
+          <div className="card p-5 sm:p-6 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">Team overview</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Quick glance at member mix and recent policy coverage.
+              </p>
+            </div>
+            <dl className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <dt className="text-gray-500 dark:text-gray-400">Admins</dt>
+                <dd className="font-medium text-gray-900 dark:text-gray-100">{adminCount}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-gray-500 dark:text-gray-400">Guest accounts</dt>
+                <dd className="font-medium text-gray-900 dark:text-gray-100">{guestCount}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-gray-500 dark:text-gray-400">Policies assigned</dt>
+                <dd className="font-medium text-gray-900 dark:text-gray-100">{team.policy_count}</dd>
+              </div>
+            </dl>
+          </div>
 
-                    <button
-                      onClick={() => handleRemoveMember(member.id, member.name)}
-                      disabled={removeMemberMutation.isPending}
-                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors disabled:opacity-50"
-                      title="Remove from team"
-                    >
-                      <UserMinusIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          <div className="card p-5 sm:p-6 space-y-3 bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-white dark:from-slate-900 dark:via-indigo-900 dark:to-slate-800">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/80">Tip</h3>
+            <p className="text-sm text-white/90">
+              Assign policies directly to this team from the policy builder to keep everyone aligned automatically.
+            </p>
+            <Link
+              to="/policies/new"
+              className="inline-flex items-center justify-center rounded-lg bg-white/15 px-4 py-2 text-sm font-medium hover:bg-white/25 transition"
+            >
+              Create policy for {team.name}
+            </Link>
+          </div>
+        </aside>
       </div>
     </div>
   );

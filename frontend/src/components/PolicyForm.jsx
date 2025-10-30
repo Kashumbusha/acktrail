@@ -204,140 +204,154 @@ export default function PolicyForm({
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Title */}
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Policy Title *
-        </label>
-        <input
-          type="text"
-          id="title"
-          value={formData.title}
-          onChange={(e) => handleInputChange('title', e.target.value)}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500 ${
-            errors.title ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Enter policy title"
-          disabled={loading}
-        />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
-        )}
-      </div>
-
-      {/* Description */}
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Description
-        </label>
-        <textarea
-          id="description"
-          rows={3}
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500"
-          placeholder="Brief description of the policy"
-          disabled={loading}
-        />
-      </div>
-
-      {/* Due Date */}
-      <div>
-        <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Due Date (Optional)
-        </label>
-        <input
-          type="date"
-          id="due_date"
-          value={formData.due_date}
-          onChange={(e) => handleInputChange('due_date', e.target.value)}
-          min={today}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 ${
-            errors.due_date ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
-          }`}
-          disabled={loading}
-        />
-        {errors.due_date && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date}</p>
-        )}
-      </div>
-
-      {/* Target Audience */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Target Audience
-        </label>
-        <select
-          value={targetAudience}
-          onChange={(e) => setTargetAudience(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-          disabled={loading}
-        >
-          <option value="all_users">All Users</option>
-          <option value="teams">Specific Teams</option>
-          <option value="manual">Manual Selection</option>
-        </select>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Select who should acknowledge this policy.
-        </p>
-
-        {/* Team Selection - Show when Specific Teams is selected */}
-        {targetAudience === 'teams' && (
-          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Select Teams *
+    <form onSubmit={handleSubmit} className="space-y-10">
+      {/* Basics */}
+      <section className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Basics</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Add a title, context, and optional due date.</p>
+        </header>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Policy Title *
             </label>
-            {teams.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No teams available. Create a team first to assign policies by team.
-              </p>
-            ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {teams.map((team) => (
-                  <label key={team.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedTeams.includes(team.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedTeams([...selectedTeams, team.id]);
-                        } else {
-                          setSelectedTeams(selectedTeams.filter(id => id !== team.id));
-                        }
-                      }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
-                      disabled={loading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{team.name}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-            {selectedTeams.length > 0 && (
-              <p className="mt-2 text-xs text-indigo-600 dark:text-indigo-400">
-                {selectedTeams.length} team{selectedTeams.length !== 1 ? 's' : ''} selected
-              </p>
+            <input
+              type="text"
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500 ${
+                errors.title ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter policy title"
+              disabled={loading}
+            />
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
             )}
           </div>
-        )}
 
-        {/* Manual Selection Note */}
-        {targetAudience === 'manual' && (
-          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              After creating the policy, you'll be able to add recipients manually by email or CSV upload.
+          <div className="md:col-span-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description
+            </label>
+            <textarea
+              id="description"
+              rows={3}
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="Brief description of the policy"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="md:max-w-xs">
+            <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Due Date (Optional)
+            </label>
+            <input
+              type="date"
+              id="due_date"
+              value={formData.due_date}
+              onChange={(e) => handleInputChange('due_date', e.target.value)}
+              min={today}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 ${
+                errors.due_date ? 'border-red-300 dark:border-red-500' : 'border-gray-300'
+              }`}
+              disabled={loading}
+            />
+            {errors.due_date && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date}</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Audience */}
+      <section className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Audience</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Choose who needs to acknowledge this policy.</p>
+        </header>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Target Audience
+            </label>
+            <select
+              value={targetAudience}
+              onChange={(e) => setTargetAudience(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+              disabled={loading}
+            >
+              <option value="all_users">All Users</option>
+              <option value="teams">Specific Teams</option>
+              <option value="manual">Manual Selection</option>
+            </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              We'll notify everyone in the selected group when the policy publishes.
             </p>
           </div>
-        )}
-      </div>
 
-      {/* Content Type Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Content Type
-        </label>
-        <div className="flex space-x-4">
+          {targetAudience === 'manual' && (
+            <div className="md:col-span-1 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800 text-sm text-blue-700 dark:text-blue-300">
+              After creating the policy, you'll add recipients manually by email or CSV upload.
+            </div>
+          )}
+
+          {targetAudience === 'teams' && (
+            <div className="md:col-span-2">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Select Teams *
+                </label>
+                {teams.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No teams available. Create a team first to assign policies by team.
+                  </p>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {teams.map((team) => (
+                      <label key={team.id} className="flex items-center rounded-md border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 px-3 py-2 transition">
+                        <input
+                          type="checkbox"
+                          checked={selectedTeams.includes(team.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedTeams([...selectedTeams, team.id]);
+                            } else {
+                              setSelectedTeams(selectedTeams.filter(id => id !== team.id));
+                            }
+                          }}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+                          disabled={loading}
+                        />
+                        <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{team.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {selectedTeams.length > 0 && (
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                    {selectedTeams.length} team{selectedTeams.length !== 1 ? 's' : ''} selected
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="space-y-6">
+        <header className="space-y-1">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Content</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Write directly in the editor or upload a PDF.</p>
+        </header>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-3 sm:space-y-0">
           <label className="flex items-center">
             <input
               type="radio"
@@ -347,7 +361,7 @@ export default function PolicyForm({
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600"
               disabled={loading}
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Text Content</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Text content</span>
           </label>
           <label className="flex items-center">
             <input
@@ -358,128 +372,128 @@ export default function PolicyForm({
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600"
               disabled={loading}
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">PDF Upload</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">PDF upload</span>
           </label>
         </div>
-      </div>
 
-      {/* Content Input */}
-      {formData.content_type === 'text' ? (
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Policy Content *
-          </label>
-          <RichTextEditor
-            content={formData.content}
-            onChange={(value) => handleInputChange('content', value)}
-            placeholder="Enter your policy content here..."
-            error={errors.content}
-          />
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Use the formatting toolbar to style your policy content. Supports bold, italic, headings, lists, colors, and more.
-          </p>
-          {errors.content && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
-          )}
-        </div>
-      ) : (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Upload PDF File *
-          </label>
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`relative border-2 border-dashed rounded-lg p-6 text-center ${
-              dragOver
-                ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
-                : errors.file || errors.content
-                ? 'border-red-300 dark:border-red-500'
-                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-          >
-            <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-            <div className="mt-4">
-              <label htmlFor="pdf-upload" className="cursor-pointer">
-                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
-                  Upload a PDF file
-                </span>
-                <input
-                  id="pdf-upload"
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => handleFileSelect(e.target.files[0])}
-                  className="sr-only"
-                  disabled={loading}
-                />
-              </label>
-              <p className="text-sm text-gray-500 dark:text-gray-400">or drag and drop</p>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              PDF files up to 10MB
+        {formData.content_type === 'text' ? (
+          <div className="space-y-3">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Policy Content *
+            </label>
+            <RichTextEditor
+              content={formData.content}
+              onChange={(value) => handleInputChange('content', value)}
+              placeholder="Enter your policy content here..."
+              error={errors.content}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Use the formatting toolbar to style your policy content. Supports bold, italic, headings, lists, colors, and more.
             </p>
+            {errors.content && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.content}</p>
+            )}
           </div>
+        ) : (
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Upload PDF File *
+            </label>
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              className={`relative border-2 border-dashed rounded-lg p-6 text-center ${
+                dragOver
+                  ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
+                  : errors.file || errors.content
+                  ? 'border-red-300 dark:border-red-500'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <div className="mt-4">
+                <label htmlFor="pdf-upload" className="cursor-pointer">
+                  <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
+                    Upload a PDF file
+                  </span>
+                  <input
+                    id="pdf-upload"
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => handleFileSelect(e.target.files[0])}
+                    className="sr-only"
+                    disabled={loading}
+                  />
+                </label>
+                <p className="text-sm text-gray-500 dark:text-gray-400">or drag and drop</p>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                PDF files up to 10MB
+              </p>
+            </div>
 
-          {formData.file && (
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
-                  <div>
-                    <span className="text-sm text-gray-900 dark:text-white">{formData.file.name}</span>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {(formData.file.size / 1024 / 1024).toFixed(2)} MB
-                      {formData.fileHash && (
-                        <span className="ml-2">• SHA-256: {formData.fileHash.substring(0, 16)}...</span>
-                      )}
+            {formData.file && (
+              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
+                    <div>
+                      <span className="text-sm text-gray-900 dark:text-white">{formData.file.name}</span>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                        {formData.fileHash && (
+                          <span className="ml-2">• SHA-256: {formData.fileHash.substring(0, 16)}...</span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, file: null, fileHash: null, content: '' }));
+                    }}
+                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                    disabled={loading}
+                  >
+                    Remove
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormData(prev => ({ ...prev, file: null, fileHash: null, content: '' }));
-                  }}
-                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                  disabled={loading}
-                >
-                  Remove
-                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {errors.file && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.file}</p>
-          )}
-          {errors.content && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
-          )}
-        </div>
-      )}
+            {errors.file && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.file}</p>
+            )}
+            {errors.content && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.content}</p>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* Comprehension Questions (Optional) */}
-      <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require comprehension questions</span>
-          <input
-            type="checkbox"
-            checked={questionsEnabled}
-            onChange={(e) => setQuestionsEnabled(e.target.checked)}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
-            disabled={loading}
-          />
-        </label>
+      <section className="space-y-4">
+        <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+          <label className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require comprehension questions</span>
+            <input
+              type="checkbox"
+              checked={questionsEnabled}
+              onChange={(e) => setQuestionsEnabled(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+              disabled={loading}
+            />
+          </label>
 
-        {questionsEnabled && (
-          <div className="mt-4 space-y-6">
-            {errors.questions && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.questions}</p>
-            )}
-            <div className="text-xs text-gray-500 dark:text-gray-400">Add 1 to 5 multiple-choice questions. Each needs 2+ options and one correct answer.</div>
-            {questions.map((q, qi) => (
-              <div key={qi} className="p-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700">
+          {questionsEnabled && (
+            <div className="mt-4 space-y-6">
+              {errors.questions && (
+                <p className="text-sm text-red-600 dark:text-red-400">{errors.questions}</p>
+              )}
+              <div className="text-xs text-gray-500 dark:text-gray-400">Add 1 to 5 multiple-choice questions. Each needs 2+ options and one correct answer.</div>
+              {questions.map((q, qi) => (
+                <div key={qi} className="p-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700">
                 <div className="flex items-start justify-between">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Question {qi + 1}</label>
                   <button type="button" className="text-xs text-red-600 dark:text-red-400" onClick={() => setQuestions(questions.filter((_, i) => i !== qi))}>Remove</button>
@@ -541,6 +555,7 @@ export default function PolicyForm({
           </div>
         )}
       </div>
+      </section>
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
