@@ -446,18 +446,20 @@ export default function Billing() {
             <li>Microsoft 365 SSO - Single sign-on with Azure AD</li>
             <li>Slack Integration - Sync users from your Slack workspace</li>
           </ul>
-          <Link
-            to="/settings/sso"
-            className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-          >
-            Configure Microsoft SSO →
-          </Link>
-          <Link
-            to="/settings/slack"
-            className="mt-2 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-          >
-            Configure Slack Integration →
-          </Link>
+          <div className="mt-4 flex flex-col gap-2">
+            <Link
+              to="/settings/sso"
+              className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+            >
+              Configure Microsoft SSO →
+            </Link>
+            <Link
+              to="/settings"
+              className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+            >
+              Configure Slack Integration →
+            </Link>
+          </div>
         </div>
       </div>
 
