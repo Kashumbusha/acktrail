@@ -11,14 +11,14 @@ export const PLANS = [
     maxStaff: 10,
     guestInvites: 50,
     admins: 1,
-    features: ['Email support', 'Basic analytics', '50 guest invites/mo', 'Microsoft 365 SSO included'],
+    features: ['Email support', 'Basic analytics', '50 guest invites/mo', 'Microsoft 365 SSO + Slack included'],
     marketing: {
       tagline: 'Perfect for small teams who want to stop the email chaos. Onboard new hires in 10 minutes instead of 3 hours.',
       benefits: [
         'Up to 10 staff members - flat rate',
         'Real-time tracking - see who viewed, who ignored',
         'Auto-reminders - stop manual follow-ups',
-        'Microsoft 365 SSO included',
+        'Microsoft 365 SSO + Slack integration',
       ],
       ctaLabel: 'Start 7-day free trial',
       highlighted: false,
@@ -33,7 +33,7 @@ export const PLANS = [
     maxStaff: 49,
     guestInvites: 250,
     admins: 3,
-    features: ['Priority support', 'Advanced analytics', '250 guest invites/mo', 'API access', 'Microsoft 365 SSO included'],
+    features: ['Priority support', 'Advanced analytics', '250 guest invites/mo', 'API access', 'Microsoft 365 SSO + Slack included'],
     popular: true,
     marketing: {
       tagline: 'Built for growing remote teams. Bulk send to entire company, track completion in real-time, eliminate spreadsheet tracking.',
@@ -41,7 +41,7 @@ export const PLANS = [
         'Up to 49 staff members - flat rate',
         'Bulk sending - 100 people in one click',
         'Dashboard view - see progress at a glance',
-        'Microsoft 365 SSO included',
+        'Microsoft 365 SSO + Slack integration',
       ],
       ctaLabel: 'Start 7-day free trial',
       highlighted: true,
@@ -56,14 +56,14 @@ export const PLANS = [
     maxStaff: null, // No upper limit
     guestInvites: 1000,
     admins: null, // Unlimited admins
-    features: ['24/7 phone support', 'Advanced security', '1,000 guest invites/mo', 'Custom integrations', 'Microsoft 365 SSO included', 'Free process automation - we build custom workflows for your team'],
+    features: ['24/7 phone support', 'Advanced security', '1,000 guest invites/mo', 'Custom integrations', 'Microsoft 365 SSO + Slack included', 'Free process automation - we build custom workflows for your team'],
     marketing: {
       tagline: 'Perfect for multi-location companies. Handle hundreds of acknowledgments effortlessly with unlimited admins and priority support.',
       benefits: [
         '50+ staff members - flat rate',
         'Unlimited admin seats - your entire HR team',
         'Handle 100+ staff with ease',
-        'Microsoft 365 SSO included',
+        'Microsoft 365 SSO + Slack integration',
         'Custom process automation included - we build workflows for free',
       ],
       ctaLabel: 'Start 7-day free trial',

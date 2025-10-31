@@ -109,7 +109,7 @@ export default function Pricing() {
           Flat-rate pricing. No per-user charges. Toggle annual billing to save 20%.
         </p>
         <p className="mt-1 text-slate-600 dark:text-slate-300">
-          Every plan includes Microsoft 365 SSO, SHA-256 receipt hashing, and CSV exports.
+          Every plan includes Microsoft 365 SSO, Slack integration, SHA-256 receipt hashing, and CSV exports.
         </p>
         <p className="mt-1 text-slate-600 dark:text-slate-300">
           <strong>7-day free trial</strong> on all plans. Guest acknowledgments are always free.
