@@ -42,8 +42,9 @@ export default function SlackIntegration() {
     } catch (error) {
       if (error.response?.status !== 404) {
         console.error('Error loading Slack config:', error);
+        toast.error('Failed to load Slack configuration');
       }
-      // 404 means not configured yet - that's okay
+      // 404 means not configured yet - that's okay, don't show error
     } finally {
       setLoading(false);
     }
