@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import {
   DocumentTextIcon,
   UsersIcon,
@@ -18,6 +19,27 @@ import { useAuth } from '../hooks/useAuth';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  // Track Google Ads conversion for new signups
+  useEffect(() => {
+    // Check if this is a new signup (coming from Stripe checkout success)
+    const isNewSignup = searchParams.get('new_signup') === 'true';
+    const conversionTracked = localStorage.getItem('ads_conversion_tracked');
+
+    // Only fire conversion once per user, and only for actual new signups
+    if (isNewSignup && !conversionTracked && user) {
+      // Fire Google Ads conversion tracking
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'ads_conversion_purchase', {
+          send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL', // Replace with your actual conversion ID
+        });
+      }
+
+      // Mark conversion as tracked
+      localStorage.setItem('ads_conversion_tracked', 'true');
+    }
+  }, [searchParams, user]);
 
   // Redirect employees to their assignments page
   if (user && user.role !== 'admin') {

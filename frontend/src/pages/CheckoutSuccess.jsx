@@ -19,7 +19,7 @@ export default function CheckoutSuccess() {
   }, []);
 
   const handleContinue = () => {
-    navigate('/dashboard');
+    navigate('/dashboard?new_signup=true');
   };
 
   return (
