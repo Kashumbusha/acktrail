@@ -27,7 +27,7 @@ export const PLANS = [
   {
     id: 'medium',
     name: 'Medium Team',
-    basePrice: 249,
+    basePrice: 149,
     perStaffPrice: 0, // Flat rate - no per-staff charges
     minStaff: 11,
     maxStaff: 49,
@@ -50,7 +50,7 @@ export const PLANS = [
   {
     id: 'large',
     name: 'Large',
-    basePrice: 699,
+    basePrice: 249,
     perStaffPrice: 0, // Flat rate - no per-staff charges
     minStaff: 50,
     maxStaff: null, // No upper limit
