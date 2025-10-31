@@ -84,6 +84,7 @@ class Workspace(Base):
     assignments = relationship("Assignment", back_populates="workspace")
     teams = relationship("Team", back_populates="workspace")
     sso_config = relationship("SSOConfig", back_populates="workspace", uselist=False)
+    slack_config = relationship("SlackConfig", back_populates="workspace", uselist=False)
 
 
 class Team(Base):
@@ -304,4 +305,35 @@ class SSOConfig(Base):
 
     # Relationships
     workspace = relationship("Workspace", back_populates="sso_config")
+    creator = relationship("User")
+
+
+class SlackConfig(Base):
+    """Slack Integration Configuration for workspace - stores Slack bot credentials"""
+    __tablename__ = "slack_configs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, unique=True)
+
+    # Slack Configuration
+    team_id = Column(String(255), nullable=False, index=True)  # Slack workspace ID
+    team_name = Column(String(255), nullable=True)  # Slack workspace name
+    bot_token_encrypted = Column(Text, nullable=False)  # Encrypted bot token (xoxb-)
+    signing_secret_encrypted = Column(Text, nullable=False)  # Encrypted signing secret for webhooks
+
+    # Sync Settings
+    auto_sync_users = Column(Boolean, default=False, nullable=False)  # Auto-sync users periodically
+    last_synced_at = Column(DateTime, nullable=True)  # Last user sync timestamp
+    sync_status = Column(String(50), nullable=True)  # 'success', 'failed', 'pending'
+
+    # Status
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+
+    # Relationships
+    workspace = relationship("Workspace", back_populates="slack_config")
     creator = relationship("User")

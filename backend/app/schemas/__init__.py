@@ -17,6 +17,16 @@ from .reporting import (
     ActivityLogItem,
     ActivityLogResponse,
 )
+from .slack import (
+    SlackConfigCreate,
+    SlackConfigUpdate,
+    SlackConfigResponse,
+    SlackTestResponse,
+    SlackUser,
+    SlackUsersResponse,
+    SlackSyncRequest,
+    SlackSyncResponse,
+)
 
 __all__ = [
     # Users
@@ -41,4 +51,8 @@ __all__ = [
 
     # Reporting
     "PolicySnapshot", "ReportsSummary", "PolicyReportList", "ActivityLogItem", "ActivityLogResponse",
+
+    # Slack
+    "SlackConfigCreate", "SlackConfigUpdate", "SlackConfigResponse", "SlackTestResponse",
+    "SlackUser", "SlackUsersResponse", "SlackSyncRequest", "SlackSyncResponse",
 ]

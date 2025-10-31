@@ -10,18 +10,21 @@ import {
   XCircleIcon,
   QuestionMarkCircleIcon,
   BoltIcon,
-  KeyIcon
+  KeyIcon,
+  Square3Stack3DIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../hooks/useAuth';
 import { paymentsAPI, usersAPI, dashboardAPI } from '../api/client';
 import { COUNTRIES } from '../utils/countries';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SlackIntegration from '../components/SlackIntegration';
 import toast from 'react-hot-toast';
 import { PLAN_MAP } from '../data/plans';
 
 const tabs = [
   { id: 'profile', name: 'Profile', icon: UserCircleIcon },
   { id: 'subscription', name: 'Subscription & Billing', icon: CreditCardIcon },
+  { id: 'integrations', name: 'Integrations', icon: Square3Stack3DIcon },
   { id: 'notifications', name: 'Notifications', icon: BellIcon },
   { id: 'security', name: 'Security', icon: ShieldCheckIcon },
   { id: 'account', name: 'Account', icon: Cog6ToothIcon },
@@ -1212,6 +1215,7 @@ export default function Settings() {
         <div className="flex-1 min-w-0">
           {activeTab === 'profile' && renderProfileTab()}
           {activeTab === 'subscription' && renderSubscriptionTab()}
+          {activeTab === 'integrations' && <SlackIntegration />}
           {activeTab === 'notifications' && renderNotificationsTab()}
           {activeTab === 'security' && renderSecurityTab()}
           {activeTab === 'account' && renderAccountTab()}
