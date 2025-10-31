@@ -54,32 +54,6 @@ export default function Billing() {
     }
   };
 
-  const handleAddSSO = async () => {
-    if (subscription.sso_enabled) {
-      toast.error('SSO add-on is already enabled');
-      return;
-    }
-
-    if (!window.confirm('Enable SSO add-on for $50/month?')) {
-      return;
-    }
-
-    setUpdating(true);
-    try {
-      await paymentsAPI.updateSubscription({ enable_sso: true });
-
-      // Wait for Stripe webhooks to complete (can take 1-5 seconds)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast.success('SSO add-on enabled!');
-      await loadSubscription();
-    } catch (error) {
-      toast.error('Failed to enable SSO');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const handleOpenCustomerPortal = async () => {
     setUpdating(true);
     try {
@@ -446,47 +420,6 @@ export default function Billing() {
                 {' '}Guest users don't count toward this limit.
               </p>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* SSO Add-on */}
-      <div className="bg-white dark:bg-slate-900 shadow-sm border border-gray-200 dark:border-slate-800 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">SSO Add-on</h2>
-          {subscription.sso_enabled ? (
-            <span className="px-3 py-1 text-xs font-medium rounded-full bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300">
-              Active
-            </span>
-          ) : (
-            <span className="text-lg font-bold text-gray-900 dark:text-white">$50 <span className="text-sm font-normal text-gray-500">/month</span></span>
-          )}
-        </div>
-
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Enable Single Sign-On (SAML, OAuth) for seamless authentication across your organization.
-        </p>
-
-        {subscription.sso_enabled ? (
-          <div className="bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg p-4">
-            <p className="text-sm text-success-800 dark:text-success-200">
-              SSO is enabled for your workspace.
-            </p>
-          </div>
-        ) : subscription.stripe_customer_id ? (
-          <button
-            onClick={handleAddSSO}
-            disabled={updating || !subscription.stripe_subscription_id}
-            className="w-full flex justify-center items-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-          >
-            {updating && <LoadingSpinner size="sm" className="mr-2" />}
-            {subscription.stripe_subscription_id ? 'Enable SSO Add-on' : 'Complete checkout to enable SSO'}
-          </button>
-        ) : (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              Complete your trial setup through the checkout link sent to your email to enable SSO.
-            </p>
           </div>
         )}
       </div>
