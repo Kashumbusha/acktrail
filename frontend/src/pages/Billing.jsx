@@ -424,6 +424,36 @@ export default function Billing() {
         )}
       </div>
 
+      {/* SSO & Integrations (Included) */}
+      <div className="bg-white dark:bg-slate-900 shadow-sm border border-gray-200 dark:border-slate-800 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Single Sign-On & Integrations</h2>
+          <span className="px-3 py-1 text-xs font-medium rounded-full bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-300">
+            Included
+          </span>
+        </div>
+
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Microsoft 365 SSO and Slack integration are included in your plan at no extra cost. Configure them in Settings to enable seamless authentication and user sync.
+        </p>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+            <strong>Available Integrations:</strong>
+          </p>
+          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1 ml-4 list-disc">
+            <li>Microsoft 365 SSO - Single sign-on with Azure AD</li>
+            <li>Slack Integration - Sync users from your Slack workspace</li>
+          </ul>
+          <Link
+            to="/settings"
+            className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            Configure in Settings →
+          </Link>
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="bg-white dark:bg-slate-900 shadow-sm border border-gray-200 dark:border-slate-800 rounded-lg p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Manage Subscription</h2>
