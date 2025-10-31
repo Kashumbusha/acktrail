@@ -10,6 +10,8 @@ import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Reports from './pages/Reports';
+import Activity from './pages/Activity';
 import PolicyList from './pages/PolicyList';
 import AdminUsers from './pages/AdminUsers';
 import PlatformDashboard from './pages/PlatformDashboard';
@@ -80,6 +82,26 @@ function App() {
                   <PrivateRoute>
                     <Layout>
                       <Dashboard />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Reports />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/activity"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Activity />
                     </Layout>
                   </PrivateRoute>
                 }

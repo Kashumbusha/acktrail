@@ -499,7 +499,7 @@ export default function Dashboard() {
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Recent Activity</h3>
-              <Link to="/dashboard" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
+              <Link to="/activity" className="text-sm text-violet-400 hover:text-violet-300 font-medium">
                 View All →
               </Link>
             </div>
@@ -550,7 +550,7 @@ export default function Dashboard() {
             </Link>
 
             <Link
-              to="/dashboard"
+              to="/reports"
               className="p-5 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-slate-700 hover:border-violet-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-violet-500/10 text-center group"
             >
               <div className="text-3xl mb-3">📊</div>

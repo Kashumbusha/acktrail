@@ -69,6 +69,13 @@ export const API_ENDPOINTS = {
   DASHBOARD: {
     STATS: '/api/dashboard/stats',
   },
+  REPORTS: {
+    SUMMARY: '/api/reports/summary',
+    POLICIES: '/api/reports/policies',
+  },
+  ACTIVITY: {
+    LOGS: '/api/activity/logs',
+  },
 };
 
 // Local storage keys
@@ -85,6 +92,9 @@ export const QUERY_KEYS = {
   POLICY: (id) => ['policies', id],
   POLICY_ASSIGNMENTS: (id) => ['policies', id, 'assignments'],
   DASHBOARD_STATS: ['dashboard', 'stats'],
+  REPORTS_SUMMARY: ['reports', 'summary'],
+  REPORTS_POLICIES: (params = {}) => ['reports', 'policies', params],
+  ACTIVITY_LOGS: (params = {}) => ['activity', 'logs', params],
   ACKNOWLEDGMENT: (token) => ['acknowledgment', token],
 };
 

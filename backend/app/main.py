@@ -16,6 +16,8 @@ from .api.policies import router as policies_router
 from .api.assignments import router as assignments_router, assignment_router
 from .api.acknowledgments import router as acknowledgments_router
 from .api.dashboard import router as dashboard_router
+from .api.reports import router as reports_router
+from .api.activity import router as activity_router
 from .api.teams import router as teams_router
 from .api.users import router as users_router
 from .api.platform import router as platform_router
@@ -144,6 +146,8 @@ def create_app() -> FastAPI:
     app.include_router(assignment_router, prefix="/api")
     app.include_router(acknowledgments_router, prefix="/api")
     app.include_router(dashboard_router, prefix="/api")
+    app.include_router(reports_router, prefix="/api")
+    app.include_router(activity_router, prefix="/api")
     app.include_router(teams_router, prefix="/api")
     app.include_router(users_router, prefix="/api")
     app.include_router(platform_router, prefix="/api")

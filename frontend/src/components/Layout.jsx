@@ -8,6 +8,8 @@ import { useAuth } from '../hooks/useAuth';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', adminOnly: true },
+  { name: 'Reports', href: '/reports', adminOnly: true },
+  { name: 'Activity', href: '/activity', adminOnly: true },
   { name: 'Policies', href: '/policies', adminOnly: true },
   { name: 'Teams', href: '/teams', adminOnly: true },
   { name: 'Users', href: '/admin/users', adminOnly: true },

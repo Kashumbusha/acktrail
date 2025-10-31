@@ -146,6 +146,17 @@ export const dashboardAPI = {
   exportWorkspaceData: () => apiClient.get('/api/dashboard/workspace/export.csv', { responseType: 'blob' }),
 };
 
+// Reports API
+export const reportsAPI = {
+  getSummary: () => apiClient.get('/api/reports/summary').then(res => res.data),
+  getPolicies: (params = {}) => apiClient.get('/api/reports/policies', { params }).then(res => res.data),
+};
+
+// Activity API
+export const activityAPI = {
+  getLogs: (params = {}) => apiClient.get('/api/activity/logs', { params }).then(res => res.data),
+};
+
 // Users API
 export const usersAPI = {
   list: (params) => apiClient.get('/api/users/', { params }),

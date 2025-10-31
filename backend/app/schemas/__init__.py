@@ -10,6 +10,13 @@ from .acknowledgments import (
 )
 from .auth import SendCodeRequest, VerifyCodeRequest, TokenResponse, CurrentUser, RefreshTokenRequest
 from .dashboard import DashboardStats, RecentActivity, DashboardResponse, PolicyExportRow
+from .reporting import (
+    PolicySnapshot,
+    ReportsSummary,
+    PolicyReportList,
+    ActivityLogItem,
+    ActivityLogResponse,
+)
 
 __all__ = [
     # Users
@@ -31,4 +38,7 @@ __all__ = [
     
     # Dashboard
     "DashboardStats", "RecentActivity", "DashboardResponse", "PolicyExportRow",
+
+    # Reporting
+    "PolicySnapshot", "ReportsSummary", "PolicyReportList", "ActivityLogItem", "ActivityLogResponse",
 ]
