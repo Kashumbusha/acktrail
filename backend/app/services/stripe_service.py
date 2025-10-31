@@ -3,9 +3,10 @@ Stripe service for handling payments, subscriptions, and billing.
 
 Pricing Model (Flat-rate):
 - Small: $99/month (up to 10 staff)
-- Medium: $249/month (up to 49 staff)
-- Large: $699/month (50+ staff)
+- Medium: $149/month (up to 49 staff)
+- Large: $249/month (50+ staff)
 - SSO: Included in all plans
+- Slack integration: Included in all plans
 - Annual billing: 20% discount
 """
 import stripe
@@ -23,16 +24,16 @@ stripe.api_key = settings.stripe_secret_key
 PLAN_PRICES = {
     "small": {
         "name": "Small Business Plan",
-        "monthly_price_id": "price_1SM6VALvgOLlfex7uHmcYAob",
-        "annual_price_id": "price_1SM6VALvgOLlfex7YQltbycI",
+        "monthly_price_id": "price_1SM6VALvgOLlfex7uHmcYAob",  # $99/month
+        "annual_price_id": "price_1SM6VALvgOLlfex7YQltbycI",   # $950/year
         "max_staff": 10,  # Up to 10 staff
         "guest_invites": 50,  # 50 guest invites/mo
         "admins": 1,  # 1 admin
     },
     "medium": {
         "name": "Medium Team Plan",
-        "monthly_price_id": "price_1SM6VBLvgOLlfex7if19LSkJ",
-        "annual_price_id": "price_1SM6VBLvgOLlfex7TABIRld8",
+        "monthly_price_id": "price_1SL8LiLvgOLlfex7oxz8XV7V",  # $149/month
+        "annual_price_id": "price_1SODOeLvgOLlfex71Qn4DaP2",   # $1430.40/year
         "min_staff": 11,  # 11-49 staff
         "max_staff": 49,
         "guest_invites": 250,  # 250 guest invites/mo
@@ -40,8 +41,8 @@ PLAN_PRICES = {
     },
     "large": {
         "name": "Large Enterprise Plan",
-        "monthly_price_id": "price_1SM6VCLvgOLlfex7j2BGE8Pr",
-        "annual_price_id": "price_1SM6VCLvgOLlfex73TeZUS1Q",
+        "monthly_price_id": "price_1SODOeLvgOLlfex7GErASLgc",  # $249/month
+        "annual_price_id": "price_1SODOfLvgOLlfex7Q1FqCJGg",   # $2390.40/year
         "min_staff": 50,  # 50+ staff
         "max_staff": None,  # Unlimited
         "guest_invites": 1000,  # 1000 guest invites/mo
