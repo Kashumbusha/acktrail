@@ -279,6 +279,7 @@ class StripeService:
             session = stripe.billing_portal.Session.create(
                 customer=customer_id,
                 return_url=f"{settings.frontend_url}/dashboard",
+                configuration="bpc_1SODdZLvgOLlfex7EXY4UGSn",  # Use configuration with all 3 plans
             )
             logger.info(f"Created portal session for customer: {customer_id}")
             return {
