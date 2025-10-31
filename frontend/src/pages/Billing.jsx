@@ -447,10 +447,16 @@ export default function Billing() {
             <li>Slack Integration - Sync users from your Slack workspace</li>
           </ul>
           <Link
-            to="/settings"
+            to="/settings/sso"
             className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
-            Configure in Settings →
+            Configure Microsoft SSO →
+          </Link>
+          <Link
+            to="/settings/slack"
+            className="mt-2 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            Configure Slack Integration →
           </Link>
         </div>
       </div>
