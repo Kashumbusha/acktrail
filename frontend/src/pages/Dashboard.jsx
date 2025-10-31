@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import {
@@ -11,11 +11,12 @@ import {
   BoltIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import { dashboardAPI } from '../api/client';
+import { dashboardAPI, paymentsAPI } from '../api/client';
 import { QUERY_KEYS } from '../utils/constants';
 import { formatNumber } from '../utils/formatters';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
+import { PLAN_MAP } from '../data/plans';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -23,26 +24,46 @@ export default function Dashboard() {
 
   // Track GA4 conversion for new signups (syncs to Google Ads)
   useEffect(() => {
-    // Check if this is a new signup (coming from Stripe checkout success)
-    const isNewSignup = searchParams.get('new_signup') === 'true';
-    const conversionTracked = localStorage.getItem('ads_conversion_tracked');
+    const trackConversion = async () => {
+      // Check if this is a new signup (coming from Stripe checkout success)
+      const isNewSignup = searchParams.get('new_signup') === 'true';
+      const conversionTracked = localStorage.getItem('ads_conversion_tracked');
 
-    // Only fire conversion once per user, and only for actual new signups
-    if (isNewSignup && !conversionTracked && user) {
-      // Fire GA4 purchase event (will sync to Google Ads if GA4 conversion import is enabled)
-      if (typeof window.gtag === 'function') {
-        window.gtag('event', 'purchase', {
-          transaction_id: `signup_${Date.now()}`,
-          value: 149.00, // Default to Medium plan value
-          currency: 'USD',
-          event_category: 'signup',
-          event_label: 'subscription_created'
-        });
+      // Only fire conversion once per user, and only for actual new signups
+      if (isNewSignup && !conversionTracked && user) {
+        try {
+          // Fetch subscription to get the actual plan
+          const response = await paymentsAPI.getSubscription();
+          const subscription = response.data;
+          const plan = PLAN_MAP[subscription.plan];
+          const planValue = plan ? plan.basePrice : 149; // Fallback to $149
+
+          // Fire GA4 purchase event (will sync to Google Ads if GA4 conversion import is enabled)
+          if (typeof window.gtag === 'function') {
+            window.gtag('event', 'purchase', {
+              transaction_id: `signup_${Date.now()}`,
+              value: planValue,
+              currency: 'USD',
+              event_category: 'signup',
+              event_label: 'subscription_created',
+              items: [{
+                item_id: subscription.plan,
+                item_name: plan ? plan.name : 'Unknown Plan',
+                price: planValue,
+                quantity: 1
+              }]
+            });
+          }
+
+          // Mark conversion as tracked
+          localStorage.setItem('ads_conversion_tracked', 'true');
+        } catch (error) {
+          console.error('Failed to track conversion:', error);
+        }
       }
+    };
 
-      // Mark conversion as tracked
-      localStorage.setItem('ads_conversion_tracked', 'true');
-    }
+    trackConversion();
   }, [searchParams, user]);
 
   // Redirect employees to their assignments page
