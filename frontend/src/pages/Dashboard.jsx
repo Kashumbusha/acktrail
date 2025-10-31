@@ -21,7 +21,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
-  // Track Google Ads conversion for new signups
+  // Track GA4 conversion for new signups (syncs to Google Ads)
   useEffect(() => {
     // Check if this is a new signup (coming from Stripe checkout success)
     const isNewSignup = searchParams.get('new_signup') === 'true';
@@ -29,10 +29,14 @@ export default function Dashboard() {
 
     // Only fire conversion once per user, and only for actual new signups
     if (isNewSignup && !conversionTracked && user) {
-      // Fire Google Ads conversion tracking
+      // Fire GA4 purchase event (will sync to Google Ads if GA4 conversion import is enabled)
       if (typeof window.gtag === 'function') {
-        window.gtag('event', 'ads_conversion_purchase', {
-          send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL', // Replace with your actual conversion ID
+        window.gtag('event', 'purchase', {
+          transaction_id: `signup_${Date.now()}`,
+          value: 149.00, // Default to Medium plan value
+          currency: 'USD',
+          event_category: 'signup',
+          event_label: 'subscription_created'
         });
       }
 
