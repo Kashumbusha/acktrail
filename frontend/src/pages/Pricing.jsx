@@ -244,11 +244,11 @@ export default function Pricing() {
         <div className="card">
           <div className="card-body">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              What's next on the roadmap?
+              Available integrations
             </h3>
             <p className="mt-2 text-slate-600 dark:text-slate-300">
-              Slack notifications are in active development with HRIS roster sync close behind. Book a
-              demo to request early access or share integrations that would make Acktrail indispensable.
+              Microsoft SSO and Slack user sync are now available! Import your team from Slack with one click
+              and enable single sign-on with Azure AD. Configure integrations in Settings after signup.
             </p>
           </div>
         </div>

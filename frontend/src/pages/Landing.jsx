@@ -402,16 +402,16 @@ export default function Landing() {
           </div>
           <div className="card bg-slate-50 ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
             <div className="card-body space-y-4">
-              <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
-                Coming soon
+              <div className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                Available now
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Slack notifications + HRIS sync</h3>
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Microsoft SSO + Slack Integration</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
-                Keep teams accountable where they work. We&apos;re preparing Slack alerts for new assignments and reminders, with HRIS roster sync on the roadmap. Let us know in the demo form if you want early access.
+                Sync your team from Slack workspaces and enable single sign-on with Microsoft Azure AD. Import users with one click and streamline authentication across your organization.
               </p>
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                <ArrowPathIcon className="h-5 w-5 text-slate-400" />
-                <span>Integrations rollout begins Q2 &mdash; register interest to help shape it.</span>
+                <ArrowPathIcon className="h-5 w-5 text-green-500" />
+                <span>Configure integrations in Settings → Integrations after signing up.</span>
               </div>
             </div>
           </div>
@@ -426,7 +426,7 @@ export default function Landing() {
             <span className="block text-slate-800 dark:text-gray-100">Start managing policies today.</span>
           </h2>
           <p className="mt-4 text-lg text-slate-600 dark:text-gray-400">
-            Start your 7-day trial today: launch in minutes, export audit evidence on day one, and add Slack alerts when they ship.
+            Start your 7-day trial today: launch in minutes, export audit evidence on day one, and sync your team from Slack or Microsoft.
           </p>
           <Link to="/signup" className="btn bg-white text-primary-600 hover:bg-primary-50 mt-8 shadow-lg hover:shadow-xl">
             Sign up
